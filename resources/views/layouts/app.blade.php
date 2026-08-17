@@ -15,19 +15,21 @@
                 <div class="page-shell flex items-center justify-between gap-4 py-2.5">
                     <a href="{{ route('home') }}" class="font-display text-2xl tracking-tight text-studio" wire:navigate>VibeCraft</a>
                     <nav class="hidden items-center gap-1 md:flex">
-                        <a href="{{ route('home') }}" class="rounded-full px-4 py-2 text-sm font-medium {{ request()->routeIs('home') ? 'bg-wall text-ember' : 'text-mist hover:bg-wall hover:text-ink' }}" wire:navigate>Home</a>
-                        <a href="{{ route('students.index') }}" class="rounded-full px-4 py-2 text-sm font-medium {{ request()->routeIs('students.*') ? 'bg-wall text-ember' : 'text-mist hover:bg-wall hover:text-ink' }}" wire:navigate>People</a>
-                        <a href="{{ route('events.index') }}" class="rounded-full px-4 py-2 text-sm font-medium {{ request()->routeIs('events.*') ? 'bg-wall text-ember' : 'text-mist hover:bg-wall hover:text-ink' }}" wire:navigate>Events</a>
+                        <x-nav-icon :href="route('home')" icon="home" label="Home" :active="request()->routeIs('home')" />
+                        <x-nav-icon :href="route('students.index')" icon="people" label="People" :active="request()->routeIs('students.index')" />
+                        <x-nav-icon :href="route('events.index')" icon="calendar" label="Events" :active="request()->routeIs('events.*')" />
                         @if (auth()->user()->canOrganizeEvents())
-                            <a href="{{ route('campus.dashboard') }}" class="rounded-full px-4 py-2 text-sm font-medium {{ request()->routeIs('campus.*') ? 'bg-wall text-ember' : 'text-mist hover:bg-wall hover:text-ink' }}" wire:navigate>Campus</a>
+                            <x-nav-icon :href="route('campus.dashboard')" icon="building" label="Campus" :active="request()->routeIs('campus.*')" />
                         @endif
                         @if (auth()->user()->isSuperAdmin())
-                            <a href="{{ route('admin.dashboard') }}" class="rounded-full px-4 py-2 text-sm font-medium {{ request()->routeIs('admin.*') ? 'bg-wall text-ember' : 'text-mist hover:bg-wall hover:text-ink' }}" wire:navigate>Admin</a>
+                            <x-nav-icon :href="route('admin.dashboard')" icon="shield" label="Admin" :active="request()->routeIs('admin.*')" />
                         @endif
                     </nav>
-                    <div class="flex items-center gap-3">
-                        <a href="{{ route('portfolio.create') }}" class="btn-primary" wire:navigate>Post</a>
-                        <a href="{{ route('profile.show') }}" class="flex size-9 items-center justify-center rounded-full bg-studio text-xs font-semibold text-gold" wire:navigate>{{ auth()->user()->initials() }}</a>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('portfolio.create') }}" class="flex size-10 items-center justify-center rounded-full bg-ember text-white transition hover:bg-ember/90 {{ request()->routeIs('portfolio.create') ? 'ring-2 ring-ember/30' : '' }}" title="Post" aria-label="Post" wire:navigate>
+                            <x-icon name="plus" class="size-5" />
+                        </a>
+                        <a href="{{ route('profile.show') }}" class="flex size-9 items-center justify-center rounded-full bg-studio text-xs font-semibold text-gold {{ request()->routeIs('students.show') ? 'ring-2 ring-ember ring-offset-2' : '' }}" title="Profile" aria-label="Profile" wire:navigate>{{ auth()->user()->initials() }}</a>
                         <x-logout-button />
                     </div>
                 </div>
@@ -49,12 +51,14 @@
         </main>
 
         @auth
-            <nav class="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-ink/10 bg-white/95 px-2 py-2 text-[11px] font-medium text-mist backdrop-blur md:hidden">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-1 {{ request()->routeIs('home') ? 'text-ember' : '' }}" wire:navigate>Home</a>
-                <a href="{{ route('students.index') }}" class="flex flex-col items-center gap-1 {{ request()->routeIs('students.index') ? 'text-ember' : '' }}" wire:navigate>People</a>
-                <a href="{{ route('portfolio.create') }}" class="flex flex-col items-center gap-1 {{ request()->routeIs('portfolio.create') ? 'text-ember' : '' }}" wire:navigate>Post</a>
-                <a href="{{ route('events.index') }}" class="flex flex-col items-center gap-1 {{ request()->routeIs('events.*') ? 'text-ember' : '' }}" wire:navigate>Events</a>
-                <a href="{{ route('profile.show') }}" class="flex flex-col items-center gap-1 {{ request()->routeIs('students.show') ? 'text-ember' : '' }}" wire:navigate>Profile</a>
+            <nav class="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-ink/10 bg-white/95 px-2 py-1.5 backdrop-blur md:hidden">
+                <x-nav-icon :href="route('home')" icon="home" label="Home" :active="request()->routeIs('home')" class="mx-auto" />
+                <x-nav-icon :href="route('students.index')" icon="people" label="People" :active="request()->routeIs('students.index')" class="mx-auto" />
+                <a href="{{ route('portfolio.create') }}" class="mx-auto flex size-10 items-center justify-center rounded-full bg-ember text-white {{ request()->routeIs('portfolio.create') ? 'ring-2 ring-ember/30' : '' }}" title="Post" aria-label="Post" wire:navigate>
+                    <x-icon name="plus" class="size-5" />
+                </a>
+                <x-nav-icon :href="route('events.index')" icon="calendar" label="Events" :active="request()->routeIs('events.*')" class="mx-auto" />
+                <x-nav-icon :href="route('profile.show')" icon="user" label="Profile" :active="request()->routeIs('students.show')" class="mx-auto" />
             </nav>
         @endauth
 

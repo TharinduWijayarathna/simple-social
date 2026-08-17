@@ -1,22 +1,67 @@
-<div class="px-4 py-8 lg:px-10">
-    <p class="text-xs uppercase tracking-[0.28em] text-ember">Campus</p>
-    <h1 class="font-display text-4xl">People</h1>
-    <p class="mt-2 text-mist">Every talent has its own room. Step into a studio.</p>
-    <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        @foreach ($students as $student)
-            <a href="{{ route('students.show', $student) }}" class="overflow-hidden rounded-[1.5rem] bg-white" wire:key="stu-{{ $student->id }}" wire:navigate>
-                @if ($student->portfolioItems->first())
-                    <img src="{{ $student->portfolioItems->first()->displayUrl() }}" alt="" class="h-44 w-full object-cover">
-                @else
-                    <div class="h-44 bg-studio"></div>
-                @endif
-                <div class="p-5">
-                    <h2 class="font-display text-2xl">{{ $student->name }}</h2>
-                    <p class="mt-1 text-sm text-mist">{{ $student->profile?->headline }}</p>
-                    <p class="mt-2 text-xs uppercase tracking-wide text-ember">{{ $student->profile?->primaryTalent()?->name }}</p>
-                </div>
-            </a>
-        @endforeach
+<div class="page-shell py-6">
+    <div class="relative">
+        <x-icon name="people" class="pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-mist" />
+        <input wire:model.live.debounce.300ms="search" type="search" class="field w-full rounded-full py-3 pl-11" placeholder="Search campus" aria-label="Search campus">
     </div>
+
+    <h1 class="mt-6 text-base font-semibold">{{ $this->search === '' ? 'Suggested for you' : 'People' }}</h1>
+
+    <div class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+        @forelse ($students as $student)
+            @php
+                $cover = $student->portfolioItems->first();
+            @endphp
+            <article class="relative overflow-hidden rounded-2xl bg-studio" wire:key="stu-{{ $student->id }}">
+                <a href="{{ route('students.show', $student) }}" class="group block aspect-[3/4]" wire:navigate>
+                    @if ($cover)
+                        <img src="{{ $cover->displayUrl() }}" alt="" class="size-full object-cover transition duration-500 group-hover:scale-105">
+                    @else
+                        <span class="flex size-full items-center justify-center text-4xl font-semibold text-gold">{{ $student->initials() }}</span>
+                    @endif
+                    <span class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></span>
+                    <span class="absolute inset-x-3 bottom-14 flex min-w-0 items-center gap-2 text-white">
+                        <span @class([
+                            'flex size-9 shrink-0 items-center justify-center rounded-full bg-studio text-[10px] font-semibold text-gold',
+                            'ring-2 ring-sky-400 ring-offset-2 ring-offset-black/40' => $student->has_active_status,
+                        ])>{{ $student->initials() }}</span>
+                        <span class="min-w-0">
+                            <span class="block truncate text-sm font-semibold leading-tight">{{ $student->name }}</span>
+                            <span class="block truncate text-[11px] text-white/70">{{ $student->profile?->primaryTalent()?->name ?? $student->profile?->headline }} · {{ $student->followers_count }} followers</span>
+                        </span>
+                    </span>
+                </a>
+                <div class="absolute inset-x-3 bottom-3">
+                    <button type="button" wire:click="follow({{ $student->id }})" @class([
+                        'w-full rounded-full py-1.5 text-sm font-semibold',
+                        'bg-white/15 text-white ring-1 ring-white/30' => $student->followed_by_viewer,
+                        'bg-ember text-white' => ! $student->followed_by_viewer,
+                    ])>
+                        {{ $student->followed_by_viewer ? 'Following' : 'Follow' }}
+                    </button>
+                </div>
+            </article>
+        @empty
+            <p class="col-span-full py-16 text-center text-sm text-mist">No one matches that search yet.</p>
+        @endforelse
+    </div>
+
     <div class="mt-6">{{ $students->links() }}</div>
+
+    @if ($explore->isNotEmpty())
+        <h2 class="mt-10 text-base font-semibold">Explore</h2>
+        <div class="mt-4 grid grid-cols-3 gap-1 md:gap-2">
+            @foreach ($explore as $item)
+                <a href="{{ route('portfolio.show', $item) }}" class="group relative aspect-square overflow-hidden bg-studio" wire:key="explore-{{ $item->id }}" wire:navigate>
+                    <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="size-full object-cover transition duration-500 group-hover:scale-105">
+                    <span class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 transition group-hover:opacity-100"></span>
+                    <span class="absolute inset-x-2 bottom-2 truncate text-xs font-semibold text-white opacity-0 transition group-hover:opacity-100">{{ $item->user->name }}</span>
+                    @if ($item->media_type === \App\Enums\PortfolioMediaType::Video)
+                        <span class="absolute right-2 top-2 text-white">
+                            <x-icon name="play" solid class="size-4" />
+                        </span>
+                    @endif
+                </a>
+            @endforeach
+        </div>
+    @endif
 </div>
