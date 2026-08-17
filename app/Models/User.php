@@ -120,6 +120,11 @@ class User extends Authenticatable
         return $this->hasMany(PortfolioItem::class);
     }
 
+    public function statuses(): HasMany
+    {
+        return $this->hasMany(Status::class);
+    }
+
     public function devices(): HasMany
     {
         return $this->hasMany(Device::class);

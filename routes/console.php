@@ -3,6 +3,7 @@
 use App\Enums\EventApplicationStatus;
 use App\Models\Event;
 use App\Models\EventApplication;
+use App\Models\Status;
 use App\Notifications\EventReminderNotification;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -15,6 +16,10 @@ Artisan::command('inspire', function () {
 Schedule::command('rankings:recompute')
     ->hourly()
     ->withoutOverlapping();
+
+Schedule::call(function (): void {
+    Status::query()->where('expires_at', '<', now())->delete();
+})->hourly()->name('statuses:prune')->withoutOverlapping();
 
 Schedule::call(function (): void {
     Event::query()

@@ -11,7 +11,10 @@ use Illuminate\Http\UploadedFile;
 
 class StorePortfolioItem
 {
-    public function __construct(private AwardXp $awardXp) {}
+    public function __construct(
+        private AwardXp $awardXp,
+        private StoreStatus $storeStatus,
+    ) {}
 
     /**
      * @param  array{
@@ -43,6 +46,10 @@ class StorePortfolioItem
 
         if ($item->isPublished()) {
             $this->awardXp->handle($user, XpEventType::PortfolioPublished, $item);
+
+            if (in_array($item->media_type, [PortfolioMediaType::Image, PortfolioMediaType::Video], true)) {
+                $this->storeStatus->handle($user, $item->file_path, $item->title);
+            }
         }
 
         return $item;

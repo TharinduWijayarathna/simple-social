@@ -15,6 +15,8 @@ use App\Livewire\Portfolio\Create as PortfolioCreate;
 use App\Livewire\Portfolio\Index as PortfolioIndex;
 use App\Livewire\Portfolio\Show as PortfolioShow;
 use App\Livewire\Profile\Edit as ProfileEdit;
+use App\Livewire\Statuses\Create as StatusCreate;
+use App\Livewire\Statuses\Show as StatusShow;
 use App\Livewire\Students\Index as StudentsIndex;
 use App\Livewire\Students\Show as StudentsShow;
 use App\Livewire\Wearable\Glance;
@@ -47,6 +49,8 @@ Route::middleware('auth')->group(function (): void {
     Route::livewire('/portfolio', PortfolioIndex::class)->name('portfolio.index');
     Route::livewire('/portfolio/create', PortfolioCreate::class)->name('portfolio.create');
     Route::livewire('/portfolio/{item}', PortfolioShow::class)->name('portfolio.show');
+    Route::livewire('/status/create', StatusCreate::class)->name('status.create');
+    Route::livewire('/status/{status}', StatusShow::class)->name('status.show');
     Route::livewire('/students', StudentsIndex::class)->name('students.index');
     Route::livewire('/students/{user}', StudentsShow::class)->name('students.show');
     Route::livewire('/events', EventsIndex::class)->name('events.index');

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Event;
 use App\Models\PortfolioItem;
+use App\Models\Status;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -28,6 +29,13 @@ class Feed extends Component
                 ])
                 ->latest('published_at')
                 ->paginate(12),
+            'statuses' => Status::query()
+                ->active()
+                ->with('user:id,name')
+                ->latest()
+                ->get()
+                ->unique('user_id')
+                ->values(),
             'upcomingEvents' => Event::query()
                 ->published()
                 ->upcoming()

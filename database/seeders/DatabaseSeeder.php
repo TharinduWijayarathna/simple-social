@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Collaboration;
 use App\Models\Event;
 use App\Models\PortfolioItem;
+use App\Models\Status;
 use App\Models\Talent;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -68,6 +69,10 @@ class DatabaseSeeder extends Seeder
                 ->recycle($primary)
                 ->count(4)
                 ->create();
+
+            Status::factory()->recycle($student)->create([
+                'caption' => $primary->name,
+            ]);
         });
 
         Event::factory()->recycle($campusAdmin)->recycle($talents->first())->count(3)->create();

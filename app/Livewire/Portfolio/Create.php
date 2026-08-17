@@ -40,7 +40,7 @@ class Create extends Component
 
         $storePortfolioItem->handle(auth()->user(), $validated);
 
-        $this->redirect(route('students.show', auth()->user()), navigate: true);
+        $this->redirect(route('home'), navigate: true);
     }
 
     public function render(): View
