@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Actions;
+
+use App\Enums\PortfolioMediaType;
+use App\Enums\XpEventType;
+use App\Jobs\GeneratePortfolioThumbnail;
+use App\Models\PortfolioItem;
+use App\Models\User;
+use Illuminate\Http\UploadedFile;
+
+class StorePortfolioItem
+{
+    public function __construct(private AwardXp $awardXp) {}
+
+    /**
+     * @param  array{
+     *     title: string,
+     *     description?: string|null,
+     *     talent_id?: int|null,
+     *     media_type: string|PortfolioMediaType,
+     *     file: UploadedFile,
+     *     published?: bool
+     * }  $data
+     */
+    public function handle(User $user, array $data): PortfolioItem
+    {
+        $file = $data['file'];
+        $path = $file->store('portfolio/'.$user->id, 'public');
+
+        $item = $user->portfolioItems()->create([
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+            'talent_id' => $data['talent_id'] ?? null,
+            'media_type' => $data['media_type'],
+            'file_path' => $path,
+            'mime_type' => $file->getMimeType(),
+            'file_size' => $file->getSize(),
+            'published_at' => ($data['published'] ?? true) ? now() : null,
+        ]);
+
+        GeneratePortfolioThumbnail::dispatch($item);
+
+        if ($item->isPublished()) {
+            $this->awardXp->handle($user, XpEventType::PortfolioPublished, $item);
+        }
+
+        return $item;
+    }
+}

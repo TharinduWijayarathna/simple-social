@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Livewire\Campus;
+
+use App\Models\Event;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+
+#[Layout('layouts::app')]
+#[Title('Campus desk')]
+class Dashboard extends Component
+{
+    public ?int $selectedEventId = null;
+
+    public function mount(): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+    }
+
+    public function selectEvent(int $eventId): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        $this->authorize('update', Event::query()->findOrFail($eventId));
+        $this->selectedEventId = $eventId;
+    }
+
+    public function render(): View
+    {
+        $user = auth()->user();
+
+        $events = Event::query()
+            ->when($user->isCampusAdmin(), fn ($query) => $query->whereBelongsTo($user, 'organizer'))
+            ->with(['talent:id,name', 'organizer:id,name'])
+            ->withCount('applications')
+            ->latest('starts_at')
+            ->get();
+
+        $selectedEvent = $events->firstWhere('id', $this->selectedEventId) ?? $events->first();
+
+        if ($selectedEvent !== null) {
+            $selectedEvent->load(['applications.user:id,name']);
+        }
+
+        return view('livewire.campus.dashboard', [
+            'events' => $events,
+            'selectedEvent' => $selectedEvent,
+        ]);
+    }
+}
