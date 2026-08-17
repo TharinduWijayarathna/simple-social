@@ -1,11 +1,11 @@
-<div class="mx-auto max-w-6xl px-4 py-6">
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,38rem)_18rem] lg:justify-center">
+<div class="page-shell py-6">
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div class="flex flex-col gap-4">
             @auth
-                <div class="rounded-2xl bg-[#242526] px-4 py-3 text-white">
+                <div class="feed-card px-4 py-3">
                     <div class="flex items-center gap-3">
                         <a href="{{ route('profile.show') }}" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-studio text-xs font-semibold text-gold" wire:navigate>{{ auth()->user()->initials() }}</a>
-                        <a href="{{ route('portfolio.create') }}" class="flex-1 rounded-full bg-[#3a3b3c] px-4 py-2.5 text-sm text-white/70" wire:navigate>What's on your mind, {{ auth()->user()->name }}?</a>
+                        <a href="{{ route('portfolio.create') }}" class="flex-1 rounded-full bg-wall px-4 py-2.5 text-sm text-mist" wire:navigate>What's on your mind, {{ auth()->user()->name }}?</a>
                         <div class="hidden items-center gap-3 sm:flex">
                             <a href="{{ route('portfolio.create') }}" class="text-rose-400" title="Video" wire:navigate>
                                 <svg class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11z"/></svg>
@@ -22,10 +22,10 @@
 
                 <div class="relative">
                     <div class="flex gap-3 overflow-x-auto pb-2">
-                        <a href="{{ route('status.create') }}" class="relative h-48 w-28 shrink-0 overflow-hidden rounded-2xl bg-[#3a3b3c]" wire:navigate>
-                            <span class="flex h-32 items-center justify-center bg-[#242526] text-lg font-semibold text-gold">{{ auth()->user()->initials() }}</span>
-                            <span class="absolute bottom-[3.25rem] left-1/2 flex size-8 -translate-x-1/2 items-center justify-center rounded-full bg-sky-500 text-xl font-bold text-white ring-4 ring-[#242526]">+</span>
-                            <span class="absolute inset-x-0 bottom-0 px-2 pb-2 text-center text-xs font-semibold text-white">Create story</span>
+                        <a href="{{ route('status.create') }}" class="relative h-48 w-28 shrink-0 overflow-hidden rounded-2xl border border-ink/8 bg-white" wire:navigate>
+                            <span class="flex h-32 items-center justify-center bg-wall text-lg font-semibold text-studio">{{ auth()->user()->initials() }}</span>
+                            <span class="absolute bottom-[3.25rem] left-1/2 flex size-8 -translate-x-1/2 items-center justify-center rounded-full bg-sky-500 text-xl font-bold text-white ring-4 ring-white">+</span>
+                            <span class="absolute inset-x-0 bottom-0 px-2 pb-2 text-center text-xs font-semibold text-ink">Create story</span>
                         </a>
 
                         @foreach ($statuses as $status)

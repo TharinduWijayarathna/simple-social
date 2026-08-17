@@ -54,9 +54,6 @@
 
     <div class="mt-6 flex flex-col items-center gap-3">
         <a href="{{ route('profile.show') }}" class="text-sm text-mist" wire:navigate>Back to profile</a>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="text-sm text-mist hover:text-ink">Sign out</button>
-        </form>
+        <x-logout-button />
     </div>
 </div>

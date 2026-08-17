@@ -9,11 +9,15 @@
     <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="mt-8 w-full rounded-[1.75rem] object-cover {{ $item->feedAspectClass() }}">
 
     <div class="mt-6 flex flex-wrap items-center gap-3">
-        <button wire:click="like" class="btn-dark">
-            Like ({{ $item->likes_count }})
+        <button wire:click="like" class="btn-dark inline-flex items-center gap-2">
+            <x-icon name="heart" class="size-4" />
+            Like
+            <span class="text-xs opacity-80">{{ $item->likes_count }}</span>
         </button>
-        <button wire:click="share" class="btn-ghost">
-            Share ({{ $item->shares_count }})
+        <button wire:click="share" class="btn-ghost inline-flex items-center gap-2">
+            <x-icon name="share" class="size-4" />
+            Share
+            <span class="text-xs">{{ $item->shares_count }}</span>
         </button>
         <a href="{{ $item->fileUrl() }}" class="text-sm text-ember">Open original</a>
     </div>

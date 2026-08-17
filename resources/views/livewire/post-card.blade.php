@@ -16,20 +16,40 @@
         <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="{{ $item->feedAspectClass() }} w-full object-cover">
     </a>
 
-    <div class="px-4 py-4">
-        <div class="flex items-center gap-4 text-sm">
+    <div class="px-4 pb-4 pt-1">
+        <div class="grid grid-cols-3 border-t border-ink/10 text-sm font-medium">
             @auth
-                <button type="button" wire:click="like" class="font-semibold {{ $likedByViewer ? 'text-ember' : 'text-ink' }}">
-                    {{ $likedByViewer ? 'Liked' : 'Like' }} · {{ $item->likes_count }}
+                <button type="button" wire:click="like" class="inline-flex items-center justify-center gap-2 rounded-lg py-2.5 {{ $likedByViewer ? 'text-ember' : 'text-mist hover:bg-wall hover:text-ink' }}">
+                    <x-icon name="heart" :solid="$likedByViewer" />
+                    {{ $likedByViewer ? 'Liked' : 'Like' }}
+                    <span class="text-xs">{{ $item->likes_count }}</span>
                 </button>
-                <span class="text-mist">Comment · {{ $item->comments_count }}</span>
-                <button type="button" wire:click="share" class="text-mist hover:text-ink">
-                    Share · {{ $item->shares_count }}
+                <button type="button" @click="$refs.commentInput?.focus()" class="inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-mist hover:bg-wall hover:text-ink">
+                    <x-icon name="chat" />
+                    Comment
+                    <span class="text-xs">{{ $item->comments_count }}</span>
+                </button>
+                <button type="button" wire:click="share" class="inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-mist hover:bg-wall hover:text-ink">
+                    <x-icon name="share" />
+                    Share
+                    <span class="text-xs">{{ $item->shares_count }}</span>
                 </button>
             @else
-                <a href="{{ route('login') }}" class="font-semibold" wire:navigate>Like · {{ $item->likes_count }}</a>
-                <a href="{{ route('login') }}" class="text-mist" wire:navigate>Comment · {{ $item->comments_count }}</a>
-                <a href="{{ route('login') }}" class="text-mist" wire:navigate>Share · {{ $item->shares_count }}</a>
+                <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-mist hover:bg-wall hover:text-ink" wire:navigate>
+                    <x-icon name="heart" />
+                    Like
+                    <span class="text-xs">{{ $item->likes_count }}</span>
+                </a>
+                <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-mist hover:bg-wall hover:text-ink" wire:navigate>
+                    <x-icon name="chat" />
+                    Comment
+                    <span class="text-xs">{{ $item->comments_count }}</span>
+                </a>
+                <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-2 rounded-lg py-2.5 text-mist hover:bg-wall hover:text-ink" wire:navigate>
+                    <x-icon name="share" />
+                    Share
+                    <span class="text-xs">{{ $item->shares_count }}</span>
+                </a>
             @endauth
         </div>
         @if (session('shared_item_id') === $item->id)
@@ -51,7 +71,7 @@
 
         @auth
             <form wire:submit="comment" class="mt-3 flex gap-2">
-                <input wire:model="body" type="text" class="field flex-1" placeholder="Write a comment…">
+                <input wire:model="body" x-ref="commentInput" type="text" class="field flex-1" placeholder="Write a comment…">
                 <button type="submit" class="btn-ghost">Send</button>
             </form>
             @error('body')

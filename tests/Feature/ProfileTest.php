@@ -46,7 +46,7 @@ test('students can update a short description and birthday', function () {
         ->and($profile->birthday->toDateString())->toBe('2004-02-20');
 });
 
-test('opening profile takes a student to their own facebook-style page', function () {
+test('opening profile takes a student to their own gallery page', function () {
     $user = User::factory()->student()->create();
 
     $this->actingAs($user)

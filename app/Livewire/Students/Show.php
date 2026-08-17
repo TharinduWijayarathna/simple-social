@@ -15,7 +15,7 @@ class Show extends Component
 {
     public User $student;
 
-    public string $tab = 'posts';
+    public string $tab = 'gallery';
 
     public function mount(User $user): void
     {
@@ -30,14 +30,14 @@ class Show extends Component
         $followUser->handle(auth()->user(), $this->student);
     }
 
-    public function showPosts(): void
+    public function showGallery(): void
     {
-        $this->tab = 'posts';
+        $this->tab = 'gallery';
     }
 
-    public function showPhotos(): void
+    public function showFeed(): void
     {
-        $this->tab = 'photos';
+        $this->tab = 'feed';
     }
 
     public function render(): View
@@ -48,11 +48,13 @@ class Show extends Component
         $posts = $this->student->portfolioItems()
             ->published()
             ->with(['user:id,name', 'talent:id,name,slug,theme'])
+            ->withCount(['likes', 'comments'])
             ->latest('published_at')
             ->get();
 
         return view('livewire.students.show', [
             'posts' => $posts,
+            'highlights' => $this->student->statuses()->active()->latest()->get(),
             'isOwnProfile' => auth()->user()?->is($this->student) ?? false,
             'isFollowing' => auth()->check()
                 && auth()->user()->following()->where('following_id', $this->student->id)->exists(),
