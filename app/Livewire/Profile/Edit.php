@@ -2,10 +2,8 @@
 
 namespace App\Livewire\Profile;
 
-use App\Enums\ExperienceLevel;
 use App\Models\Talent;
 use Illuminate\Contracts\View\View;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -24,49 +22,46 @@ class Edit extends Component
 
     public string $department = '';
 
-    public string $experience_level = 'beginner';
+    public string $birthday = '';
+
+    public string $location = '';
 
     /**
      * @var list<int>
      */
     public array $talent_ids = [];
 
-    /**
-     * @var list<int>
-     */
-    public array $favorite_talent_ids = [];
-
     public function mount(): void
     {
         $user = auth()->user()->load(['profile.talents']);
         $profile = $user->profile;
+
+        $this->authorize('update', $profile);
 
         $this->name = $user->name;
         $this->headline = $profile->headline ?? '';
         $this->bio = $profile->bio ?? '';
         $this->faculty = $profile->faculty ?? '';
         $this->department = $profile->department ?? '';
-        $this->experience_level = $profile->experience_level->value;
+        $this->birthday = $profile->birthday?->format('Y-m-d') ?? '';
+        $this->location = $profile->location ?? '';
         $this->talent_ids = $profile->talents->pluck('id')->all();
-        $this->favorite_talent_ids = $profile->talents
-            ->filter(fn ($talent): bool => (bool) $talent->pivot->is_favorite)
-            ->pluck('id')
-            ->all();
     }
 
     public function save(): void
     {
+        $this->authorize('update', auth()->user()->profile);
+
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'headline' => ['nullable', 'string', 'max:255'],
+            'headline' => ['nullable', 'string', 'max:160'],
             'bio' => ['nullable', 'string', 'max:2000'],
             'faculty' => ['nullable', 'string', 'max:255'],
             'department' => ['nullable', 'string', 'max:255'],
-            'experience_level' => ['required', Rule::enum(ExperienceLevel::class)],
+            'birthday' => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
+            'location' => ['nullable', 'string', 'max:255'],
             'talent_ids' => ['array', 'max:12'],
             'talent_ids.*' => ['integer', 'exists:talents,id'],
-            'favorite_talent_ids' => ['array', 'max:'.config('vibecraft.wearable.favorite_talent_limit')],
-            'favorite_talent_ids.*' => ['integer', 'exists:talents,id'],
         ]);
 
         $user = auth()->user();
@@ -77,18 +72,20 @@ class Edit extends Component
             'bio' => $validated['bio'] ?: null,
             'faculty' => $validated['faculty'] ?: null,
             'department' => $validated['department'] ?: null,
-            'experience_level' => $validated['experience_level'],
+            'birthday' => $validated['birthday'] ?: null,
+            'location' => $validated['location'] ?: null,
         ]);
 
         $sync = collect($validated['talent_ids'] ?? [])
-            ->mapWithKeys(fn (int $talentId): array => [
-                $talentId => ['is_favorite' => in_array($talentId, $validated['favorite_talent_ids'] ?? [], true)],
+            ->values()
+            ->mapWithKeys(fn (int $talentId, int $index): array => [
+                $talentId => ['is_favorite' => $index === 0],
             ])
             ->all();
 
         $user->profile->talents()->sync($sync);
 
-        session()->flash('status', 'Profile updated.');
+        $this->redirect(route('students.show', $user), navigate: true);
     }
 
     public function render(): View

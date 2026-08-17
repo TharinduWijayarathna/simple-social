@@ -23,6 +23,8 @@ class ProfileResource extends JsonResource
             'bio' => $this->bio,
             'faculty' => $this->faculty,
             'department' => $this->department,
+            'birthday' => $this->birthday?->toDateString(),
+            'location' => $this->location,
             'experience_level' => $this->experience_level->value,
             'avatar_url' => $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : null,
             'talents' => TalentResource::collection($this->whenLoaded('talents')),

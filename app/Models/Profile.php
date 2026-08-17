@@ -18,12 +18,14 @@ use Illuminate\Support\Carbon;
  * @property string|null $bio
  * @property string|null $faculty
  * @property string|null $department
+ * @property Carbon|null $birthday
+ * @property string|null $location
  * @property ExperienceLevel $experience_level
  * @property string|null $avatar_path
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'headline', 'bio', 'faculty', 'department', 'experience_level', 'avatar_path'])]
+#[Fillable(['user_id', 'headline', 'bio', 'faculty', 'department', 'birthday', 'location', 'experience_level', 'avatar_path'])]
 class Profile extends Model
 {
     /** @use HasFactory<ProfileFactory> */
@@ -43,6 +45,7 @@ class Profile extends Model
     {
         return [
             'experience_level' => ExperienceLevel::class,
+            'birthday' => 'date',
         ];
     }
 

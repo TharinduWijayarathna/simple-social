@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Feed;
+use App\Livewire\PostCard;
 use App\Models\PortfolioItem;
 use App\Models\Share;
 use App\Models\User;
@@ -22,23 +22,23 @@ test('students can like comment and share a homepage post', function () {
     $item = PortfolioItem::factory()->create();
 
     Livewire::actingAs($viewer)
-        ->test(Feed::class)
-        ->call('like', $item->id)
+        ->test(PostCard::class, ['item' => $item])
+        ->call('like')
         ->assertHasNoErrors();
 
     expect($item->likes()->whereBelongsTo($viewer)->exists())->toBeTrue();
 
     Livewire::actingAs($viewer)
-        ->test(Feed::class)
-        ->set('commentDrafts.'.$item->id, 'Stunning work')
-        ->call('comment', $item->id)
+        ->test(PostCard::class, ['item' => $item])
+        ->set('body', 'Stunning work')
+        ->call('comment')
         ->assertHasNoErrors();
 
     expect($item->comments()->where('body', 'Stunning work')->exists())->toBeTrue();
 
     Livewire::actingAs($viewer)
-        ->test(Feed::class)
-        ->call('share', $item->id)
+        ->test(PostCard::class, ['item' => $item])
+        ->call('share')
         ->assertDispatched('share-copied');
 
     $this->assertModelExists(

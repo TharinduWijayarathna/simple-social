@@ -3,7 +3,6 @@
 namespace App\Livewire\Students;
 
 use App\Actions\FollowUser;
-use App\Enums\TalentTheme;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -11,10 +10,12 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('layouts::app')]
-#[Title('Student')]
+#[Title('Profile')]
 class Show extends Component
 {
     public User $student;
+
+    public string $tab = 'posts';
 
     public function mount(User $user): void
     {
@@ -23,21 +24,38 @@ class Show extends Component
 
     public function follow(FollowUser $followUser): void
     {
+        abort_unless(auth()->check(), 403);
+        abort_if(auth()->user()->is($this->student), 403);
+
         $followUser->handle(auth()->user(), $this->student);
+    }
+
+    public function showPosts(): void
+    {
+        $this->tab = 'posts';
+    }
+
+    public function showPhotos(): void
+    {
+        $this->tab = 'photos';
     }
 
     public function render(): View
     {
-        $this->student->load([
-            'profile.talents',
-            'portfolioItems' => fn ($query) => $query->published()->with('talent:id,name,slug,theme')->latest('published_at')->limit(24),
-        ]);
+        $this->student->load(['profile.talents']);
+        $this->student->loadCount(['followers', 'following']);
 
-        $theme = $this->student->profile?->primaryTalent()?->theme ?? TalentTheme::Gallery;
+        $posts = $this->student->portfolioItems()
+            ->published()
+            ->with(['user:id,name', 'talent:id,name,slug,theme'])
+            ->latest('published_at')
+            ->get();
 
         return view('livewire.students.show', [
-            'theme' => $theme,
-            'isFollowing' => auth()->user()->following()->where('following_id', $this->student->id)->exists(),
+            'posts' => $posts,
+            'isOwnProfile' => auth()->user()?->is($this->student) ?? false,
+            'isFollowing' => auth()->check()
+                && auth()->user()->following()->where('following_id', $this->student->id)->exists(),
         ]);
     }
 }

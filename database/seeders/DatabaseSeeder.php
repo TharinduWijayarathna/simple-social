@@ -51,6 +51,8 @@ class DatabaseSeeder extends Seeder
                 'headline' => fake()->sentence(6),
                 'bio' => fake()->paragraph(),
                 'faculty' => fake()->randomElement(['Arts', 'Design', 'Media', 'Engineering']),
+                'birthday' => fake()->dateTimeBetween('-26 years', '-19 years')->format('Y-m-d'),
+                'location' => fake()->city(),
                 'experience_level' => 'intermediate',
             ]);
 

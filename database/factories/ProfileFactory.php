@@ -23,6 +23,8 @@ class ProfileFactory extends Factory
             'bio' => fake()->paragraph(),
             'faculty' => fake()->randomElement(['Arts', 'Engineering', 'Business', 'Science', 'Humanities']),
             'department' => fake()->word(),
+            'birthday' => fake()->dateTimeBetween('-28 years', '-18 years')->format('Y-m-d'),
+            'location' => fake()->city(),
             'experience_level' => fake()->randomElement(ExperienceLevel::cases()),
             'avatar_path' => null,
         ];

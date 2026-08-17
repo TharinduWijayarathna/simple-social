@@ -13,7 +13,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 #[Layout('layouts::app')]
-#[Title('Upload work')]
+#[Title('New post')]
 class Create extends Component
 {
     use WithFileUploads;
@@ -38,9 +38,9 @@ class Create extends Component
             'file' => ['required', 'file', 'max:51200', 'mimes:jpg,jpeg,png,webp,gif,mp4,mov,mp3,wav,pdf,doc,docx'],
         ]);
 
-        $item = $storePortfolioItem->handle(auth()->user(), $validated);
+        $storePortfolioItem->handle(auth()->user(), $validated);
 
-        $this->redirect(route('portfolio.show', $item), navigate: true);
+        $this->redirect(route('students.show', auth()->user()), navigate: true);
     }
 
     public function render(): View

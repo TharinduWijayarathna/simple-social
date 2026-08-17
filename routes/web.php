@@ -40,7 +40,10 @@ Route::post('/logout', function () {
 
 Route::middleware('auth')->group(function (): void {
     Route::livewire('/campus', CampusDashboard::class)->name('campus.dashboard');
-    Route::livewire('/profile', ProfileEdit::class)->name('profile.edit');
+    Route::get('/profile', function () {
+        return redirect()->route('students.show', auth()->user());
+    })->name('profile.show');
+    Route::livewire('/profile/edit', ProfileEdit::class)->name('profile.edit');
     Route::livewire('/portfolio', PortfolioIndex::class)->name('portfolio.index');
     Route::livewire('/portfolio/create', PortfolioCreate::class)->name('portfolio.create');
     Route::livewire('/portfolio/{item}', PortfolioShow::class)->name('portfolio.show');
