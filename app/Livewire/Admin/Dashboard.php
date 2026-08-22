@@ -6,7 +6,6 @@ use App\Enums\ReportStatus;
 use App\Enums\Role;
 use App\Enums\UserStatus;
 use App\Models\Event;
-use App\Models\Like;
 use App\Models\PortfolioItem;
 use App\Models\Report;
 use App\Models\Talent;
@@ -14,12 +13,16 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
-#[Layout('layouts::app')]
-#[Title('Super admin')]
+#[Layout('layouts::admin-panel')]
+#[Title('Admin Dashboard')]
 class Dashboard extends Component
 {
+    #[Url(as: 'tab')]
+    public string $activeTab = 'overview';
+
     public function mount(): void
     {
         abort_unless(auth()->user()->isSuperAdmin(), 403);
@@ -71,23 +74,22 @@ class Dashboard extends Component
     public function render(): View
     {
         return view('livewire.admin.dashboard', [
-            'users' => User::query()->count(),
-            'students' => User::query()->students()->count(),
-            'campusAdmins' => User::query()->where('role', Role::CampusAdmin)->count(),
-            'items' => PortfolioItem::query()->published()->count(),
-            'likes' => Like::query()->count(),
-            'events' => Event::query()->published()->count(),
+            'totalUsers' => User::query()->count(),
+            'totalStudents' => User::query()->students()->count(),
+            'totalCampusAdmins' => User::query()->where('role', Role::CampusAdmin)->where('status', UserStatus::Approved)->count(),
+            'totalItems' => PortfolioItem::query()->published()->count(),
+            'totalEvents' => Event::query()->published()->count(),
+            'pendingCampusAdmins' => User::query()->pendingCampusAdmins()->latest()->get(),
+            'approvedCampusAdmins' => User::query()
+                ->where('role', Role::CampusAdmin)
+                ->where('status', UserStatus::Approved)
+                ->latest()
+                ->get(),
             'categories' => Talent::query()
                 ->withCount(['portfolioItems as published_items_count' => fn ($query) => $query->published()])
                 ->orderByDesc('published_items_count')
                 ->get(),
             'reports' => Report::query()->pending()->with(['reporter:id,name', 'reportable'])->latest()->limit(20)->get(),
-            'staff' => User::query()
-                ->whereIn('role', [Role::CampusAdmin, Role::SuperAdmin, Role::Student])
-                ->latest()
-                ->limit(12)
-                ->get(),
-            'pendingCampusAdmins' => User::query()->pendingCampusAdmins()->latest()->get(),
         ]);
     }
 }

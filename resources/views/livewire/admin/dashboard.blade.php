@@ -1,89 +1,204 @@
-<div class="px-4 py-8 lg:px-10">
-    <p class="text-xs uppercase tracking-[0.28em] text-gold">Platform</p>
-    <h1 class="font-display text-4xl">Super admin</h1>
-    <p class="mt-2 text-mist">Campus-wide moderation, talent stats, and staff roles.</p>
+<div class="flex flex-col min-h-full">
 
-    <dl class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <div class="rounded-2xl bg-studio p-4 text-paper"><dt class="text-xs text-gold">Users</dt><dd class="text-2xl font-semibold">{{ $users }}</dd></div>
-        <div class="rounded-2xl bg-studio p-4 text-paper"><dt class="text-xs text-gold">Students</dt><dd class="text-2xl font-semibold">{{ $students }}</dd></div>
-        <div class="rounded-2xl bg-studio p-4 text-paper"><dt class="text-xs text-gold">Campus admins</dt><dd class="text-2xl font-semibold">{{ $campusAdmins }}</dd></div>
-        <div class="rounded-2xl bg-studio p-4 text-paper"><dt class="text-xs text-gold">Works</dt><dd class="text-2xl font-semibold">{{ $items }}</dd></div>
-        <div class="rounded-2xl bg-studio p-4 text-paper"><dt class="text-xs text-gold">Events</dt><dd class="text-2xl font-semibold">{{ $events }}</dd></div>
-    </dl>
-
-    {{-- Pending Campus Admin Approvals --}}
-    @if ($pendingCampusAdmins->isNotEmpty())
-        <section class="mt-10">
-            <div class="flex items-center gap-3">
-                <h2 class="font-display text-2xl">Pending campus accounts</h2>
-                <span class="rounded-full bg-ember px-2.5 py-0.5 text-xs font-semibold text-white">{{ $pendingCampusAdmins->count() }}</span>
+    {{-- Page header --}}
+    <div class="border-b border-ink/10 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+            <div>
+                @if ($activeTab === 'overview')
+                    <h1 class="text-xl font-semibold">Overview</h1>
+                    <p class="mt-0.5 text-sm text-mist">Platform statistics and moderation queue.</p>
+                @else
+                    <h1 class="text-xl font-semibold">Campus Management</h1>
+                    <p class="mt-0.5 text-sm text-mist">Review campus admin applications and manage approved campuses.</p>
+                @endif
             </div>
-            <p class="mt-1 text-sm text-mist">These campus admin applications are waiting for your approval.</p>
-            <ul class="mt-4 flex flex-col gap-3">
-                @foreach ($pendingCampusAdmins as $applicant)
-                    <li class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ember/20 bg-ember/5 px-5 py-4 text-sm" wire:key="pending-campus-{{ $applicant->id }}">
-                        <div>
-                            <p class="font-semibold">{{ $applicant->name }}</p>
-                            <p class="text-mist">{{ $applicant->email }}</p>
-                            <p class="mt-0.5 text-xs text-mist">Applied {{ $applicant->created_at->diffForHumans() }}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="button" wire:click="rejectCampusAdmin({{ $applicant->id }})" class="btn-ghost px-4 py-2 text-sm">Reject</button>
-                            <button type="button" wire:click="approveCampusAdmin({{ $applicant->id }})" class="btn-primary px-4 py-2 text-sm">Approve</button>
-                        </div>
-                    </li>
-                @endforeach
-            </ul>
-        </section>
-    @endif
+            @if ($activeTab === 'campuses' && $pendingCampusAdmins->isNotEmpty())
+                <span class="flex items-center gap-1.5 rounded-full bg-ember/10 px-3 py-1 text-xs font-semibold text-ember">
+                    <span class="size-2 rounded-full bg-ember"></span>
+                    {{ $pendingCampusAdmins->count() }} pending
+                </span>
+            @endif
+        </div>
 
-    <div class="mt-10 grid gap-8 lg:grid-cols-2">
-        <section>
-            <h2 class="font-display text-2xl">Talent rooms</h2>
-            <ul class="mt-3 grid gap-2">
-                @foreach ($categories as $category)
-                    <li class="flex justify-between rounded-xl bg-white px-4 py-3 text-sm" wire:key="cat-{{ $category->id }}">
-                        <span>{{ $category->name }}</span>
-                        <span class="text-ember">{{ $category->published_items_count }}</span>
-                    </li>
-                @endforeach
-            </ul>
-        </section>
-
-        <section>
-            <h2 class="font-display text-2xl">People & roles</h2>
-            <ul class="mt-3 flex flex-col gap-2">
-                @foreach ($staff as $member)
-                    <li class="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white px-4 py-3 text-sm" wire:key="staff-{{ $member->id }}">
-                        <span>
-                            <span class="font-medium">{{ $member->name }}</span>
-                            <span class="text-mist"> · {{ $member->role->label() }}</span>
-                        </span>
-                        @unless ($member->is(auth()->user()))
-                            <span class="flex gap-2">
-                                <button type="button" wire:click="assignRole({{ $member->id }}, 'student')" class="btn-ghost px-3 py-1">Student</button>
-                                <button type="button" wire:click="assignRole({{ $member->id }}, 'campus_admin')" class="btn-ghost px-3 py-1">Campus</button>
-                            </span>
-                        @endunless
-                    </li>
-                @endforeach
-            </ul>
-        </section>
+        {{-- Tab bar (mobile + inline for desktop too) --}}
+        <div class="mt-4 flex gap-1 border-b -mb-5 border-transparent">
+            <button wire:click="$set('activeTab', 'overview')"
+                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
+                           {{ $activeTab === 'overview' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
+                Overview
+            </button>
+            <button wire:click="$set('activeTab', 'campuses')"
+                    class="flex items-center gap-2 border-b-2 px-4 pb-4 text-sm font-medium transition
+                           {{ $activeTab === 'campuses' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
+                Campus Management
+                @if ($pendingCampusAdmins->isNotEmpty())
+                    <span class="rounded-full bg-ember px-1.5 py-0.5 text-[10px] font-bold text-white">{{ $pendingCampusAdmins->count() }}</span>
+                @endif
+            </button>
+        </div>
     </div>
 
-    <h2 class="mt-10 font-display text-2xl">Reports queue</h2>
-    <ul class="mt-3 flex flex-col gap-3">
-        @forelse ($reports as $report)
-            <li class="rounded-2xl border border-ink/10 bg-white p-4 text-sm" wire:key="rep-{{ $report->id }}">
-                <p><span class="font-medium">{{ $report->reporter->name }}</span> · {{ $report->reason }}</p>
-                <p class="mt-1 text-mist">{{ $report->details }}</p>
-                <div class="mt-3 flex gap-2">
-                    <button wire:click="moderate({{ $report->id }}, 'dismissed')" class="btn-ghost">Dismiss</button>
-                    <button wire:click="moderate({{ $report->id }}, 'actioned')" class="btn-primary">Take down</button>
+    {{-- Content --}}
+    <div class="flex-1 px-6 py-6">
+
+        {{-- ── OVERVIEW TAB ── --}}
+        @if ($activeTab === 'overview')
+
+            {{-- Stats grid --}}
+            <div class="grid grid-cols-2 gap-4 lg:grid-cols-5">
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Users</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $totalUsers }}</p>
                 </div>
-            </li>
-        @empty
-            <li class="text-mist">Queue is clear.</li>
-        @endforelse
-    </ul>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Students</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $totalStudents }}</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Campuses</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $totalCampusAdmins }}</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Works</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $totalItems }}</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Events</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $totalEvents }}</p>
+                </div>
+            </div>
+
+            {{-- Two columns --}}
+            <div class="mt-6 grid gap-6 lg:grid-cols-2">
+                {{-- Talent rooms --}}
+                <div class="rounded-2xl border border-ink/8 bg-white">
+                    <div class="border-b border-ink/8 px-5 py-4">
+                        <h2 class="font-semibold">Talent rooms</h2>
+                    </div>
+                    <ul class="divide-y divide-ink/8">
+                        @foreach ($categories as $category)
+                            <li class="flex items-center justify-between px-5 py-3 text-sm" wire:key="cat-{{ $category->id }}">
+                                <span>{{ $category->name }}</span>
+                                <span class="font-semibold text-ember">{{ $category->published_items_count }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                {{-- Reports queue --}}
+                <div class="rounded-2xl border border-ink/8 bg-white">
+                    <div class="border-b border-ink/8 px-5 py-4">
+                        <h2 class="font-semibold">Reports queue</h2>
+                    </div>
+                    <ul class="divide-y divide-ink/8">
+                        @forelse ($reports as $report)
+                            <li class="px-5 py-4 text-sm" wire:key="rep-{{ $report->id }}">
+                                <p><span class="font-medium">{{ $report->reporter->name }}</span> <span class="text-mist">· {{ $report->reason }}</span></p>
+                                @if ($report->details)
+                                    <p class="mt-0.5 text-mist">{{ Str::limit($report->details, 80) }}</p>
+                                @endif
+                                <div class="mt-3 flex gap-2">
+                                    <button wire:click="moderate({{ $report->id }}, 'dismissed')"
+                                            class="rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium transition hover:bg-ink/5">
+                                        Dismiss
+                                    </button>
+                                    <button wire:click="moderate({{ $report->id }}, 'actioned')"
+                                            class="rounded-lg bg-ember px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-ember/90">
+                                        Take down
+                                    </button>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="px-5 py-6 text-center text-sm text-mist">Queue is clear ✓</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
+        {{-- ── CAMPUS MANAGEMENT TAB ── --}}
+        @else
+
+            {{-- Pending applications --}}
+            <div class="rounded-2xl border border-ink/8 bg-white">
+                <div class="flex items-center justify-between border-b border-ink/8 px-5 py-4">
+                    <div>
+                        <h2 class="font-semibold">Pending applications</h2>
+                        <p class="text-sm text-mist">Campus admin accounts waiting for approval</p>
+                    </div>
+                    @if ($pendingCampusAdmins->isNotEmpty())
+                        <span class="rounded-full bg-ember px-2.5 py-0.5 text-xs font-semibold text-white">{{ $pendingCampusAdmins->count() }}</span>
+                    @endif
+                </div>
+
+                @if ($pendingCampusAdmins->isEmpty())
+                    <div class="px-5 py-10 text-center text-sm text-mist">No pending applications.</div>
+                @else
+                    <ul class="divide-y divide-ink/8">
+                        @foreach ($pendingCampusAdmins as $applicant)
+                            <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="pending-{{ $applicant->id }}">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex size-10 items-center justify-center rounded-full bg-ember/10 text-sm font-semibold text-ember">
+                                        {{ $applicant->initials() }}
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">{{ $applicant->name }}</p>
+                                        <p class="text-sm text-mist">{{ $applicant->email }}</p>
+                                        <p class="text-xs text-mist">Applied {{ $applicant->created_at->diffForHumans() }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button wire:click="rejectCampusAdmin({{ $applicant->id }})"
+                                            class="rounded-lg border border-ink/15 px-4 py-2 text-sm font-medium transition hover:bg-ink/5">
+                                        Reject
+                                    </button>
+                                    <button wire:click="approveCampusAdmin({{ $applicant->id }})"
+                                            class="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90">
+                                        Approve
+                                    </button>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+
+            {{-- Approved campuses --}}
+            <div class="mt-6 rounded-2xl border border-ink/8 bg-white">
+                <div class="border-b border-ink/8 px-5 py-4">
+                    <h2 class="font-semibold">Approved campuses</h2>
+                    <p class="text-sm text-mist">Active campus admin accounts</p>
+                </div>
+
+                @if ($approvedCampusAdmins->isEmpty())
+                    <div class="px-5 py-10 text-center text-sm text-mist">No approved campus admins yet.</div>
+                @else
+                    <ul class="divide-y divide-ink/8">
+                        @foreach ($approvedCampusAdmins as $campus)
+                            <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="campus-{{ $campus->id }}">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex size-10 items-center justify-center rounded-full bg-studio text-sm font-semibold text-gold">
+                                        {{ $campus->initials() }}
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">{{ $campus->name }}</p>
+                                        <p class="text-sm text-mist">{{ $campus->email }}</p>
+                                        <p class="text-xs text-mist">Joined {{ $campus->created_at->format('M j, Y') }}</p>
+                                    </div>
+                                </div>
+                                @unless ($campus->is(auth()->user()))
+                                    <div class="flex gap-2">
+                                        <button wire:click="assignRole({{ $campus->id }}, 'student')"
+                                                class="rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium transition hover:bg-ink/5">
+                                            Demote to student
+                                        </button>
+                                    </div>
+                                @endunless
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+
+        @endif
+    </div>
 </div>
