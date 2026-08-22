@@ -80,6 +80,11 @@ class User extends Authenticatable
             : $initials;
     }
 
+    public function avatarUrl(): ?string
+    {
+        return $this->profile?->avatarUrl();
+    }
+
     public function isStudent(): bool
     {
         return $this->role === Role::Student;

@@ -1,7 +1,13 @@
 <article class="feed-card">
     <div class="flex items-center justify-between gap-3 px-4 py-3">
         <a href="{{ route('students.show', $item->user) }}" class="flex items-center gap-3" wire:navigate>
-            <span class="flex size-10 items-center justify-center rounded-full bg-studio text-xs font-semibold text-gold">{{ $item->user->initials() }}</span>
+            <span class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-semibold text-gold">
+                @if ($item->user->avatarUrl())
+                    <img src="{{ $item->user->avatarUrl() }}" alt="{{ $item->user->name }}" class="size-full object-cover rounded-full">
+                @else
+                    {{ $item->user->initials() }}
+                @endif
+            </span>
             <span>
                 <span class="block text-sm font-semibold">{{ $item->user->name }}</span>
                 <span class="block text-xs text-mist">{{ $item->talent?->name }} · {{ $item->published_at?->diffForHumans() }}</span>

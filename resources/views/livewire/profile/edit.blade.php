@@ -8,6 +8,38 @@
     @endif
 
     <form wire:submit="save" class="mt-6 flex flex-col gap-4">
+        {{-- Profile Picture Uploader --}}
+        <div class="p-4 rounded-2xl bg-wall/60 border border-ink/10 flex items-center gap-5">
+            <div class="relative size-20 shrink-0 overflow-hidden rounded-full bg-studio shadow-md ring-4 ring-amber-400/80">
+                @if ($avatar)
+                    <img src="{{ $avatar->temporaryUrl() }}" alt="Avatar Preview" class="size-full object-cover">
+                @elseif ($currentAvatarUrl)
+                    <img src="{{ $currentAvatarUrl }}" alt="Current Avatar" class="size-full object-cover">
+                @else
+                    <span class="flex size-full items-center justify-center text-2xl font-bold text-gold">{{ auth()->user()->initials() }}</span>
+                @endif
+            </div>
+
+            <div class="flex-1 space-y-2">
+                <label class="block text-xs font-bold text-ink">Profile Picture</label>
+                <div class="flex flex-wrap items-center gap-2">
+                    <label class="btn-primary cursor-pointer text-xs py-2 px-3 inline-flex items-center gap-1.5">
+                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Upload Photo
+                        <input type="file" wire:model="avatar" accept="image/*" class="hidden">
+                    </label>
+
+                    @if ($currentAvatarUrl || $avatar)
+                        <button type="button" wire:click="removeAvatar" class="btn-ghost text-xs text-ember py-2 px-3">
+                            Remove
+                        </button>
+                    @endif
+                </div>
+                @error('avatar') <p class="text-ember text-xs">{{ $message }}</p> @enderror
+                <p class="text-[10px] text-mist">Recommended: Square JPG, PNG, or WebP up to 10MB.</p>
+            </div>
+        </div>
+
         <label class="flex flex-col gap-1 text-sm font-medium">Name
             <input wire:model="name" class="field">
             @error('name') <span class="text-ember text-xs">{{ $message }}</span> @enderror

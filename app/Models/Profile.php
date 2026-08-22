@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property int $id
@@ -74,6 +75,15 @@ class Profile extends Model
     public function favoriteTalents(): BelongsToMany
     {
         return $this->talents()->wherePivot('is_favorite', true);
+    }
+
+    public function avatarUrl(): ?string
+    {
+        if ($this->avatar_path) {
+            return Storage::disk('public')->url($this->avatar_path);
+        }
+
+        return null;
     }
 
     public function primaryTalent(): ?Talent

@@ -2,9 +2,21 @@
     <div class="flex items-start gap-6 md:gap-16">
         <div class="p-2 shrink-0 overflow-visible">
             @if ($highlights->isNotEmpty())
-                <a href="{{ route('status.show', $highlights->first()) }}" class="flex size-24 items-center justify-center rounded-full bg-studio text-2xl font-semibold text-gold ring-4 ring-amber-400 ring-offset-4 ring-offset-wall md:size-36 md:text-4xl shadow-md transition hover:scale-105" wire:navigate>{{ $student->initials() }}</a>
+                <a href="{{ route('status.show', $highlights->first()) }}" class="flex size-24 items-center justify-center overflow-hidden rounded-full bg-studio text-2xl font-semibold text-gold ring-4 ring-amber-400 ring-offset-4 ring-offset-wall md:size-36 md:text-4xl shadow-md transition hover:scale-105" wire:navigate>
+                    @if ($student->avatarUrl())
+                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                    @else
+                        {{ $student->initials() }}
+                    @endif
+                </a>
             @else
-                <span class="flex size-24 items-center justify-center rounded-full bg-studio text-2xl font-semibold text-gold md:size-36 md:text-4xl shadow-md">{{ $student->initials() }}</span>
+                <span class="flex size-24 items-center justify-center overflow-hidden rounded-full bg-studio text-2xl font-semibold text-gold md:size-36 md:text-4xl shadow-md">
+                    @if ($student->avatarUrl())
+                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                    @else
+                        {{ $student->initials() }}
+                    @endif
+                </span>
             @endif
         </div>
 
