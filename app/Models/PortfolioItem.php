@@ -60,6 +60,22 @@ class PortfolioItem extends Model
         return $this->belongsTo(Talent::class);
     }
 
+    public function isVideo(): bool
+    {
+        if ($this->media_type === PortfolioMediaType::Video) {
+            return true;
+        }
+
+        $mime = strtolower($this->mime_type ?? '');
+        if (str_contains($mime, 'video')) {
+            return true;
+        }
+
+        $extension = strtolower(pathinfo($this->file_path, PATHINFO_EXTENSION));
+
+        return in_array($extension, ['mp4', 'mov', 'webm', 'mkv', 'avi'], true);
+    }
+
     public function likes(): MorphMany
     {
         return $this->morphMany(Like::class, 'likeable');

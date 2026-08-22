@@ -12,9 +12,55 @@
         @endif
     </div>
 
-    <a href="{{ route('portfolio.show', $item) }}" wire:navigate>
-        <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="{{ $item->feedAspectClass() }} w-full object-cover">
-    </a>
+    @if ($item->isVideo())
+        <div class="relative overflow-hidden bg-black aspect-[9/16] max-h-[600px] w-full flex items-center justify-center group"
+             x-data="{ playing: false, muted: true, togglePlay() { if (this.playing) { $refs.video.pause(); this.playing = false; } else { $refs.video.play(); this.playing = true; } }, toggleMute() { this.muted = !this.muted; $refs.video.muted = this.muted; } }">
+            
+            <video x-ref="video"
+                   src="{{ $item->fileUrl() }}"
+                   poster="{{ $item->displayUrl() }}"
+                   loop
+                   playsinline
+                   :muted="muted"
+                   @click="togglePlay"
+                   @play="playing = true"
+                   @pause="playing = false"
+                   class="size-full object-cover cursor-pointer">
+            </video>
+
+            {{-- Reels Badge --}}
+            <span class="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-black/60 px-3 py-1 text-[11px] font-bold text-white backdrop-blur pointer-events-none">
+                <svg class="size-3.5 text-rose-500 fill-current" viewBox="0 0 24 24"><path d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11z"/></svg>
+                REEL 🎥
+            </span>
+
+            {{-- Play/Pause Center Button Overlay --}}
+            <button type="button" @click="togglePlay" class="absolute inset-0 z-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition duration-200">
+                <span class="flex size-16 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur shadow-lg transform transition group-hover:scale-105">
+                    <template x-if="!playing">
+                        <svg class="size-8 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </template>
+                    <template x-if="playing">
+                        <svg class="size-8" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </template>
+                </span>
+            </button>
+
+            {{-- Mute / Unmute Toggle Button --}}
+            <button type="button" @click.stop="toggleMute" class="absolute bottom-3 right-3 z-10 flex size-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur hover:bg-black/80 transition" title="Toggle Sound">
+                <template x-if="muted">
+                    <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+                </template>
+                <template x-if="!muted">
+                    <svg class="size-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                </template>
+            </button>
+        </div>
+    @else
+        <a href="{{ route('portfolio.show', $item) }}" wire:navigate>
+            <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="{{ $item->feedAspectClass() }} w-full object-cover">
+        </a>
+    @endif
 
     <div class="px-4 pb-4 pt-1">
         <div class="grid grid-cols-3 border-t border-ink/10 text-sm font-medium">
