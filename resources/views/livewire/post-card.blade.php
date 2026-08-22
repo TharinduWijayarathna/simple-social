@@ -13,7 +13,7 @@
     </div>
 
     @if ($item->isVideo())
-        <div class="relative overflow-hidden bg-black aspect-[9/16] max-h-[600px] w-full flex items-center justify-center group"
+        <div class="relative overflow-hidden bg-black/90 w-full h-auto max-h-[750px] flex items-center justify-center rounded-2xl group shadow-sm"
              x-data="{ playing: false, muted: true, togglePlay() { if (this.playing) { $refs.video.pause(); this.playing = false; } else { $refs.video.play(); this.playing = true; } }, toggleMute() { this.muted = !this.muted; $refs.video.muted = this.muted; } }">
             
             <video x-ref="video"
@@ -25,7 +25,7 @@
                    @click="togglePlay"
                    @play="playing = true"
                    @pause="playing = false"
-                   class="size-full object-cover cursor-pointer">
+                   class="w-full h-auto max-h-[750px] object-contain rounded-2xl cursor-pointer">
             </video>
 
             {{-- Reels Badge --}}
@@ -57,8 +57,8 @@
             </button>
         </div>
     @else
-        <a href="{{ route('portfolio.show', $item) }}" wire:navigate>
-            <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="{{ $item->feedAspectClass() }} w-full object-cover">
+        <a href="{{ route('portfolio.show', $item) }}" class="block overflow-hidden bg-wall/30 rounded-2xl" wire:navigate>
+            <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="w-full h-auto max-h-[750px] object-contain mx-auto rounded-2xl">
         </a>
     @endif
 

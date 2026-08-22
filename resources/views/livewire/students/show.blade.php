@@ -1,10 +1,12 @@
 <div class="mx-auto max-w-4xl px-4 py-8">
-    <div class="flex gap-6 md:gap-16">
-        @if ($highlights->isNotEmpty())
-            <a href="{{ route('status.show', $highlights->first()) }}" class="flex size-24 shrink-0 items-center justify-center rounded-full bg-studio text-2xl font-semibold text-gold ring-2 ring-sky-400 ring-offset-4 ring-offset-wall md:size-36 md:text-4xl" wire:navigate>{{ $student->initials() }}</a>
-        @else
-            <span class="flex size-24 shrink-0 items-center justify-center rounded-full bg-studio text-2xl font-semibold text-gold md:size-36 md:text-4xl">{{ $student->initials() }}</span>
-        @endif
+    <div class="flex items-start gap-6 md:gap-16">
+        <div class="p-2 shrink-0 overflow-visible">
+            @if ($highlights->isNotEmpty())
+                <a href="{{ route('status.show', $highlights->first()) }}" class="flex size-24 items-center justify-center rounded-full bg-studio text-2xl font-semibold text-gold ring-4 ring-amber-400 ring-offset-4 ring-offset-wall md:size-36 md:text-4xl shadow-md transition hover:scale-105" wire:navigate>{{ $student->initials() }}</a>
+            @else
+                <span class="flex size-24 items-center justify-center rounded-full bg-studio text-2xl font-semibold text-gold md:size-36 md:text-4xl shadow-md">{{ $student->initials() }}</span>
+            @endif
+        </div>
 
         <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-3">
@@ -56,11 +58,11 @@
     </div>
 
     @if ($highlights->isNotEmpty())
-        <div class="mt-8 flex gap-5 overflow-x-auto pb-2">
+        <div class="mt-8 flex gap-5 overflow-x-auto p-2 pb-3">
             @foreach ($highlights as $status)
-                <a href="{{ route('status.show', $status) }}" class="flex w-16 shrink-0 flex-col items-center gap-1.5" wire:key="highlight-{{ $status->id }}" wire:navigate>
-                    <img src="{{ $status->imageUrl() }}" alt="" class="size-16 rounded-full object-cover ring-2 ring-sky-400 ring-offset-2 ring-offset-wall">
-                    <span class="w-full truncate text-center text-[11px] text-mist">{{ $status->created_at->isToday() ? 'Today' : $status->created_at->format('M j') }}</span>
+                <a href="{{ route('status.show', $status) }}" class="flex w-16 shrink-0 flex-col items-center gap-1.5 transition hover:scale-105" wire:key="highlight-{{ $status->id }}" wire:navigate>
+                    <img src="{{ $status->imageUrl() }}" alt="" class="size-16 rounded-full object-cover ring-2 ring-amber-400 ring-offset-2 ring-offset-wall shadow-sm">
+                    <span class="w-full truncate text-center text-[11px] font-semibold text-mist">{{ $status->created_at->isToday() ? 'Today' : $status->created_at->format('M j') }}</span>
                 </a>
             @endforeach
         </div>

@@ -176,12 +176,12 @@
                         </div>
                     </div>
 
-                    <div class="relative overflow-hidden rounded-2xl bg-wall aspect-video flex items-center justify-center">
+                    <div class="relative overflow-hidden rounded-2xl bg-wall/40 min-h-[160px] flex items-center justify-center p-2">
                         @if ($file && str_starts_with($file->getMimeType(), 'video/'))
-                            <video src="{{ $file->temporaryUrl() }}" controls class="size-full object-cover rounded-2xl"></video>
+                            <video src="{{ $file->temporaryUrl() }}" controls class="w-full h-auto max-h-72 object-contain rounded-2xl"></video>
                             <span class="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white">REEL 🎥</span>
                         @elseif ($file && str_starts_with($file->getMimeType(), 'image/'))
-                            <img src="{{ $file->temporaryUrl() }}" alt="Preview" class="size-full object-cover rounded-2xl">
+                            <img src="{{ $file->temporaryUrl() }}" alt="Preview" class="w-full h-auto max-h-72 object-contain rounded-2xl">
                         @else
                             <span class="text-xs text-mist font-medium">Media preview container</span>
                         @endif

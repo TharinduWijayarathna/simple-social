@@ -6,7 +6,15 @@
     </p>
     <p class="mt-4 whitespace-pre-wrap text-mist">{{ $item->description }}</p>
 
-    <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="mt-8 w-full rounded-[1.75rem] object-cover {{ $item->feedAspectClass() }}">
+    @if ($item->isVideo())
+        <div class="mt-8 overflow-hidden rounded-[1.75rem] bg-black/90 w-full flex items-center justify-center p-2 shadow-lg">
+            <video src="{{ $item->fileUrl() }}" controls poster="{{ $item->displayUrl() }}" class="w-full h-auto max-h-[800px] object-contain mx-auto rounded-2xl"></video>
+        </div>
+    @else
+        <div class="mt-8 overflow-hidden rounded-[1.75rem] bg-wall/30 flex items-center justify-center p-2">
+            <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="w-full h-auto max-h-[800px] object-contain mx-auto rounded-2xl">
+        </div>
+    @endif
 
     <div class="mt-6 flex flex-wrap items-center gap-3">
         <button wire:click="like" class="btn-dark inline-flex items-center gap-2">

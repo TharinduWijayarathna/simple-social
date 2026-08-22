@@ -22,23 +22,23 @@
 
                 <div class="relative">
                     <div class="flex gap-3 overflow-x-auto pb-2">
-                        <a href="{{ route('portfolio.create', ['type' => 'story']) }}" class="relative h-48 w-28 shrink-0 overflow-hidden rounded-2xl border border-ink/8 bg-white group transition hover:border-amber-400" wire:navigate>
-                            <span class="flex h-32 items-center justify-center bg-wall text-lg font-semibold text-studio group-hover:bg-amber-50">{{ auth()->user()->initials() }}</span>
-                            <span class="absolute bottom-[3.25rem] left-1/2 flex size-8 -translate-x-1/2 items-center justify-center rounded-full bg-ember text-xl font-bold text-white ring-4 ring-white shadow-sm">+</span>
-                            <span class="absolute inset-x-0 bottom-0 px-2 pb-2 text-center text-xs font-bold text-ink">Create story</span>
+                        <a href="{{ route('portfolio.create', ['type' => 'story']) }}" class="relative w-32 aspect-[9/16] shrink-0 overflow-hidden rounded-2xl border-2 border-dashed border-ember/30 bg-wall/60 group transition hover:border-amber-400 flex flex-col items-center justify-center text-center p-3" wire:navigate>
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-ember text-white font-bold text-lg shadow-sm mb-2">+</span>
+                            <span class="block text-xs font-bold text-ink">Create story</span>
+                            <span class="block text-[10px] text-mist mt-0.5">24h 9:16 Clip</span>
                         </a>
 
                         @foreach ($statuses as $status)
-                            <a href="{{ route('status.show', $status) }}" class="relative h-48 w-28 shrink-0 overflow-hidden rounded-2xl border-2 border-amber-400/80 shadow-sm transition hover:scale-105" wire:key="status-{{ $status->id }}" wire:navigate>
+                            <a href="{{ route('status.show', $status) }}" class="relative w-32 aspect-[9/16] shrink-0 overflow-hidden rounded-2xl border-2 border-amber-400/80 shadow-md transition hover:scale-[1.02]" wire:key="status-{{ $status->id }}" wire:navigate>
                                 @if ($status->isVideo())
-                                    <video src="{{ $status->mediaUrl() }}" class="size-full object-cover" muted></video>
+                                    <video src="{{ $status->mediaUrl() }}" class="size-full object-cover aspect-[9/16]" muted></video>
                                     <span class="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-black/60 text-[10px] text-white">🎥</span>
                                 @else
                                     <img src="{{ $status->imageUrl() }}" alt="" class="size-full object-cover">
                                 @endif
                                 <span class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></span>
-                                <span class="absolute left-2 top-2 flex size-8 items-center justify-center rounded-full bg-studio text-[10px] font-semibold text-gold ring-2 ring-amber-400">{{ $status->user->initials() }}</span>
-                                <span class="absolute inset-x-2 bottom-2 text-xs font-bold leading-tight text-white drop-shadow">{{ $status->user->name }}</span>
+                                <span class="absolute left-2.5 top-2.5 flex size-7 items-center justify-center rounded-full bg-studio text-[10px] font-semibold text-gold ring-2 ring-amber-400">{{ $status->user->initials() }}</span>
+                                <span class="absolute inset-x-2.5 bottom-2.5 text-xs font-bold leading-tight text-white drop-shadow truncate">{{ $status->user->name }}</span>
                             </a>
                         @endforeach
                     </div>
