@@ -42,6 +42,6 @@ class AdminLogin extends Component
 
         session()->regenerate();
 
-        $this->redirect(route('admin.dashboard'), navigate: true);
+        $this->redirect(route('admin.dashboard'));
     }
 }

@@ -56,6 +56,6 @@ class Login extends Component
             default => route('home'),
         };
 
-        $this->redirect($redirect, navigate: true);
+        $this->redirect($redirect);
     }
 }

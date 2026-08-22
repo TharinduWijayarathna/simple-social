@@ -15,7 +15,7 @@
             <a href="{{ route('login') }}" class="btn-dark mt-8 inline-block" wire:navigate>Back to sign in</a>
         </div>
     @else
-        <h1 class="font-display text-4xl">Join campus</h1>
+        <h1 class="font-display text-4xl">Register as Student or Campus</h1>
         <p class="mt-2 text-mist">Create your account to get started.</p>
 
         {{-- Account type tabs --}}

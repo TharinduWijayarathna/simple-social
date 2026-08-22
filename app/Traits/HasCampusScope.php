@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\PortfolioItem;
 use App\Models\Status;
 use App\Models\User;
+use App\Support\CampusScopeGuard;
 use Illuminate\Database\Eloquent\Builder;
 
 trait HasCampusScope
@@ -18,47 +19,54 @@ trait HasCampusScope
     public static function bootHasCampusScope(): void
     {
         static::addGlobalScope('campus_scope', function (Builder $builder) {
-            // Check if there is an authenticated user
-            if (! auth()->check()) {
+            if (CampusScopeGuard::$active) {
                 return;
             }
 
-            /** @var User $user */
-            $user = auth()->user();
+            CampusScopeGuard::$active = true;
 
-            // Super admins see everything
-            if ($user->isSuperAdmin()) {
-                return;
-            }
+            try {
+                if (! auth()->check()) {
+                    return;
+                }
 
-            // Determine active campus ID (campus admin ID)
-            $campusId = $user->role === Role::CampusAdmin ? $user->id : $user->campus_id;
+                /** @var User $user */
+                $user = auth()->user();
 
-            if ($campusId === null) {
-                return;
-            }
+                if ($user->isSuperAdmin()) {
+                    return;
+                }
 
-            $modelClass = static::class;
+                $campusId = $user->role === Role::CampusAdmin ? $user->id : $user->campus_id;
 
-            if ($modelClass === User::class) {
-                $builder->where(function (Builder $query) use ($campusId) {
-                    $query->where('campus_id', $campusId)
-                        ->orWhere('id', $campusId);
-                });
-            } elseif ($modelClass === Event::class) {
-                $builder->where('organizer_id', $campusId);
-            } elseif ($modelClass === PortfolioItem::class) {
-                $builder->whereHas('user', function (Builder $query) use ($campusId) {
-                    $query->where('campus_id', $campusId);
-                });
-            } elseif ($modelClass === Status::class) {
-                $builder->whereHas('user', function (Builder $query) use ($campusId) {
-                    $query->where('campus_id', $campusId);
-                });
-            } elseif ($modelClass === Collaboration::class) {
-                $builder->whereHas('owner', function (Builder $query) use ($campusId) {
-                    $query->where('campus_id', $campusId);
-                });
+                if ($campusId === null) {
+                    return;
+                }
+
+                $modelClass = static::class;
+
+                if ($modelClass === User::class) {
+                    $builder->where(function (Builder $query) use ($campusId) {
+                        $query->where('campus_id', $campusId)
+                            ->orWhere('id', $campusId);
+                    });
+                } elseif ($modelClass === Event::class) {
+                    $builder->where('organizer_id', $campusId);
+                } elseif ($modelClass === PortfolioItem::class) {
+                    $builder->whereHas('user', function (Builder $query) use ($campusId) {
+                        $query->where('campus_id', $campusId);
+                    });
+                } elseif ($modelClass === Status::class) {
+                    $builder->whereHas('user', function (Builder $query) use ($campusId) {
+                        $query->where('campus_id', $campusId);
+                    });
+                } elseif ($modelClass === Collaboration::class) {
+                    $builder->whereHas('owner', function (Builder $query) use ($campusId) {
+                        $query->where('campus_id', $campusId);
+                    });
+                }
+            } finally {
+                CampusScopeGuard::$active = false;
             }
         });
     }

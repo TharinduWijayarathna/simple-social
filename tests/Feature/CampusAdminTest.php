@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Dashboard as AdminDashboard;
+use App\Livewire\Auth\AdminLogin;
 use App\Livewire\Events\Show as EventsShow;
 use App\Models\Event;
 use App\Models\User;
@@ -34,6 +35,30 @@ test('campus admins cannot open super admin', function () {
     $this->actingAs(User::factory()->campusAdmin()->create())
         ->get(route('admin.dashboard'))
         ->assertForbidden();
+});
+
+test('super admins can open the admin dashboard', function () {
+    $this->actingAs(User::factory()->superAdmin()->create())
+        ->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertSee('Overview');
+});
+
+test('super admins can sign in through the admin portal', function () {
+    $superAdmin = User::factory()->superAdmin()->create([
+        'password' => 'password',
+    ]);
+
+    Livewire::test(AdminLogin::class)
+        ->set('email', $superAdmin->email)
+        ->set('password', 'password')
+        ->call('login')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('admin.dashboard'));
+
+    $this->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertSee('Overview');
 });
 
 test('super admins can appoint campus admins', function () {
