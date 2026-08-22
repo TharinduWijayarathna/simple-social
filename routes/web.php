@@ -24,8 +24,8 @@ use App\Livewire\Wearable\Glance;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// Public home (campus admins redirected via their login)
-Route::livewire('/', Feed::class)->name('home');
+// Public home (campus/super admins redirected via student-only middleware)
+Route::livewire('/', Feed::class)->middleware('student-only')->name('home');
 Route::permanentRedirect('/feed', '/');
 Route::permanentRedirect('/studio', '/');
 
@@ -45,8 +45,8 @@ Route::post('/logout', function () {
     return redirect()->route('home');
 })->middleware('auth')->name('logout');
 
-// ── Student-only social routes (campus admins are redirected away) ──
-Route::middleware(['auth', 'no-campus'])->group(function (): void {
+// ── Student-only social routes (campus and super admins are redirected away) ──
+Route::middleware(['auth', 'student-only'])->group(function (): void {
     Route::get('/profile', function () {
         return redirect()->route('students.show', auth()->user());
     })->name('profile.show');
