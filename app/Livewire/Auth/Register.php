@@ -4,6 +4,7 @@ namespace App\Livewire\Auth;
 
 use App\Enums\Role;
 use App\Enums\UserStatus;
+use App\Models\Talent;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\Rule;
@@ -32,6 +33,20 @@ class Register extends Component
     /** ID of the selected campus admin (students only) */
     public ?int $campusId = null;
 
+    /** Campus & Batch Details */
+    public string $batch = '';
+
+    public string $program = '';
+
+    public string $faculty = '';
+
+    public string $department = '';
+
+    /** Profile Categorization */
+    public string $profileType = '🎤 Performing Arts Creator Account';
+
+    public ?int $primaryTalentId = null;
+
     public bool $submitted = false;
 
     /**
@@ -49,6 +64,32 @@ class Register extends Component
             ->get(['id', 'name']);
     }
 
+    /**
+     * Load available talents grouped by category.
+     *
+     * @return \Illuminate\Support\Collection<string, Collection<int, Talent>>
+     */
+    #[Computed]
+    public function talentCategories(): \Illuminate\Support\Collection
+    {
+        return Talent::query()
+            ->orderBy('category')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('category');
+    }
+
+    /**
+     * Load all talents for searchable dropdown.
+     *
+     * @return Collection<int, Talent>
+     */
+    #[Computed]
+    public function allTalents(): Collection
+    {
+        return Talent::query()->orderBy('category')->orderBy('name')->get();
+    }
+
     public function register(): void
     {
         $isStudent = $this->accountType === 'student';
@@ -57,7 +98,7 @@ class Register extends Component
 
         $role = $isStudent ? Role::Student : Role::CampusAdmin;
 
-        User::query()->create([
+        $user = User::query()->create([
             'name' => $this->name,
             'email' => $this->email,
             'password' => $this->password,
@@ -66,6 +107,21 @@ class Register extends Component
             'university_id' => $isStudent ? $this->universityId : null,
             'campus_id' => $isStudent ? $this->campusId : null,
         ]);
+
+        if ($isStudent) {
+            $profile = $user->profile()->create([
+                'batch' => $this->batch ?: null,
+                'program' => $this->program ?: null,
+                'faculty' => $this->faculty ?: null,
+                'department' => $this->department ?: null,
+                'profile_type' => $this->profileType,
+                'primary_talent_id' => $this->primaryTalentId,
+            ]);
+
+            if ($this->primaryTalentId) {
+                $profile->talents()->attach($this->primaryTalentId, ['is_favorite' => true]);
+            }
+        }
 
         // Do NOT log the user in — they must be approved first.
         $this->submitted = true;
@@ -85,6 +141,12 @@ class Register extends Component
         if ($isStudent) {
             $rules['universityId'] = ['required', 'string', 'max:50'];
             $rules['campusId'] = ['required', 'integer', Rule::exists('users', 'id')->where('role', Role::CampusAdmin->value)->where('status', UserStatus::Approved->value)];
+            $rules['batch'] = ['nullable', 'string', 'max:100'];
+            $rules['program'] = ['nullable', 'string', 'max:255'];
+            $rules['faculty'] = ['nullable', 'string', 'max:255'];
+            $rules['department'] = ['nullable', 'string', 'max:255'];
+            $rules['profileType'] = ['required', 'string', 'max:255'];
+            $rules['primaryTalentId'] = ['nullable', 'integer', 'exists:talents,id'];
         }
 
         return $rules;

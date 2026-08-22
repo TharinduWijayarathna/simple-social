@@ -22,6 +22,14 @@ class Edit extends Component
 
     public string $department = '';
 
+    public string $batch = '';
+
+    public string $program = '';
+
+    public string $profile_type = 'General Student Account';
+
+    public ?int $primary_talent_id = null;
+
     public string $birthday = '';
 
     public string $location = '';
@@ -43,6 +51,10 @@ class Edit extends Component
         $this->bio = $profile->bio ?? '';
         $this->faculty = $profile->faculty ?? '';
         $this->department = $profile->department ?? '';
+        $this->batch = $profile->batch ?? '';
+        $this->program = $profile->program ?? '';
+        $this->profile_type = $profile->profile_type ?? 'General Student Account';
+        $this->primary_talent_id = $profile->primary_talent_id;
         $this->birthday = $profile->birthday?->format('Y-m-d') ?? '';
         $this->location = $profile->location ?? '';
         $this->talent_ids = $profile->talents->pluck('id')->all();
@@ -58,6 +70,10 @@ class Edit extends Component
             'bio' => ['nullable', 'string', 'max:2000'],
             'faculty' => ['nullable', 'string', 'max:255'],
             'department' => ['nullable', 'string', 'max:255'],
+            'batch' => ['nullable', 'string', 'max:100'],
+            'program' => ['nullable', 'string', 'max:255'],
+            'profile_type' => ['required', 'string', 'max:255'],
+            'primary_talent_id' => ['nullable', 'integer', 'exists:talents,id'],
             'birthday' => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
             'location' => ['nullable', 'string', 'max:255'],
             'talent_ids' => ['array', 'max:12'],
@@ -72,6 +88,10 @@ class Edit extends Component
             'bio' => $validated['bio'] ?: null,
             'faculty' => $validated['faculty'] ?: null,
             'department' => $validated['department'] ?: null,
+            'batch' => $validated['batch'] ?: null,
+            'program' => $validated['program'] ?: null,
+            'profile_type' => $validated['profile_type'],
+            'primary_talent_id' => $validated['primary_talent_id'],
             'birthday' => $validated['birthday'] ?: null,
             'location' => $validated['location'] ?: null,
         ]);
@@ -79,7 +99,7 @@ class Edit extends Component
         $sync = collect($validated['talent_ids'] ?? [])
             ->values()
             ->mapWithKeys(fn (int $talentId, int $index): array => [
-                $talentId => ['is_favorite' => $index === 0],
+                $talentId => ['is_favorite' => $index === 0 || $talentId === $validated['primary_talent_id']],
             ])
             ->all();
 
@@ -91,6 +111,7 @@ class Edit extends Component
     public function render(): View
     {
         return view('livewire.profile.edit', [
+            'talentCategories' => Talent::query()->orderBy('category')->orderBy('name')->get()->groupBy('category'),
             'talents' => Talent::query()->orderBy('name')->get(),
         ]);
     }

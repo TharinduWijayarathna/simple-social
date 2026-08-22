@@ -11,26 +11,88 @@ class TalentSeeder extends Seeder
 {
     public function run(): void
     {
-        $talents = [
-            ['name' => 'Visual Arts', 'theme' => TalentTheme::Gallery],
-            ['name' => 'Photography & Videography', 'theme' => TalentTheme::Darkroom],
-            ['name' => 'Music & Audio Production', 'theme' => TalentTheme::Vinyl],
-            ['name' => 'Performing Arts', 'theme' => TalentTheme::Stage],
-            ['name' => 'Digital Design', 'theme' => TalentTheme::Grid],
-            ['name' => 'Content Creation', 'theme' => TalentTheme::Social],
-            ['name' => 'Film & Video Production', 'theme' => TalentTheme::Cinema],
-            ['name' => 'Fashion & Styling', 'theme' => TalentTheme::Editorial],
+        $categories = [
+            'Performing Arts' => [
+                'theme' => TalentTheme::Stage,
+                'items' => [
+                    'Singing',
+                    'Dancing',
+                    'Rap / Beatboxing',
+                    'Playing Musical Instruments',
+                    'Acting / Drama',
+                    'Stand-up Comedy',
+                    'Mimicry',
+                    'Poetry / Spoken Word',
+                    'Public Speaking',
+                    'Storytelling',
+                ],
+            ],
+            'Creative & Visual Arts' => [
+                'theme' => TalentTheme::Gallery,
+                'items' => [
+                    'Drawing / Sketching',
+                    'Painting',
+                    'Photography',
+                    'Videography',
+                    'Graphic Design',
+                    'Digital Art',
+                    'Calligraphy / Lettering',
+                    'Makeup / Face Painting',
+                    'Fashion Designing',
+                    'Crafting',
+                ],
+            ],
+            'Sports & Physical' => [
+                'theme' => TalentTheme::Grid,
+                'items' => [
+                    'Cricket',
+                    'Football',
+                    'Basketball',
+                    'Volleyball',
+                    'Badminton',
+                    'Table Tennis',
+                    'Athletics',
+                    'Swimming',
+                    'Martial Arts',
+                    'Fitness / Yoga',
+                ],
+            ],
+            'Unique & Hidden' => [
+                'theme' => TalentTheme::Social,
+                'items' => [
+                    'Cooking / Baking',
+                    'Magic',
+                    'Origami',
+                    'Speed Cubing',
+                    'Chess',
+                    'Car / Bike Knowledge',
+                    'Gardening',
+                    'Handcrafts',
+                    'Fashion Styling',
+                    'Nail Art',
+                    'Hair Styling',
+                ],
+            ],
+            'General User' => [
+                'theme' => TalentTheme::Social,
+                'items' => [
+                    'General Creator',
+                ],
+            ],
         ];
 
-        foreach ($talents as $talent) {
-            Talent::query()->updateOrCreate(
-                ['slug' => Str::slug($talent['name'])],
-                [
-                    'name' => $talent['name'],
-                    'description' => $talent['name'].' on campus.',
-                    'theme' => $talent['theme'],
-                ],
-            );
+        foreach ($categories as $categoryName => $group) {
+            foreach ($group['items'] as $talentName) {
+                Talent::query()->updateOrCreate(
+                    ['slug' => Str::slug($talentName)],
+                    [
+                        'name' => $talentName,
+                        'category' => $categoryName,
+                        'description' => $talentName.' talent on campus.',
+                        'theme' => $group['theme'],
+                    ],
+                );
+            }
         }
     }
 }

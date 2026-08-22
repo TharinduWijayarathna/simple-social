@@ -90,13 +90,8 @@
 
                 {{-- Talent Category --}}
                 <div>
-                    <label class="block text-sm font-semibold text-ink">Talent Category</label>
-                    <select wire:model="talent_id" class="field mt-1">
-                        <option value="">Select Talent Category</option>
-                        @foreach ($talents as $t)
-                            <option value="{{ $t->id }}">{{ $t->name }}</option>
-                        @endforeach
-                    </select>
+                    <label class="block text-sm font-semibold text-ink mb-1">Talent Category</label>
+                    <x-searchable-talent-select wire:model="talent_id" :talents="$talents" :selectedId="$talent_id" placeholder="Type to search talent (e.g. Singing, Photography, Football)..." />
                 </div>
 
                 {{-- Media Type Format Selector --}}

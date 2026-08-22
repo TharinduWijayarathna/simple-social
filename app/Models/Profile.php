@@ -18,6 +18,10 @@ use Illuminate\Support\Carbon;
  * @property string|null $bio
  * @property string|null $faculty
  * @property string|null $department
+ * @property string|null $batch
+ * @property string|null $program
+ * @property string $profile_type
+ * @property int|null $primary_talent_id
  * @property Carbon|null $birthday
  * @property string|null $location
  * @property ExperienceLevel $experience_level
@@ -25,7 +29,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'headline', 'bio', 'faculty', 'department', 'birthday', 'location', 'experience_level', 'avatar_path'])]
+#[Fillable(['user_id', 'headline', 'bio', 'faculty', 'department', 'batch', 'program', 'profile_type', 'primary_talent_id', 'birthday', 'location', 'experience_level', 'avatar_path'])]
 class Profile extends Model
 {
     /** @use HasFactory<ProfileFactory> */
@@ -36,6 +40,7 @@ class Profile extends Model
      */
     protected $attributes = [
         'experience_level' => 'beginner',
+        'profile_type' => 'General Student Account',
     ];
 
     /**
@@ -54,6 +59,11 @@ class Profile extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function primaryTalentModel(): BelongsTo
+    {
+        return $this->belongsTo(Talent::class, 'primary_talent_id');
+    }
+
     public function talents(): BelongsToMany
     {
         return $this->belongsToMany(Talent::class)
@@ -68,6 +78,10 @@ class Profile extends Model
 
     public function primaryTalent(): ?Talent
     {
+        if ($this->primary_talent_id && $this->primaryTalentModel) {
+            return $this->primaryTalentModel;
+        }
+
         $favorite = $this->talents->first(
             fn (Talent $talent): bool => (bool) $talent->pivot->is_favorite,
         );

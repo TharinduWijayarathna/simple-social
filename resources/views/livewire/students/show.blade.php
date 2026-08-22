@@ -28,14 +28,30 @@
                 <li><span class="font-semibold">{{ $student->following_count }}</span> <span class="text-mist">following</span></li>
             </ul>
 
-            <div class="mt-4 text-sm">
+            <div class="mt-4 text-sm space-y-2">
+                @if ($student->profile?->profile_type)
+                    <div class="inline-flex items-center gap-2 rounded-full bg-amber-100/80 px-3.5 py-1 text-xs font-bold text-amber-900 shadow-sm border border-amber-300/50">
+                        {{ $student->profile->profile_type }}
+                        @if ($student->profile->primaryTalentModel)
+                            <span class="text-amber-700">· {{ $student->profile->primaryTalentModel->name }}</span>
+                        @endif
+                    </div>
+                @endif
+
                 @if ($student->profile?->headline)
-                    <p class="font-semibold">{{ $student->profile->headline }}</p>
+                    <p class="font-semibold text-ink">{{ $student->profile->headline }}</p>
                 @endif
                 @if ($student->profile?->bio)
-                    <p class="mt-1 leading-6 text-ink/80">{{ $student->profile->bio }}</p>
+                    <p class="leading-6 text-ink/80">{{ $student->profile->bio }}</p>
                 @endif
-                <ul class="mt-2 flex flex-col gap-0.5 text-mist">
+                
+                <ul class="flex flex-col gap-1 text-xs text-mist">
+                    @if ($student->profile?->batch || $student->profile?->program)
+                        <li class="font-medium text-ember">
+                            🎓 {{ $student->profile->batch ?: 'Campus Student' }}
+                            @if ($student->profile->program) · {{ $student->profile->program }} @endif
+                        </li>
+                    @endif
                     @if ($student->profile?->faculty)
                         <li>Studies {{ $student->profile->faculty }}@if ($student->profile->department) · {{ $student->profile->department }}@endif</li>
                     @endif
@@ -46,10 +62,14 @@
                         <li>Born {{ $student->profile->birthday->format('F j') }}</li>
                     @endif
                 </ul>
+
                 @if ($student->profile?->talents?->isNotEmpty())
                     <div class="mt-3 flex flex-wrap gap-2">
                         @foreach ($student->profile->talents as $talent)
-                            <span class="rounded-full bg-white px-3 py-1 text-xs font-medium" wire:key="badge-{{ $talent->id }}">{{ $talent->name }}</span>
+                            <span class="rounded-full bg-white px-3 py-1 text-xs font-medium border border-ink/8 shadow-sm" wire:key="badge-{{ $talent->id }}">
+                                {{ $talent->name }}
+                                <span class="text-[10px] text-mist">({{ $talent->category }})</span>
+                            </span>
                         @endforeach
                     </div>
                 @endif
