@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasCampusScope;
 use Database\Factories\StatusFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -25,7 +26,7 @@ use Illuminate\Support\Facades\Storage;
 class Status extends Model
 {
     /** @use HasFactory<StatusFactory> */
-    use HasFactory;
+    use HasCampusScope, HasFactory;
 
     protected $table = 'statuses';
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasCampusScope;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
-    use HasFactory;
+    use HasCampusScope, HasFactory;
 
     /**
      * @var array<string, mixed>

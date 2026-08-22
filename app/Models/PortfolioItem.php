@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PortfolioMediaType;
 use App\Enums\TalentTheme;
+use App\Traits\HasCampusScope;
 use Database\Factories\PortfolioItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -35,7 +36,7 @@ use Illuminate\Support\Facades\Storage;
 class PortfolioItem extends Model
 {
     /** @use HasFactory<PortfolioItemFactory> */
-    use HasFactory;
+    use HasCampusScope, HasFactory;
 
     /**
      * @return array<string, string>
