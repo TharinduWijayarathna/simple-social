@@ -45,6 +45,18 @@ Route::post('/logout', function () {
     return redirect()->route('home');
 })->middleware('auth')->name('logout');
 
+// ── Campus Admin / Event Creation Routes ──
+Route::middleware(['auth', 'role:campus_admin,super_admin'])->group(function (): void {
+    Route::livewire('/campus', CampusDashboard::class)->name('campus.dashboard');
+    Route::livewire('/events/create', EventsCreate::class)->name('events.create');
+});
+
+// ── Shared Authenticated Events Routes ──
+Route::middleware('auth')->group(function (): void {
+    Route::livewire('/events', EventsIndex::class)->name('events.index');
+    Route::livewire('/events/{event}', EventsShow::class)->name('events.show');
+});
+
 // ── Student-only social routes (campus and super admins are redirected away) ──
 Route::middleware(['auth', 'student-only'])->group(function (): void {
     Route::get('/profile', function () {
@@ -58,18 +70,10 @@ Route::middleware(['auth', 'student-only'])->group(function (): void {
     Route::livewire('/status/{status}', StatusShow::class)->name('status.show');
     Route::livewire('/students', StudentsIndex::class)->name('students.index');
     Route::livewire('/students/{user}', StudentsShow::class)->name('students.show');
-    Route::livewire('/events', EventsIndex::class)->name('events.index');
-    Route::livewire('/events/{event}', EventsShow::class)->name('events.show');
     Route::livewire('/collaborations', CollaborationsIndex::class)->name('collaborations.index');
     Route::livewire('/collaborations/{collaboration}', CollaborationsShow::class)->name('collaborations.show');
     Route::livewire('/leaderboard', Leaderboard::class)->name('leaderboard');
     Route::livewire('/watch', Glance::class)->name('wearable.glance');
-});
-
-// ── Campus admin panel routes ──
-Route::middleware(['auth', 'role:campus_admin,super_admin'])->group(function (): void {
-    Route::livewire('/campus', CampusDashboard::class)->name('campus.dashboard');
-    Route::livewire('/events/create', EventsCreate::class)->name('events.create');
 });
 
 // ── Super admin panel routes ──

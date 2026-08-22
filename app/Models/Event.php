@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EventApplicationStatus;
 use App\Traits\HasCampusScope;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -28,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['organizer_id', 'talent_id', 'title', 'description', 'location', 'starts_at', 'ends_at', 'application_deadline', 'capacity', 'is_published'])]
+#[Fillable(['organizer_id', 'talent_id', 'event_type', 'title', 'description', 'requirements', 'location', 'contact_email', 'contact_phone', 'contact_instructions', 'cover_image', 'starts_at', 'ends_at', 'application_deadline', 'capacity', 'is_published'])]
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -65,9 +67,21 @@ class Event extends Model
         return $this->belongsTo(Talent::class);
     }
 
+    public function talents(): BelongsToMany
+    {
+        return $this->belongsToMany(Talent::class, 'event_talents')
+            ->withPivot(['id', 'slots', 'notes'])
+            ->withTimestamps();
+    }
+
     public function applications(): HasMany
     {
         return $this->hasMany(EventApplication::class);
+    }
+
+    public function acceptedApplications(): HasMany
+    {
+        return $this->hasMany(EventApplication::class)->where('status', EventApplicationStatus::Accepted);
     }
 
     public function invitations(): HasMany

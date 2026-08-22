@@ -239,15 +239,36 @@
 
                             <div class="mt-6">
                                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist">
-                                    Participants · {{ $selectedEvent->applications->count() }}
+                                    Applicants & Participants · {{ $selectedEvent->applications->count() }}
                                 </h3>
                                 <ul class="mt-3 divide-y divide-ink/8">
                                     @forelse ($selectedEvent->applications as $application)
-                                        <li class="flex items-center justify-between py-2.5 text-sm" wire:key="app-{{ $application->id }}">
-                                            <span class="font-medium">{{ $application->user->name }}</span>
-                                            <span class="rounded-full bg-wall px-2.5 py-0.5 text-xs capitalize text-mist">
-                                                {{ str_replace('_', ' ', $application->status->value) }}
-                                            </span>
+                                        <li class="flex flex-col md:flex-row md:items-center justify-between gap-3 py-3 text-sm" wire:key="app-{{ $application->id }}">
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-medium text-ink">{{ $application->user->name }}</span>
+                                                    <span class="rounded-full px-2 py-0.5 text-[10px] font-bold capitalize
+                                                                 {{ $application->isAccepted() ? 'bg-emerald-100 text-emerald-800' : ($application->isDeclined() ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800') }}">
+                                                        {{ $application->status->value }}
+                                                    </span>
+                                                </div>
+                                                @if ($application->talent)
+                                                    <p class="text-xs text-mist">Role: <strong class="text-ink">{{ $application->talent->name }}</strong></p>
+                                                @endif
+                                                @if ($application->message)
+                                                    <p class="mt-1 text-xs italic text-mist">"{{ $application->message }}"</p>
+                                                @endif
+                                            </div>
+
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                @if (! $application->isAccepted())
+                                                    <button wire:click="selectCandidate({{ $application->id }})" class="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-sm hover:bg-emerald-700">
+                                                        Select Student
+                                                    </button>
+                                                @else
+                                                    <span class="text-xs font-bold text-emerald-600">✓ Selected</span>
+                                                @endif
+                                            </div>
                                         </li>
                                     @empty
                                         <li class="py-4 text-sm text-mist">Nobody has joined yet.</li>

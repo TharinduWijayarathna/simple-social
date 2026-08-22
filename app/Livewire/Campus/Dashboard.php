@@ -2,9 +2,14 @@
 
 namespace App\Livewire\Campus;
 
+use App\Actions\AwardXp;
+use App\Enums\EventApplicationStatus;
 use App\Enums\UserStatus;
+use App\Enums\XpEventType;
 use App\Models\Event;
+use App\Models\EventApplication;
 use App\Models\User;
+use App\Notifications\EventApplicationSelectedNotification;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -55,6 +60,38 @@ class Dashboard extends Component
         $user->update(['status' => UserStatus::Rejected]);
     }
 
+    public function selectCandidate(int $applicationId, AwardXp $awardXp): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        $application = EventApplication::query()->findOrFail($applicationId);
+        $this->authorize('update', $application->event);
+
+        $application->update([
+            'status' => EventApplicationStatus::Accepted,
+        ]);
+
+        $application->user->notify(
+            new EventApplicationSelectedNotification($application->event, $application->talent?->name)
+        );
+
+        $awardXp->handle($application->user, XpEventType::EventRsvp, $application->event);
+
+        session()->flash('status', "{$application->user->name} has been selected for {$application->event->title}!");
+    }
+
+    public function declineCandidate(int $applicationId): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        $application = EventApplication::query()->findOrFail($applicationId);
+        $this->authorize('update', $application->event);
+
+        $application->update([
+            'status' => EventApplicationStatus::Declined,
+        ]);
+    }
+
     public function render(): View
     {
         $campusUser = auth()->user();
@@ -69,7 +106,7 @@ class Dashboard extends Component
         $selectedEvent = $events->firstWhere('id', $this->selectedEventId) ?? $events->first();
 
         if ($selectedEvent !== null) {
-            $selectedEvent->load(['applications.user:id,name']);
+            $selectedEvent->load(['applications.user:id,name,email', 'applications.talent:id,name']);
         }
 
         $pendingStudents = User::query()
