@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CollaborationStatus;
+use App\Traits\HasCampusScope;
 use Database\Factories\CollaborationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,7 +27,7 @@ use Illuminate\Support\Carbon;
 class Collaboration extends Model
 {
     /** @use HasFactory<CollaborationFactory> */
-    use HasFactory;
+    use HasCampusScope, HasFactory;
 
     /**
      * @var array<string, mixed>

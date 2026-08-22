@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['event_id', 'user_id', 'status', 'message'])]
+#[Fillable(['event_id', 'user_id', 'talent_id', 'status', 'message'])]
 class EventApplication extends Model
 {
     /** @use HasFactory<EventApplicationFactory> */
@@ -50,5 +50,25 @@ class EventApplication extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function talent(): BelongsTo
+    {
+        return $this->belongsTo(Talent::class);
+    }
+
+    public function isAccepted(): bool
+    {
+        return $this->status === EventApplicationStatus::Accepted;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === EventApplicationStatus::Pending;
+    }
+
+    public function isDeclined(): bool
+    {
+        return $this->status === EventApplicationStatus::Declined;
     }
 }

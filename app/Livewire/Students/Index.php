@@ -19,8 +19,21 @@ class Index extends Component
 
     public string $search = '';
 
+    public string $category = 'All';
+
     public function updatedSearch(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatedCategory(): void
+    {
+        $this->resetPage();
+    }
+
+    public function setCategory(string $cat): void
+    {
+        $this->category = $cat;
         $this->resetPage();
     }
 
@@ -40,18 +53,32 @@ class Index extends Component
         $students = User::query()
             ->students()
             ->when(auth()->check(), fn ($query) => $query->where('id', '!=', auth()->id()))
+            ->when($this->category !== 'All', function ($query): void {
+                $query->whereHas('profile', function ($profile): void {
+                    $profile->where('profile_type', 'like', '%'.$this->category.'%')
+                        ->orWhereHas('talents', function ($talent): void {
+                            $talent->where('category', $this->category);
+                        });
+                });
+            })
             ->when($this->search !== '', function ($query): void {
                 $term = '%'.$this->search.'%';
                 $query->where(function ($query) use ($term): void {
                     $query->where('name', 'like', $term)
                         ->orWhereHas('profile', function ($profile) use ($term): void {
                             $profile->where('headline', 'like', $term)
-                                ->orWhere('location', 'like', $term);
+                                ->orWhere('location', 'like', $term)
+                                ->orWhere('batch', 'like', $term)
+                                ->orWhere('program', 'like', $term)
+                                ->orWhere('faculty', 'like', $term)
+                                ->orWhere('department', 'like', $term)
+                                ->orWhere('profile_type', 'like', $term);
                         });
                 });
             })
             ->with([
                 'profile.talents',
+                'profile.primaryTalentModel',
                 'portfolioItems' => fn ($query) => $query->published()->with('talent:id,name,slug,theme')->latest('published_at'),
             ])
             ->withCount('followers')
@@ -64,7 +91,15 @@ class Index extends Component
 
         return view('livewire.students.index', [
             'students' => $students,
-            'explore' => $this->search === ''
+            'categories' => [
+                'All' => 'All Creators',
+                'Performing Arts' => '🎤 Performing Arts',
+                'Creative & Visual Arts' => '🎨 Creative Arts',
+                'Sports & Physical' => '🏆 Sports & Physical',
+                'Unique & Hidden' => '✨ Unique Talents',
+                'General User' => '👤 General',
+            ],
+            'explore' => ($this->search === '' && $this->category === 'All')
                 ? PortfolioItem::query()
                     ->published()
                     ->with(['user:id,name', 'talent:id,name,slug,theme'])

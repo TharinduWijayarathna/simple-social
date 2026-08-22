@@ -1,10 +1,24 @@
 <div class="mx-auto max-w-4xl px-4 py-8">
-    <div class="flex gap-6 md:gap-16">
-        @if ($highlights->isNotEmpty())
-            <a href="{{ route('status.show', $highlights->first()) }}" class="flex size-24 shrink-0 items-center justify-center rounded-full bg-studio text-2xl font-semibold text-gold ring-2 ring-sky-400 ring-offset-4 ring-offset-wall md:size-36 md:text-4xl" wire:navigate>{{ $student->initials() }}</a>
-        @else
-            <span class="flex size-24 shrink-0 items-center justify-center rounded-full bg-studio text-2xl font-semibold text-gold md:size-36 md:text-4xl">{{ $student->initials() }}</span>
-        @endif
+    <div class="flex items-start gap-6 md:gap-16">
+        <div class="p-2 shrink-0 overflow-visible">
+            @if ($highlights->isNotEmpty())
+                <a href="{{ route('status.show', $highlights->first()) }}" class="flex size-24 items-center justify-center overflow-hidden rounded-full bg-studio text-2xl font-semibold text-gold ring-4 ring-amber-400 ring-offset-4 ring-offset-wall md:size-36 md:text-4xl shadow-md transition hover:scale-105" wire:navigate>
+                    @if ($student->avatarUrl())
+                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                    @else
+                        {{ $student->initials() }}
+                    @endif
+                </a>
+            @else
+                <span class="flex size-24 items-center justify-center overflow-hidden rounded-full bg-studio text-2xl font-semibold text-gold md:size-36 md:text-4xl shadow-md">
+                    @if ($student->avatarUrl())
+                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                    @else
+                        {{ $student->initials() }}
+                    @endif
+                </span>
+            @endif
+        </div>
 
         <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-3">
@@ -26,14 +40,30 @@
                 <li><span class="font-semibold">{{ $student->following_count }}</span> <span class="text-mist">following</span></li>
             </ul>
 
-            <div class="mt-4 text-sm">
+            <div class="mt-4 text-sm space-y-2">
+                @if ($student->profile?->profile_type)
+                    <div class="inline-flex items-center gap-2 rounded-full bg-amber-100/80 px-3.5 py-1 text-xs font-bold text-amber-900 shadow-sm border border-amber-300/50">
+                        {{ $student->profile->profile_type }}
+                        @if ($student->profile->primaryTalentModel)
+                            <span class="text-amber-700">· {{ $student->profile->primaryTalentModel->name }}</span>
+                        @endif
+                    </div>
+                @endif
+
                 @if ($student->profile?->headline)
-                    <p class="font-semibold">{{ $student->profile->headline }}</p>
+                    <p class="font-semibold text-ink">{{ $student->profile->headline }}</p>
                 @endif
                 @if ($student->profile?->bio)
-                    <p class="mt-1 leading-6 text-ink/80">{{ $student->profile->bio }}</p>
+                    <p class="leading-6 text-ink/80">{{ $student->profile->bio }}</p>
                 @endif
-                <ul class="mt-2 flex flex-col gap-0.5 text-mist">
+                
+                <ul class="flex flex-col gap-1 text-xs text-mist">
+                    @if ($student->profile?->batch || $student->profile?->program)
+                        <li class="font-medium text-ember">
+                            🎓 {{ $student->profile->batch ?: 'Campus Student' }}
+                            @if ($student->profile->program) · {{ $student->profile->program }} @endif
+                        </li>
+                    @endif
                     @if ($student->profile?->faculty)
                         <li>Studies {{ $student->profile->faculty }}@if ($student->profile->department) · {{ $student->profile->department }}@endif</li>
                     @endif
@@ -44,10 +74,14 @@
                         <li>Born {{ $student->profile->birthday->format('F j') }}</li>
                     @endif
                 </ul>
+
                 @if ($student->profile?->talents?->isNotEmpty())
                     <div class="mt-3 flex flex-wrap gap-2">
                         @foreach ($student->profile->talents as $talent)
-                            <span class="rounded-full bg-white px-3 py-1 text-xs font-medium" wire:key="badge-{{ $talent->id }}">{{ $talent->name }}</span>
+                            <span class="rounded-full bg-white px-3 py-1 text-xs font-medium border border-ink/8 shadow-sm" wire:key="badge-{{ $talent->id }}">
+                                {{ $talent->name }}
+                                <span class="text-[10px] text-mist">({{ $talent->category }})</span>
+                            </span>
                         @endforeach
                     </div>
                 @endif
@@ -56,11 +90,11 @@
     </div>
 
     @if ($highlights->isNotEmpty())
-        <div class="mt-8 flex gap-5 overflow-x-auto pb-2">
+        <div class="mt-8 flex gap-5 overflow-x-auto p-2 pb-3">
             @foreach ($highlights as $status)
-                <a href="{{ route('status.show', $status) }}" class="flex w-16 shrink-0 flex-col items-center gap-1.5" wire:key="highlight-{{ $status->id }}" wire:navigate>
-                    <img src="{{ $status->imageUrl() }}" alt="" class="size-16 rounded-full object-cover ring-2 ring-sky-400 ring-offset-2 ring-offset-wall">
-                    <span class="w-full truncate text-center text-[11px] text-mist">{{ $status->created_at->isToday() ? 'Today' : $status->created_at->format('M j') }}</span>
+                <a href="{{ route('status.show', $status) }}" class="flex w-16 shrink-0 flex-col items-center gap-1.5 transition hover:scale-105" wire:key="highlight-{{ $status->id }}" wire:navigate>
+                    <img src="{{ $status->imageUrl() }}" alt="" class="size-16 rounded-full object-cover ring-2 ring-amber-400 ring-offset-2 ring-offset-wall shadow-sm">
+                    <span class="w-full truncate text-center text-[11px] font-semibold text-mist">{{ $status->created_at->isToday() ? 'Today' : $status->created_at->format('M j') }}</span>
                 </a>
             @endforeach
         </div>

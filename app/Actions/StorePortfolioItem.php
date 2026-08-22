@@ -29,15 +29,22 @@ class StorePortfolioItem
     public function handle(User $user, array $data): PortfolioItem
     {
         $file = $data['file'];
+        $mime = $file->getMimeType();
+        $mediaType = $data['media_type'] ?? PortfolioMediaType::Image;
+
+        if (str_starts_with($mime, 'video/')) {
+            $mediaType = PortfolioMediaType::Video;
+        }
+
         $path = $file->store('portfolio/'.$user->id, 'public');
 
         $item = $user->portfolioItems()->create([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'talent_id' => $data['talent_id'] ?? null,
-            'media_type' => $data['media_type'],
+            'media_type' => $mediaType,
             'file_path' => $path,
-            'mime_type' => $file->getMimeType(),
+            'mime_type' => $mime,
             'file_size' => $file->getSize(),
             'published_at' => ($data['published'] ?? true) ? now() : null,
         ]);

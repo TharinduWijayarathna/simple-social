@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PortfolioMediaType;
 use App\Enums\TalentTheme;
+use App\Traits\HasCampusScope;
 use Database\Factories\PortfolioItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -35,7 +36,7 @@ use Illuminate\Support\Facades\Storage;
 class PortfolioItem extends Model
 {
     /** @use HasFactory<PortfolioItemFactory> */
-    use HasFactory;
+    use HasCampusScope, HasFactory;
 
     /**
      * @return array<string, string>
@@ -57,6 +58,22 @@ class PortfolioItem extends Model
     public function talent(): BelongsTo
     {
         return $this->belongsTo(Talent::class);
+    }
+
+    public function isVideo(): bool
+    {
+        if ($this->media_type === PortfolioMediaType::Video) {
+            return true;
+        }
+
+        $mime = strtolower($this->mime_type ?? '');
+        if (str_contains($mime, 'video')) {
+            return true;
+        }
+
+        $extension = strtolower(pathinfo($this->file_path, PATHINFO_EXTENSION));
+
+        return in_array($extension, ['mp4', 'mov', 'webm', 'mkv', 'avi'], true);
     }
 
     public function likes(): MorphMany

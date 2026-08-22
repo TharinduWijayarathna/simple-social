@@ -40,7 +40,7 @@
                     <a href="{{ route('home') }}" class="font-display text-2xl tracking-tight text-studio" wire:navigate>VibeCraft</a>
                     <div class="flex items-center gap-3 text-sm">
                         <a href="{{ route('login') }}" class="hover:text-ember" wire:navigate>Sign in</a>
-                        <a href="{{ route('register') }}" class="btn-primary" wire:navigate>Join campus</a>
+                        <a href="{{ route('register') }}" class="btn-primary" wire:navigate>Sign up</a>
                     </div>
                 </div>
             </header>
