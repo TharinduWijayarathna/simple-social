@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Dashboard as AdminDashboard;
+use App\Livewire\Auth\AdminLogin;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
 use App\Livewire\Campus\Dashboard as CampusDashboard;
@@ -30,6 +31,7 @@ Route::permanentRedirect('/studio', '/');
 Route::middleware('guest')->group(function (): void {
     Route::livewire('/login', Login::class)->name('login');
     Route::livewire('/register', Register::class)->name('register');
+    Route::livewire('/admin/login', AdminLogin::class)->name('admin.login');
 });
 
 Route::post('/logout', function () {

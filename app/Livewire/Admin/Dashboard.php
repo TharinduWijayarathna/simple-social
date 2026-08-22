@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Enums\ReportStatus;
 use App\Enums\Role;
+use App\Enums\UserStatus;
 use App\Models\Event;
 use App\Models\Like;
 use App\Models\PortfolioItem;
@@ -51,6 +52,22 @@ class Dashboard extends Component
         $user->update(['role' => Role::from($role)]);
     }
 
+    public function approveCampusAdmin(int $userId): void
+    {
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
+
+        $user = User::query()->where('role', Role::CampusAdmin)->findOrFail($userId);
+        $user->update(['status' => UserStatus::Approved]);
+    }
+
+    public function rejectCampusAdmin(int $userId): void
+    {
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
+
+        $user = User::query()->where('role', Role::CampusAdmin)->findOrFail($userId);
+        $user->update(['status' => UserStatus::Rejected]);
+    }
+
     public function render(): View
     {
         return view('livewire.admin.dashboard', [
@@ -70,6 +87,7 @@ class Dashboard extends Component
                 ->latest()
                 ->limit(12)
                 ->get(),
+            'pendingCampusAdmins' => User::query()->pendingCampusAdmins()->latest()->get(),
         ]);
     }
 }

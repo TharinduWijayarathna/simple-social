@@ -3,8 +3,8 @@
 namespace App\Livewire\Auth;
 
 use App\Enums\Role;
+use App\Enums\UserStatus;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
@@ -14,6 +14,8 @@ use Livewire\Component;
 #[Title('Join VibeCraft')]
 class Register extends Component
 {
+    public string $accountType = 'student';
+
     #[Validate('required|string|max:255')]
     public string $name = '';
 
@@ -25,22 +27,23 @@ class Register extends Component
 
     public string $password_confirmation = '';
 
+    public bool $submitted = false;
+
     public function register(): void
     {
         $this->validate();
 
-        $user = User::query()->create([
+        $role = $this->accountType === 'campus' ? Role::CampusAdmin : Role::Student;
+
+        User::query()->create([
             'name' => $this->name,
             'email' => $this->email,
             'password' => $this->password,
-            'role' => Role::Student,
+            'role' => $role,
+            'status' => UserStatus::Pending,
         ]);
 
-        $user->profile()->firstOrCreate([]);
-
-        Auth::login($user);
-        session()->regenerate();
-
-        $this->redirect(route('home'), navigate: true);
+        // Do NOT log the user in — they must be approved first.
+        $this->submitted = true;
     }
 }

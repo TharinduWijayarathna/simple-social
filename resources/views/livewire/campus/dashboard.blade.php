@@ -8,6 +8,32 @@
         <a href="{{ route('events.create') }}" class="btn-primary" wire:navigate>New event</a>
     </div>
 
+    {{-- Pending Student Approvals --}}
+    @if ($pendingStudents->isNotEmpty())
+        <section class="mt-8">
+            <div class="flex items-center gap-3">
+                <h2 class="font-display text-2xl">Pending student accounts</h2>
+                <span class="rounded-full bg-ember px-2.5 py-0.5 text-xs font-semibold text-white">{{ $pendingStudents->count() }}</span>
+            </div>
+            <p class="mt-1 text-sm text-mist">These students are waiting for approval to access VibeCraft.</p>
+            <ul class="mt-4 flex flex-col gap-3">
+                @foreach ($pendingStudents as $student)
+                    <li class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ember/20 bg-ember/5 px-5 py-4 text-sm" wire:key="pending-student-{{ $student->id }}">
+                        <div>
+                            <p class="font-semibold">{{ $student->name }}</p>
+                            <p class="text-mist">{{ $student->email }}</p>
+                            <p class="mt-0.5 text-xs text-mist">Registered {{ $student->created_at->diffForHumans() }}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" wire:click="rejectStudent({{ $student->id }})" class="btn-ghost px-4 py-2 text-sm">Reject</button>
+                            <button type="button" wire:click="approveStudent({{ $student->id }})" class="btn-primary px-4 py-2 text-sm">Approve</button>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     <div class="mt-8 grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
         <ul class="flex flex-col gap-3">
             @forelse ($events as $event)

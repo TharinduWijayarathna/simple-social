@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Campus;
 
+use App\Enums\UserStatus;
 use App\Models\Event;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -27,6 +29,22 @@ class Dashboard extends Component
         $this->selectedEventId = $eventId;
     }
 
+    public function approveStudent(int $userId): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        $user = User::query()->pendingStudents()->findOrFail($userId);
+        $user->update(['status' => UserStatus::Approved]);
+    }
+
+    public function rejectStudent(int $userId): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        $user = User::query()->pendingStudents()->findOrFail($userId);
+        $user->update(['status' => UserStatus::Rejected]);
+    }
+
     public function render(): View
     {
         $user = auth()->user();
@@ -47,6 +65,7 @@ class Dashboard extends Component
         return view('livewire.campus.dashboard', [
             'events' => $events,
             'selectedEvent' => $selectedEvent,
+            'pendingStudents' => User::query()->pendingStudents()->latest()->get(),
         ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Role;
+use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -24,6 +25,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property Role $role
+ * @property UserStatus $status
  * @property int $xp
  * @property int|null $current_rank
  * @property int|null $previous_rank
@@ -32,7 +34,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  * @property-read Profile|null $profile
  */
-#[Fillable(['name', 'email', 'password', 'role', 'xp', 'current_rank', 'previous_rank'])]
+#[Fillable(['name', 'email', 'password', 'role', 'status', 'xp', 'current_rank', 'previous_rank'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -44,6 +46,7 @@ class User extends Authenticatable
      */
     protected $attributes = [
         'role' => 'student',
+        'status' => 'approved',
         'xp' => 0,
     ];
 
@@ -56,6 +59,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => Role::class,
+            'status' => UserStatus::class,
             'xp' => 'integer',
             'current_rank' => 'integer',
             'previous_rank' => 'integer',
@@ -84,6 +88,21 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return $this->role === Role::SuperAdmin;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === UserStatus::Pending;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === UserStatus::Approved;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === UserStatus::Rejected;
     }
 
     public function isOrganizer(): bool
@@ -202,5 +221,17 @@ class User extends Authenticatable
     protected function ranked(Builder $query): Builder
     {
         return $query->whereNotNull('current_rank')->orderBy('current_rank');
+    }
+
+    #[Scope]
+    protected function pendingStudents(Builder $query): Builder
+    {
+        return $query->where('role', Role::Student)->where('status', UserStatus::Pending);
+    }
+
+    #[Scope]
+    protected function pendingCampusAdmins(Builder $query): Builder
+    {
+        return $query->where('role', Role::CampusAdmin)->where('status', UserStatus::Pending);
     }
 }
