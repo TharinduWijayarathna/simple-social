@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -22,6 +23,8 @@ use Illuminate\Support\Str;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property string|null $university_id
+ * @property int|null $campus_id
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property Role $role
@@ -33,8 +36,9 @@ use Illuminate\Support\Str;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Profile|null $profile
+ * @property-read User|null $campus
  */
-#[Fillable(['name', 'email', 'password', 'role', 'status', 'xp', 'current_rank', 'previous_rank'])]
+#[Fillable(['name', 'email', 'password', 'role', 'status', 'university_id', 'campus_id', 'xp', 'current_rank', 'previous_rank'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -132,6 +136,22 @@ class User extends Authenticatable
     public function profile(): HasOne
     {
         return $this->hasOne(Profile::class);
+    }
+
+    /**
+     * The campus this student belongs to (campus admin user).
+     */
+    public function campus(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'campus_id');
+    }
+
+    /**
+     * Students that belong to this campus admin.
+     */
+    public function campusStudents(): HasMany
+    {
+        return $this->hasMany(User::class, 'campus_id');
     }
 
     public function portfolioItems(): HasMany
@@ -233,5 +253,27 @@ class User extends Authenticatable
     protected function pendingCampusAdmins(Builder $query): Builder
     {
         return $query->where('role', Role::CampusAdmin)->where('status', UserStatus::Pending);
+    }
+
+    /**
+     * Pending students belonging to a specific campus admin.
+     */
+    #[Scope]
+    protected function pendingStudentsForCampus(Builder $query, int $campusId): Builder
+    {
+        return $query->where('role', Role::Student)
+            ->where('status', UserStatus::Pending)
+            ->where('campus_id', $campusId);
+    }
+
+    /**
+     * Approved students belonging to a specific campus admin.
+     */
+    #[Scope]
+    protected function approvedStudentsForCampus(Builder $query, int $campusId): Builder
+    {
+        return $query->where('role', Role::Student)
+            ->where('status', UserStatus::Approved)
+            ->where('campus_id', $campusId);
     }
 }

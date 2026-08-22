@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Campus;
 
-use App\Enums\Role;
 use App\Enums\UserStatus;
 use App\Models\Event;
 use App\Models\User;
@@ -38,7 +37,10 @@ class Dashboard extends Component
     {
         abort_unless(auth()->user()->canOrganizeEvents(), 403);
 
-        $user = User::query()->pendingStudents()->findOrFail($userId);
+        $user = User::query()
+            ->pendingStudentsForCampus(auth()->id())
+            ->findOrFail($userId);
+
         $user->update(['status' => UserStatus::Approved]);
     }
 
@@ -46,16 +48,19 @@ class Dashboard extends Component
     {
         abort_unless(auth()->user()->canOrganizeEvents(), 403);
 
-        $user = User::query()->pendingStudents()->findOrFail($userId);
+        $user = User::query()
+            ->pendingStudentsForCampus(auth()->id())
+            ->findOrFail($userId);
+
         $user->update(['status' => UserStatus::Rejected]);
     }
 
     public function render(): View
     {
-        $user = auth()->user();
+        $campusUser = auth()->user();
 
         $events = Event::query()
-            ->when($user->isCampusAdmin(), fn ($query) => $query->whereBelongsTo($user, 'organizer'))
+            ->when($campusUser->isCampusAdmin(), fn ($query) => $query->whereBelongsTo($campusUser, 'organizer'))
             ->with(['talent:id,name', 'organizer:id,name'])
             ->withCount('applications')
             ->latest('starts_at')
@@ -67,10 +72,13 @@ class Dashboard extends Component
             $selectedEvent->load(['applications.user:id,name']);
         }
 
-        $pendingStudents = User::query()->pendingStudents()->latest()->get();
+        $pendingStudents = User::query()
+            ->pendingStudentsForCampus(auth()->id())
+            ->latest()
+            ->get();
+
         $approvedStudents = User::query()
-            ->where('role', Role::Student)
-            ->where('status', UserStatus::Approved)
+            ->approvedStudentsForCampus(auth()->id())
             ->latest()
             ->get();
 
