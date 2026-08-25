@@ -111,15 +111,15 @@
                     $leaders = $item['leaders'];
                 @endphp
                 <section class="overflow-hidden rounded-[1.5rem] border border-ink/8 bg-white shadow-sm">
-                    <div class="relative overflow-hidden bg-gradient-to-br from-ember via-ember/80 to-amber-500 px-5 py-4">
+                    <div class="relative overflow-hidden bg-gradient-to-br from-studio-deep via-studio to-black px-5 py-4 border-b border-gold/15">
                         <div class="relative z-10 flex items-center justify-between">
                             <div>
-                                <h2 class="font-display text-lg tracking-tight text-white">{{ $ranking->title }}</h2>
-                                <p class="text-xs font-medium text-white/80 uppercase tracking-wide">{{ $ranking->talent->category }}</p>
+                                <h2 class="font-display text-lg tracking-tight text-paper">{{ $ranking->title }}</h2>
+                                <p class="text-xs font-semibold text-gold uppercase tracking-wide">{{ $ranking->talent->category }}</p>
                             </div>
-                            <x-icon name="trophy" class="size-6 text-white/60" />
+                            <x-icon name="trophy" class="size-6 text-gold" />
                         </div>
-                        <div class="absolute -bottom-4 -right-4 size-16 rounded-full bg-white/10"></div>
+                        <div class="absolute -bottom-4 -right-4 size-16 rounded-full bg-gold/10"></div>
                     </div>
                     
                     @if ($leaders->isEmpty())

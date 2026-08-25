@@ -25,17 +25,17 @@
                 <div class="overflow-hidden rounded-3xl border border-ink/8 bg-white shadow-sm">
 
                     {{-- Card header --}}
-                    <div class="relative overflow-hidden bg-gradient-to-br from-ember via-ember/80 to-amber-500 px-6 py-5">
+                    <div class="relative overflow-hidden bg-gradient-to-br from-studio-deep via-studio to-black px-6 py-5 border-b border-gold/15">
                         <div class="relative z-10 flex items-start justify-between gap-4">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-widest text-white/60">{{ $ranking->talent->category }}</p>
-                                <h2 class="mt-0.5 text-xl font-bold text-white">{{ $ranking->title }}</h2>
-                                <p class="mt-1 text-sm text-white/70">{{ $ranking->talent->name }} · Top 10</p>
+                                <p class="text-xs font-semibold uppercase tracking-widest text-gold">{{ $ranking->talent->category }}</p>
+                                <h2 class="mt-0.5 text-xl font-bold text-paper">{{ $ranking->title }}</h2>
+                                <p class="mt-1 text-sm text-gold/80">{{ $ranking->talent->name }} · Top 10</p>
                             </div>
-                            <x-icon name="trophy" class="size-10 text-white/60" />
+                            <x-icon name="trophy" class="size-10 text-gold" />
                         </div>
                         {{-- Decorative circle --}}
-                        <div class="absolute -bottom-6 -right-6 size-24 rounded-full bg-white/10"></div>
+                        <div class="absolute -bottom-6 -right-6 size-24 rounded-full bg-gold/10"></div>
                     </div>
 
                     {{-- Leaderboard --}}
