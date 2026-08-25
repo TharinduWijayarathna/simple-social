@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -15,6 +16,13 @@ use Livewire\Component;
 #[Title('Rankings')]
 class Rankings extends Component
 {
+    /** Re-render triggered by PostCard after a like is toggled. */
+    #[On('like-toggled')]
+    public function refresh(): void
+    {
+        // render() is automatically called after this method returns
+    }
+
     public function render(): View
     {
         /** @var User $currentUser */

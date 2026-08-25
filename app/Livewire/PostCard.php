@@ -24,6 +24,9 @@ class PostCard extends Component
         }
 
         $toggleLike->handle(auth()->user(), $this->item);
+
+        // Notify the rankings page (if open) to refresh live
+        $this->dispatch('like-toggled')->to('rankings');
     }
 
     public function comment(AwardXp $awardXp): void
