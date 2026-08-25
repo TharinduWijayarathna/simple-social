@@ -48,6 +48,13 @@
                         </svg>
                         Event Management
                     </a>
+                    <a href="{{ route('campus.dashboard', ['tab' => 'talents']) }}"
+                       class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
+                              {{ request()->query('tab') === 'talents' ? 'bg-ember/8 text-ember' : 'text-ink/60 hover:bg-ink/5 hover:text-ink' }}"
+                       wire:navigate>
+                        <x-icon name="sparkles" class="size-4.5 shrink-0" />
+                        Talent Management
+                    </a>
                     <a href="{{ route('campus.rankings') }}"
                        class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
                               {{ request()->routeIs('campus.rankings') ? 'bg-ember/8 text-ember' : 'text-ink/60 hover:bg-ink/5 hover:text-ink' }}"
@@ -95,8 +102,9 @@
                     <span class="rounded-md bg-ember/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ember">Campus</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('campus.dashboard', ['tab' => 'students']) }}" class="text-xs text-mist">Students</a>
-                    <a href="{{ route('campus.dashboard', ['tab' => 'events']) }}" class="text-xs text-mist">Events</a>
+                    <a href="{{ route('campus.dashboard', ['tab' => 'students']) }}" class="text-xs {{ request()->query('tab') === 'students' ? 'text-ember font-medium' : 'text-mist' }}">Students</a>
+                    <a href="{{ route('campus.dashboard', ['tab' => 'events']) }}" class="text-xs {{ request()->query('tab') === 'events' ? 'text-ember font-medium' : 'text-mist' }}">Events</a>
+                    <a href="{{ route('campus.dashboard', ['tab' => 'talents']) }}" class="text-xs {{ request()->query('tab') === 'talents' ? 'text-ember font-medium' : 'text-mist' }}">Talents</a>
                     <a href="{{ route('campus.rankings') }}" class="text-xs {{ request()->routeIs('campus.rankings') ? 'text-ember font-medium' : 'text-mist' }}">Rankings</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

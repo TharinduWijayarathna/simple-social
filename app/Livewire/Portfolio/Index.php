@@ -30,9 +30,11 @@ class Index extends Component
             ->latest('published_at')
             ->paginate(12);
 
+        $campusId = auth()->check() ? auth()->user()->campus_id : null;
+
         return view('livewire.portfolio.index', [
             'items' => $items,
-            'talents' => Talent::query()->orderBy('name')->get(),
+            'talents' => Talent::query()->forCampus($campusId)->orderBy('name')->get(),
         ]);
     }
 }

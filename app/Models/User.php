@@ -290,4 +290,15 @@ class User extends Authenticatable
             ->where('status', UserStatus::Approved)
             ->where('campus_id', $campusId);
     }
+
+    /**
+     * Banned students belonging to a specific campus admin.
+     */
+    #[Scope]
+    protected function bannedStudentsForCampus(Builder $query, int $campusId): Builder
+    {
+        return $query->where('role', Role::Student)
+            ->where('status', UserStatus::Banned)
+            ->where('campus_id', $campusId);
+    }
 }
