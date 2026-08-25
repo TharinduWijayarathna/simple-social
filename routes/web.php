@@ -5,6 +5,7 @@ use App\Livewire\Auth\AdminLogin;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
 use App\Livewire\Campus\Dashboard as CampusDashboard;
+use App\Livewire\Campus\Rankings as CampusRankings;
 use App\Livewire\Collaborations\Index as CollaborationsIndex;
 use App\Livewire\Collaborations\Show as CollaborationsShow;
 use App\Livewire\Events\Create as EventsCreate;
@@ -16,6 +17,7 @@ use App\Livewire\Portfolio\Create as PortfolioCreate;
 use App\Livewire\Portfolio\Index as PortfolioIndex;
 use App\Livewire\Portfolio\Show as PortfolioShow;
 use App\Livewire\Profile\Edit as ProfileEdit;
+use App\Livewire\Rankings;
 use App\Livewire\Statuses\Create as StatusCreate;
 use App\Livewire\Statuses\Show as StatusShow;
 use App\Livewire\Students\Index as StudentsIndex;
@@ -48,6 +50,7 @@ Route::post('/logout', function () {
 // ── Campus Admin / Event Creation Routes ──
 Route::middleware(['auth', 'role:campus_admin,super_admin'])->group(function (): void {
     Route::livewire('/campus', CampusDashboard::class)->name('campus.dashboard');
+    Route::livewire('/campus/rankings', CampusRankings::class)->name('campus.rankings');
     Route::livewire('/events/create', EventsCreate::class)->name('events.create');
 });
 
@@ -73,6 +76,7 @@ Route::middleware(['auth', 'student-only'])->group(function (): void {
     Route::livewire('/collaborations', CollaborationsIndex::class)->name('collaborations.index');
     Route::livewire('/collaborations/{collaboration}', CollaborationsShow::class)->name('collaborations.show');
     Route::livewire('/leaderboard', Leaderboard::class)->name('leaderboard');
+    Route::livewire('/rankings', Rankings::class)->name('rankings');
     Route::livewire('/watch', Glance::class)->name('wearable.glance');
 });
 
