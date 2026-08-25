@@ -41,26 +41,20 @@ class Rankings extends Component
         $rankingsWithLeaders = $rankings->map(function (CampusRanking $ranking) use ($campusId) {
             $talentId = $ranking->talent_id;
 
-            // Get users that belong to this campus, ranked by likes on their posts for this talent
+            // Get users that belong to this campus, ranked by likes on all their posts, filtered by their primary talent category
             $leaders = User::query()
                 ->where('campus_id', $campusId)
                 ->where('role', 'student')
                 ->where('status', 'approved')
-                ->withCount([
-                    'portfolioItems as talent_likes_count' => function ($query) use ($talentId) {
-                        $query->where('talent_id', $talentId)
-                            ->whereNotNull('published_at')
-                            ->where('published_at', '<=', now())
-                            ->whereHas('likes');
-                    },
-                ])
+                ->whereHas('profile', function ($query) use ($talentId) {
+                    $query->where('primary_talent_id', $talentId);
+                })
                 ->addSelect([
                     'talent_likes_total' => DB::table('likes')
                         ->selectRaw('COALESCE(SUM(1), 0)')
-                        ->join('portfolio_items', function ($join) use ($talentId) {
+                        ->join('portfolio_items', function ($join) {
                             $join->on('likes.likeable_id', '=', 'portfolio_items.id')
                                 ->where('likes.likeable_type', '=', PortfolioItem::class)
-                                ->where('portfolio_items.talent_id', '=', $talentId)
                                 ->whereNotNull('portfolio_items.published_at')
                                 ->where('portfolio_items.published_at', '<=', now());
                         })

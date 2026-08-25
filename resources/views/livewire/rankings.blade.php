@@ -1,16 +1,9 @@
-<div class="page-shell py-8" wire:poll.30s>
+<div class="page-shell py-8" wire:poll.2s>
 
     <div class="mb-8 flex items-end justify-between gap-4">
         <div>
             <h1 class="font-display text-4xl tracking-tight">Campus Rankings</h1>
             <p class="mt-1 text-mist">Top performers ranked by likes on their talent posts.</p>
-        </div>
-        <div class="flex items-center gap-2 text-xs text-mist">
-            <span class="relative flex size-2">
-                <span class="absolute inline-flex size-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-                <span class="relative inline-flex size-2 rounded-full bg-green-500"></span>
-            </span>
-            Live · updates every 30 s
         </div>
     </div>
 
