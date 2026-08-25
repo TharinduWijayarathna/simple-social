@@ -75,7 +75,7 @@
         @endif
 
         {{-- Rankings list --}}
-        @if ($rankings->isEmpty())
+        @if ($rankingsWithLeaders->isEmpty())
             <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink/15 bg-white py-16 text-center">
                 <div class="mb-3 text-amber-500">
                     <x-icon name="trophy" class="size-12" />
@@ -90,20 +90,27 @@
                 @endif
             </div>
         @else
-            <div class="rounded-2xl border border-ink/8 bg-white overflow-hidden">
-                <div class="border-b border-ink/8 px-5 py-4">
-                    <h2 class="font-semibold">Your rankings</h2>
-                </div>
-                <ul class="divide-y divide-ink/8">
-                    @foreach ($rankings as $ranking)
-                        <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="ranking-{{ $ranking->id }}">
+            <div class="space-y-6">
+                @foreach ($rankingsWithLeaders as $item)
+                    @php
+                        $ranking = $item['ranking'];
+                        $leaders = $item['leaders'];
+                    @endphp
+                    <div class="rounded-2xl border border-ink/8 bg-white overflow-hidden shadow-sm" wire:key="ranking-card-{{ $ranking->id }}">
+                        {{-- Ranking Header --}}
+                        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-ink/8 px-6 py-4 bg-wall/30">
                             <div class="flex items-center gap-3 min-w-0">
                                 <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ember/10">
                                     <x-icon name="trophy" class="size-5 text-ember" />
                                 </div>
                                 <div class="min-w-0">
-                                    <p class="truncate font-medium">{{ $ranking->title }}</p>
-                                    <p class="text-xs text-mist">{{ $ranking->talent->name }} · {{ $ranking->talent->category }}</p>
+                                    <div class="flex items-center gap-2">
+                                        <h2 class="font-semibold text-base text-ink truncate">{{ $ranking->title }}</h2>
+                                        <span class="rounded-full bg-wall px-2 py-0.5 text-[10px] font-bold text-mist">{{ $ranking->talent->category }}</span>
+                                    </div>
+                                    <p class="text-xs text-mist mt-0.5">
+                                        Talent: <strong class="text-ink font-medium">{{ $ranking->talent->name }}</strong> · {{ $leaders->count() }} ranked student{{ $leaders->count() !== 1 ? 's' : '' }}
+                                    </p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -115,7 +122,7 @@
                                                     : 'bg-ink/5 text-mist hover:bg-ink/10' }}"
                                         title="{{ $ranking->is_active ? 'Deactivate' : 'Activate' }}">
                                     <span class="size-1.5 rounded-full {{ $ranking->is_active ? 'bg-green-500' : 'bg-mist' }}"></span>
-                                    {{ $ranking->is_active ? 'Active' : 'Inactive' }}
+                                    {{ $ranking->is_active ? 'Active on Campus' : 'Inactive' }}
                                 </button>
 
                                 {{-- Delete button --}}
@@ -128,9 +135,72 @@
                                     </svg>
                                 </button>
                             </div>
-                        </li>
-                    @endforeach
-                </ul>
+                        </div>
+
+                        {{-- Leaderboard list --}}
+                        @if ($leaders->isEmpty())
+                            <div class="px-6 py-8 text-center text-sm text-mist">
+                                No students currently ranked under this talent.
+                            </div>
+                        @else
+                            <div class="divide-y divide-ink/6">
+                                @foreach ($leaders as $i => $student)
+                                    <div class="flex items-center justify-between gap-4 px-6 py-3.5 hover:bg-wall/20 transition" wire:key="rank-leader-{{ $ranking->id }}-{{ $student->id }}">
+                                        <div class="flex items-center gap-3.5 min-w-0">
+                                            {{-- Rank number / medal --}}
+                                            <div class="flex w-7 shrink-0 items-center justify-center text-center">
+                                                @if ($i === 0)
+                                                    <span class="flex size-6 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white shadow-sm ring-2 ring-amber-300">1</span>
+                                                @elseif ($i === 1)
+                                                    <span class="flex size-6 items-center justify-center rounded-full bg-slate-400 text-xs font-bold text-white shadow-sm ring-2 ring-slate-300">2</span>
+                                                @elseif ($i === 2)
+                                                    <span class="flex size-6 items-center justify-center rounded-full bg-amber-700 text-xs font-bold text-white shadow-sm ring-2 ring-amber-600">3</span>
+                                                @else
+                                                    <span class="text-xs font-bold text-mist">#{{ $i + 1 }}</span>
+                                                @endif
+                                            </div>
+
+                                            {{-- Avatar --}}
+                                            <div class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-wall text-xs font-semibold text-ink">
+                                                @if ($student->avatarUrl())
+                                                    <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                                                @else
+                                                    {{ $student->initials() }}
+                                                @endif
+                                            </div>
+
+                                            {{-- Student details --}}
+                                            <div class="min-w-0">
+                                                <div class="flex items-center gap-2">
+                                                    <a href="{{ route('students.show', $student) }}" class="truncate text-sm font-semibold text-ink hover:text-ember transition" wire:navigate>
+                                                        {{ $student->name }}
+                                                    </a>
+                                                    <a href="{{ route('students.show', $student) }}" class="text-[10px] font-medium text-ember hover:underline" wire:navigate>
+                                                        View Profile ↗
+                                                    </a>
+                                                </div>
+                                                <p class="text-xs text-mist truncate">
+                                                    {{ $student->profile?->headline ?? $student->email }}
+                                                    @if ($student->profile?->batch || $student->profile?->program)
+                                                        · {{ implode(' · ', array_filter([$student->profile?->program, $student->profile?->batch])) }}
+                                                    @endif
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {{-- Points & Likes count --}}
+                                        <div class="shrink-0 text-right">
+                                            <div class="inline-flex items-center gap-1 rounded-xl bg-ember/10 px-3 py-1.5 text-ember">
+                                                <span class="text-sm font-extrabold">{{ number_format($student->talent_likes_total ?? 0) }}</span>
+                                                <span class="text-[11px] font-semibold text-ember/80">points ({{ number_format($student->talent_likes_total ?? 0) }} likes)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
             </div>
         @endif
 

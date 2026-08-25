@@ -5,7 +5,11 @@ use App\Enums\TalentTheme;
 use App\Enums\UserStatus;
 use App\Livewire\Auth\Login;
 use App\Livewire\Campus\Dashboard;
+use App\Livewire\Campus\Rankings;
 use App\Livewire\Portfolio\Create;
+use App\Models\CampusRanking;
+use App\Models\Like;
+use App\Models\PortfolioItem;
 use App\Models\Talent;
 use App\Models\TalentCategory;
 use App\Models\User;
@@ -239,4 +243,71 @@ test('campus admin can manage talent categories separately', function () {
         'id' => $category->id,
     ]);
     expect($talent->fresh()->category)->toBe('General User');
+});
+
+test('campus admin rankings section shows all student ranks with points and likes count', function () {
+    $admin = User::factory()->create([
+        'role' => Role::CampusAdmin,
+        'status' => UserStatus::Approved,
+    ]);
+    $admin->update(['campus_id' => $admin->id]);
+
+    $talent = Talent::create([
+        'name' => 'Classical Singing',
+        'category' => 'Performing Arts',
+        'theme' => TalentTheme::Stage,
+        'campus_id' => $admin->id,
+    ]);
+
+    $student1 = User::factory()->create([
+        'role' => Role::Student,
+        'status' => UserStatus::Approved,
+        'campus_id' => $admin->id,
+    ]);
+    $student1->profile()->update(['primary_talent_id' => $talent->id]);
+
+    $student2 = User::factory()->create([
+        'role' => Role::Student,
+        'status' => UserStatus::Approved,
+        'campus_id' => $admin->id,
+    ]);
+    $student2->profile()->update(['primary_talent_id' => $talent->id]);
+
+    // Student 1 has 5 likes
+    $post1 = PortfolioItem::factory()->create([
+        'user_id' => $student1->id,
+        'talent_id' => $talent->id,
+        'published_at' => now()->subDay(),
+    ]);
+    Like::factory()->count(5)->create([
+        'likeable_id' => $post1->id,
+        'likeable_type' => PortfolioItem::class,
+    ]);
+
+    // Student 2 has 2 likes
+    $post2 = PortfolioItem::factory()->create([
+        'user_id' => $student2->id,
+        'talent_id' => $talent->id,
+        'published_at' => now()->subDay(),
+    ]);
+    Like::factory()->count(2)->create([
+        'likeable_id' => $post2->id,
+        'likeable_type' => PortfolioItem::class,
+    ]);
+
+    $ranking = CampusRanking::create([
+        'campus_id' => $admin->id,
+        'talent_id' => $talent->id,
+        'title' => 'Top Classical Singers',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(Rankings::class)
+        ->assertSee('Top Classical Singers')
+        ->assertSee($student1->name)
+        ->assertSee('points (5 likes)')
+        ->assertSee($student2->name)
+        ->assertSee('points (2 likes)');
 });
