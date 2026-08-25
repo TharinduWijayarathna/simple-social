@@ -79,17 +79,18 @@ class Dashboard extends Component
             'totalCampusAdmins' => User::query()->where('role', Role::CampusAdmin)->where('status', UserStatus::Approved)->count(),
             'totalItems' => PortfolioItem::query()->published()->count(),
             'totalEvents' => Event::query()->published()->count(),
-            'pendingCampusAdmins' => User::query()->pendingCampusAdmins()->latest()->get(),
+            'pendingCampusAdmins' => User::query()->pendingCampusAdmins()->with('profile')->latest()->get(),
             'approvedCampusAdmins' => User::query()
                 ->where('role', Role::CampusAdmin)
                 ->where('status', UserStatus::Approved)
+                ->with('profile')
                 ->latest()
                 ->get(),
             'categories' => Talent::query()
                 ->withCount(['portfolioItems as published_items_count' => fn ($query) => $query->published()])
                 ->orderByDesc('published_items_count')
                 ->get(),
-            'reports' => Report::query()->pending()->with(['reporter:id,name', 'reportable'])->latest()->limit(20)->get(),
+            'reports' => Report::query()->pending()->with(['reporter.profile', 'reportable'])->latest()->limit(20)->get(),
         ]);
     }
 }

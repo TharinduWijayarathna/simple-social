@@ -18,7 +18,7 @@ class Show extends Component
     {
         abort_unless($status->isActive(), 404);
         $this->authorize('view', $status);
-        $this->status = $status->load('user:id,name');
+        $this->status = $status->load('user.profile');
     }
 
     public function render(): View

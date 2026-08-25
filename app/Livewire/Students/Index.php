@@ -102,7 +102,7 @@ class Index extends Component
             'explore' => ($this->search === '' && $this->category === 'All')
                 ? PortfolioItem::query()
                     ->published()
-                    ->with(['user:id,name', 'talent:id,name,slug,theme'])
+                    ->with(['user.profile', 'talent:id,name,slug,theme'])
                     ->latest('published_at')
                     ->limit(18)
                     ->get()

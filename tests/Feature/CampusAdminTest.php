@@ -5,6 +5,7 @@ use App\Livewire\Auth\AdminLogin;
 use App\Livewire\Events\Show as EventsShow;
 use App\Models\Event;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Livewire\Livewire;
 
 test('students cannot open the campus desk or super admin', function () {
@@ -85,4 +86,15 @@ test('students can join a published campus event from the web', function () {
         ->assertHasNoErrors();
 
     expect($student->eventApplications()->whereBelongsTo($event)->exists())->toBeTrue();
+});
+
+test('super admin can view campuses tab without lazy loading violations', function () {
+    Model::preventLazyLoading(true);
+
+    $superAdmin = User::factory()->superAdmin()->create();
+    User::factory()->campusAdmin()->count(3)->create();
+
+    $this->actingAs($superAdmin)
+        ->get(route('admin.dashboard', ['tab' => 'campuses']))
+        ->assertOk();
 });

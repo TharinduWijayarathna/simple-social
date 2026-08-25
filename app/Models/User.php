@@ -82,6 +82,14 @@ class User extends Authenticatable
 
     public function avatarUrl(): ?string
     {
+        if ($this->relationLoaded('profile')) {
+            return $this->profile?->avatarUrl();
+        }
+
+        if ($this->preventsLazyLoading) {
+            return null;
+        }
+
         return $this->profile?->avatarUrl();
     }
 

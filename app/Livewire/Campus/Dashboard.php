@@ -98,7 +98,7 @@ class Dashboard extends Component
 
         $events = Event::query()
             ->when($campusUser->isCampusAdmin(), fn ($query) => $query->whereBelongsTo($campusUser, 'organizer'))
-            ->with(['talent:id,name', 'organizer:id,name'])
+            ->with(['talent:id,name', 'organizer.profile'])
             ->withCount('applications')
             ->latest('starts_at')
             ->get();
@@ -106,16 +106,18 @@ class Dashboard extends Component
         $selectedEvent = $events->firstWhere('id', $this->selectedEventId) ?? $events->first();
 
         if ($selectedEvent !== null) {
-            $selectedEvent->load(['applications.user:id,name,email', 'applications.talent:id,name']);
+            $selectedEvent->load(['applications.user.profile', 'applications.talent:id,name']);
         }
 
         $pendingStudents = User::query()
             ->pendingStudentsForCampus(auth()->id())
+            ->with('profile')
             ->latest()
             ->get();
 
         $approvedStudents = User::query()
             ->approvedStudentsForCampus(auth()->id())
+            ->with('profile')
             ->latest()
             ->get();
 
