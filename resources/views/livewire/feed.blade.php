@@ -1,12 +1,12 @@
 <div class="page-shell py-6">
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <div class="flex flex-col gap-4">
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] items-start">
+        <div class="flex flex-col gap-4 min-w-0">
             @auth
                 <div class="feed-card px-4 py-3">
                     <div class="flex items-center gap-3">
                         <a href="{{ route('profile.show') }}" class="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-semibold text-gold" wire:navigate>
                             @if (auth()->user()->avatarUrl())
-                                <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="size-full object-cover rounded-full">
+                                <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="size-full object-cover rounded-full" referrerpolicy="no-referrer">
                             @else
                                 {{ auth()->user()->initials() }}
                             @endif
@@ -35,22 +35,28 @@
                         </a>
 
                         @foreach ($statuses as $status)
-                            <a href="{{ route('status.show', $status) }}" class="relative w-32 aspect-[9/16] shrink-0 overflow-hidden rounded-2xl border-2 border-amber-400/80 shadow-md transition hover:scale-[1.02]" wire:key="status-{{ $status->id }}" wire:navigate>
+                            @continue($status->user === null)
+                            <a href="{{ route('status.show', $status) }}" class="relative w-32 aspect-[9/16] shrink-0 overflow-hidden rounded-2xl border-2 border-amber-400/80 bg-studio shadow-md transition hover:scale-[1.02]" wire:key="status-{{ $status->id }}" wire:navigate>
                                 @if ($status->isVideo())
-                                    <video src="{{ $status->mediaUrl() }}" class="size-full object-cover aspect-[9/16]" muted></video>
-                                    <span class="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-black/60 text-white">
-                                        <x-icon name="video" class="size-3" />
-                                    </span>
+                                    <video src="{{ $status->mediaUrl() }}" class="absolute inset-0 size-full object-cover" muted playsinline></video>
                                 @else
-                                    <img src="{{ $status->imageUrl() }}" alt="" class="size-full object-cover">
+                                    <img src="{{ $status->imageUrl() }}"
+                                         alt=""
+                                         class="absolute inset-0 size-full object-cover"
+                                         referrerpolicy="no-referrer"
+                                         onerror="this.onerror=null;this.src='https://picsum.photos/seed/story{{ $status->id }}/720/1280';">
                                 @endif
                                 <span class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></span>
                                 @if ($status->user->avatarUrl())
-                                    <img src="{{ $status->user->avatarUrl() }}" alt="{{ $status->user->name }}" class="absolute left-2.5 top-2.5 size-7 rounded-full object-cover ring-2 ring-amber-400">
+                                    <img src="{{ $status->user->avatarUrl() }}"
+                                         alt="{{ $status->user->name }}"
+                                         class="absolute left-2.5 top-2.5 size-7 rounded-full object-cover ring-2 ring-amber-400"
+                                         referrerpolicy="no-referrer"
+                                         onerror="this.style.display='none'">
                                 @else
                                     <span class="absolute left-2.5 top-2.5 flex size-7 items-center justify-center rounded-full bg-studio text-[10px] font-semibold text-gold ring-2 ring-amber-400">{{ $status->user->initials() }}</span>
                                 @endif
-                                <span class="absolute inset-x-2.5 bottom-2.5 text-xs font-bold leading-tight text-white drop-shadow truncate">{{ $status->user->name }}</span>
+                                <span class="absolute inset-x-2.5 bottom-2.5 text-xs font-bold leading-tight text-white drop-shadow line-clamp-2">{{ $status->user->name }}</span>
                             </a>
                         @endforeach
                     </div>
@@ -76,7 +82,7 @@
             <div>{{ $posts->links() }}</div>
         </div>
 
-        <aside class="hidden lg:flex lg:flex-col lg:gap-5">
+        <aside class="hidden lg:flex lg:flex-col lg:gap-5 sticky top-[4.5rem] max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar pb-6">
             <section class="rounded-[1.5rem] bg-white p-5">
                 <h2 class="font-display text-lg">Campus nights</h2>
                 <ul class="mt-3 flex flex-col gap-3">
@@ -93,13 +99,14 @@
                 </ul>
                 <a href="{{ route('events.index') }}" class="mt-4 inline-block text-xs uppercase tracking-wide text-ember" wire:navigate>All events</a>
             </section>
+
             <section class="rounded-[1.5rem] bg-studio p-5 text-paper">
                 <h2 class="font-display text-lg text-gold">People on campus</h2>
                 <ol class="mt-3 flex flex-col gap-3 text-sm">
                     @foreach ($risingStudents as $student)
-                        <li class="flex justify-between gap-3" wire:key="rail-student-{{ $student->id }}">
-                            <a href="{{ route('students.show', $student) }}" class="hover:text-gold" wire:navigate>{{ $student->name }}</a>
-                            <span class="text-mist">{{ $student->profile?->headline }}</span>
+                        <li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-start gap-3" wire:key="rail-student-{{ $student->id }}">
+                            <a href="{{ route('students.show', $student) }}" class="truncate font-medium hover:text-gold" wire:navigate>{{ $student->name }}</a>
+                            <span class="truncate text-right text-xs leading-5 text-paper/55">{{ $student->profile?->headline }}</span>
                         </li>
                     @endforeach
                 </ol>
@@ -112,16 +119,16 @@
                 @endphp
                 <section class="overflow-hidden rounded-[1.5rem] border border-ink/8 bg-white shadow-sm">
                     <div class="relative overflow-hidden bg-gradient-to-br from-studio-deep via-studio to-black px-5 py-4 border-b border-gold/15">
-                        <div class="relative z-10 flex items-center justify-between">
-                            <div>
-                                <h2 class="font-display text-lg tracking-tight text-paper">{{ $ranking->title }}</h2>
-                                <p class="text-xs font-semibold text-gold uppercase tracking-wide">{{ $ranking->talent->category }}</p>
+                        <div class="relative z-10 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <h2 class="font-display text-base tracking-tight text-paper truncate">{{ $ranking->title }}</h2>
+                                <p class="text-[10px] font-semibold text-gold uppercase tracking-wide">{{ $ranking->talent->category }} · Top 10</p>
                             </div>
-                            <x-icon name="trophy" class="size-6 text-gold" />
+                            <x-icon name="trophy" class="size-5 shrink-0 text-gold" />
                         </div>
                         <div class="absolute -bottom-4 -right-4 size-16 rounded-full bg-gold/10"></div>
                     </div>
-                    
+
                     @if ($leaders->isEmpty())
                         <div class="px-5 py-6 text-center text-xs text-mist">
                             No posts for this talent yet.
@@ -129,21 +136,25 @@
                     @else
                         <ol class="divide-y divide-ink/6">
                             @foreach ($leaders as $i => $student)
-                                <li class="flex items-center gap-3 px-4 py-2.5" wire:key="feed-rank-{{ $ranking->id }}-{{ $student->id }}">
-                                    <div class="flex w-5 shrink-0 items-center justify-center text-center">
+                                <li class="flex items-center gap-2.5 px-3.5 py-2" wire:key="feed-rank-{{ $ranking->id }}-{{ $student->id }}">
+                                    <div class="flex w-5 shrink-0 items-center justify-center">
                                         @if ($i === 0)
-                                            <span class="flex size-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-amber-400">1</span>
+                                            <span class="flex size-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">1</span>
                                         @elseif ($i === 1)
-                                            <span class="flex size-5 items-center justify-center rounded-full bg-slate-400 text-[10px] font-bold text-white shadow-sm ring-1 ring-slate-300">2</span>
+                                            <span class="flex size-5 items-center justify-center rounded-full bg-slate-400 text-[10px] font-bold text-white">2</span>
                                         @elseif ($i === 2)
-                                            <span class="flex size-5 items-center justify-center rounded-full bg-amber-700 text-[10px] font-bold text-white shadow-sm ring-1 ring-amber-600">3</span>
+                                            <span class="flex size-5 items-center justify-center rounded-full bg-amber-700 text-[10px] font-bold text-white">3</span>
+                                        @else
+                                            <span class="text-[11px] font-bold text-mist">{{ $i + 1 }}</span>
                                         @endif
                                     </div>
                                     <div class="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-studio text-[10px] font-semibold text-gold">
-                                        @if ($student->profile?->avatar_path)
-                                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($student->profile->avatar_path) }}"
+                                        @if ($student->avatarUrl())
+                                            <img src="{{ $student->avatarUrl() }}"
                                                  alt="{{ $student->name }}"
-                                                 class="size-full object-cover rounded-full">
+                                                 class="size-full object-cover rounded-full"
+                                                 referrerpolicy="no-referrer"
+                                                 onerror="this.style.display='none'">
                                         @else
                                             {{ $student->initials() }}
                                         @endif

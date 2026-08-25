@@ -50,7 +50,7 @@ class Status extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withoutGlobalScope('campus_scope');
     }
 
     public function isActive(): bool
@@ -71,6 +71,10 @@ class Status extends Model
 
     public function imageUrl(): string
     {
+        if (str_starts_with($this->image_path, 'http://') || str_starts_with($this->image_path, 'https://')) {
+            return $this->image_path;
+        }
+
         if (Storage::disk('public')->exists($this->image_path)) {
             return Storage::disk('public')->url($this->image_path);
         }

@@ -107,17 +107,29 @@ class PortfolioItem extends Model
             return null;
         }
 
+        if ($this->isRemotePath($this->thumbnail_path)) {
+            return $this->thumbnail_path;
+        }
+
         return Storage::disk('public')->url($this->thumbnail_path);
     }
 
     public function fileUrl(): string
     {
+        if ($this->isRemotePath($this->file_path)) {
+            return $this->file_path;
+        }
+
         return Storage::disk('public')->url($this->file_path);
     }
 
     public function displayUrl(): string
     {
         $path = $this->thumbnail_path ?? $this->file_path;
+
+        if ($path !== null && $this->isRemotePath($path)) {
+            return $path;
+        }
 
         if ($path !== null && Storage::disk('public')->exists($path)) {
             return Storage::disk('public')->url($path);
@@ -133,6 +145,11 @@ class PortfolioItem extends Model
         };
 
         return 'https://picsum.photos/seed/vibecraft'.$this->id.'/'.$width.'/'.$height;
+    }
+
+    protected function isRemotePath(string $path): bool
+    {
+        return str_starts_with($path, 'http://') || str_starts_with($path, 'https://');
     }
 
     public function feedAspectClass(): string

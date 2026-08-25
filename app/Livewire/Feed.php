@@ -7,8 +7,8 @@ use App\Models\Event;
 use App\Models\PortfolioItem;
 use App\Models\Status;
 use App\Models\User;
+use App\Support\CampusRankingLeaders;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -22,46 +22,21 @@ class Feed extends Component
 
     public function render(): View
     {
-        $campusId = auth()->check() ? auth()->user()->campus_id : User::first()?->campus_id;
+        $campusId = auth()->check() ? auth()->user()->campus_id : null;
 
-        $topRankings = $campusId ? CampusRanking::query()
-            ->where('campus_id', $campusId)
-            ->where('is_active', true)
-            ->with('talent:id,name,category')
-            ->inRandomOrder()
-            ->limit(2)
-            ->get()
-            ->map(function (CampusRanking $ranking) use ($campusId) {
-                $talentId = $ranking->talent_id;
-
-                $leaders = User::query()
-                    ->where('campus_id', $campusId)
-                    ->where('role', 'student')
-                    ->where('status', 'approved')
-                    ->whereHas('profile', function ($query) use ($talentId) {
-                        $query->where('primary_talent_id', $talentId);
-                    })
-                    ->addSelect([
-                        'talent_likes_total' => DB::table('likes')
-                            ->selectRaw('COALESCE(SUM(1), 0)')
-                            ->join('portfolio_items', function ($join) {
-                                $join->on('likes.likeable_id', '=', 'portfolio_items.id')
-                                    ->where('likes.likeable_type', '=', PortfolioItem::class)
-                                    ->whereNotNull('portfolio_items.published_at')
-                                    ->where('portfolio_items.published_at', '<=', now());
-                            })
-                            ->whereColumn('portfolio_items.user_id', 'users.id'),
-                    ])
-                    ->with('profile:id,user_id,avatar_path,headline')
-                    ->orderByDesc('talent_likes_total')
-                    ->limit(3)
-                    ->get();
-
-                return [
+        $topRankings = $campusId
+            ? CampusRanking::query()
+                ->where('campus_id', $campusId)
+                ->where('is_active', true)
+                ->with('talent:id,name,category')
+                ->inRandomOrder()
+                ->limit(2)
+                ->get()
+                ->map(fn (CampusRanking $ranking): array => [
                     'ranking' => $ranking,
-                    'leaders' => $leaders,
-                ];
-            }) : collect();
+                    'leaders' => CampusRankingLeaders::for($ranking, $campusId, 10),
+                ])
+            : collect();
 
         return view('livewire.feed', [
             'posts' => PortfolioItem::query()

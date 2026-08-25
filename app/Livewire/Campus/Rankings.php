@@ -3,11 +3,9 @@
 namespace App\Livewire\Campus;
 
 use App\Models\CampusRanking;
-use App\Models\PortfolioItem;
 use App\Models\Talent;
-use App\Models\User;
+use App\Support\CampusRankingLeaders;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -103,33 +101,9 @@ class Rankings extends Component
             ->get();
 
         $rankingsWithLeaders = $rankings->map(function (CampusRanking $ranking) use ($campusId) {
-            $talentId = $ranking->talent_id;
-
-            $leaders = User::query()
-                ->where('campus_id', $campusId)
-                ->where('role', 'student')
-                ->where('status', 'approved')
-                ->whereHas('profile', function ($query) use ($talentId) {
-                    $query->where('primary_talent_id', $talentId);
-                })
-                ->addSelect([
-                    'talent_likes_total' => DB::table('likes')
-                        ->selectRaw('COALESCE(SUM(1), 0)')
-                        ->join('portfolio_items', function ($join) {
-                            $join->on('likes.likeable_id', '=', 'portfolio_items.id')
-                                ->where('likes.likeable_type', '=', PortfolioItem::class)
-                                ->whereNotNull('portfolio_items.published_at')
-                                ->where('portfolio_items.published_at', '<=', now());
-                        })
-                        ->whereColumn('portfolio_items.user_id', 'users.id'),
-                ])
-                ->with(['profile' => fn ($q) => $q->select('id', 'user_id', 'avatar_path', 'headline', 'batch', 'program')])
-                ->orderByDesc('talent_likes_total')
-                ->get();
-
             return [
                 'ranking' => $ranking,
-                'leaders' => $leaders,
+                'leaders' => CampusRankingLeaders::for($ranking, (int) $campusId, 10),
             ];
         });
 

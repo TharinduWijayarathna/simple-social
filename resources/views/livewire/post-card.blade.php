@@ -114,6 +114,7 @@
 
         <ul class="mt-4 flex flex-col gap-2">
             @foreach ($item->comments->take(2) as $comment)
+                @continue($comment->user === null)
                 <li class="text-sm" wire:key="card-comment-{{ $comment->id }}">
                     <span class="font-semibold">{{ $comment->user->name }}</span>
                     <span class="text-mist"> {{ $comment->body }}</span>

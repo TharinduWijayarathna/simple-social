@@ -60,6 +60,15 @@
     .field {
         @apply rounded-xl border border-ink/12 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brass;
     }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }
 
 .theme-gallery {

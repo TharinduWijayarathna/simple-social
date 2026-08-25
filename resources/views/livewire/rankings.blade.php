@@ -63,10 +63,12 @@
 
                                     {{-- Avatar --}}
                                     <div class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-semibold text-gold">
-                                        @if ($student->profile?->avatar_path)
-                                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($student->profile->avatar_path) }}"
+                                        @if ($student->avatarUrl())
+                                            <img src="{{ $student->avatarUrl() }}"
                                                  alt="{{ $student->name }}"
-                                                 class="size-full object-cover rounded-full">
+                                                 class="size-full object-cover rounded-full"
+                                                 referrerpolicy="no-referrer"
+                                                 onerror="this.style.display='none'">
                                         @else
                                             {{ $student->initials() }}
                                         @endif
