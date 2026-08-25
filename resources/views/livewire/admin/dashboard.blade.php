@@ -137,8 +137,12 @@
                         @foreach ($pendingCampusAdmins as $applicant)
                             <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="pending-{{ $applicant->id }}">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex size-10 items-center justify-center rounded-full bg-ember/10 text-sm font-semibold text-ember">
-                                        {{ $applicant->initials() }}
+                                    <div class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-ember/10 text-sm font-semibold text-ember">
+                                        @if ($applicant->avatarUrl())
+                                            <img src="{{ $applicant->avatarUrl() }}" alt="{{ $applicant->name }}" class="size-full object-cover rounded-full">
+                                        @else
+                                            {{ $applicant->initials() }}
+                                        @endif
                                     </div>
                                     <div>
                                         <p class="font-medium">{{ $applicant->name }}</p>
@@ -176,8 +180,12 @@
                         @foreach ($approvedCampusAdmins as $campus)
                             <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="campus-{{ $campus->id }}">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex size-10 items-center justify-center rounded-full bg-studio text-sm font-semibold text-gold">
-                                        {{ $campus->initials() }}
+                                    <div class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-studio text-sm font-semibold text-gold">
+                                        @if ($campus->avatarUrl())
+                                            <img src="{{ $campus->avatarUrl() }}" alt="{{ $campus->name }}" class="size-full object-cover rounded-full">
+                                        @else
+                                            {{ $campus->initials() }}
+                                        @endif
                                     </div>
                                     <div>
                                         <p class="font-medium">{{ $campus->name }}</p>

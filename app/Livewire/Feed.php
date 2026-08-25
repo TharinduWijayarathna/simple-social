@@ -24,14 +24,14 @@ class Feed extends Component
             'posts' => PortfolioItem::query()
                 ->published()
                 ->with([
-                    'user:id,name',
+                    'user.profile',
                     'talent:id,name,slug,theme',
                 ])
                 ->latest('published_at')
                 ->paginate(12),
             'statuses' => Status::query()
                 ->active()
-                ->with('user:id,name')
+                ->with('user.profile')
                 ->latest()
                 ->get()
                 ->unique('user_id')

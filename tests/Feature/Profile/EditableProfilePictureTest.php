@@ -43,3 +43,17 @@ test('user can remove custom profile picture', function () {
     expect($user->profile->avatar_path)->toBeNull();
     expect($user->avatarUrl())->toBeNull();
 });
+
+test('user avatar is displayed in navbar and feed create post bar when set', function () {
+    Storage::fake('public');
+    $user = User::factory()->student()->create();
+
+    $avatar = UploadedFile::fake()->image('my_avatar.png', 400, 400);
+    $path = $avatar->store('avatars', 'public');
+    $user->profile->update(['avatar_path' => $path]);
+
+    $response = $this->actingAs($user)->get(route('home'));
+
+    $response->assertOk();
+    $response->assertSee($user->avatarUrl());
+});

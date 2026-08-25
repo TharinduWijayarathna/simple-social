@@ -26,6 +26,8 @@
                 <a href="{{ route('students.show', $student) }}" class="group block aspect-[3/4]" wire:navigate>
                     @if ($cover)
                         <img src="{{ $cover->displayUrl() }}" alt="" class="size-full object-cover transition duration-500 group-hover:scale-105">
+                    @elseif ($student->avatarUrl())
+                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover transition duration-500 group-hover:scale-105">
                     @else
                         <span class="flex size-full items-center justify-center text-4xl font-semibold text-gold">{{ $student->initials() }}</span>
                     @endif
@@ -40,9 +42,15 @@
 
                     <span class="absolute inset-x-3 bottom-14 flex min-w-0 items-center gap-2 text-white">
                         <span @class([
-                            'flex size-9 shrink-0 items-center justify-center rounded-full bg-studio text-[10px] font-semibold text-gold',
+                            'flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-studio text-[10px] font-semibold text-gold',
                             'ring-2 ring-amber-400 ring-offset-2 ring-offset-black/40' => $student->has_active_status,
-                        ])>{{ $student->initials() }}</span>
+                        ])>
+                            @if ($student->avatarUrl())
+                                <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                            @else
+                                {{ $student->initials() }}
+                            @endif
+                        </span>
                         <span class="min-w-0">
                             <span class="block truncate text-sm font-semibold leading-tight text-white drop-shadow">{{ $student->name }}</span>
                             <span class="block truncate text-[11px] text-white/80">

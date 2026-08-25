@@ -29,7 +29,13 @@
                         <a href="{{ route('portfolio.create') }}" class="flex size-10 items-center justify-center rounded-full bg-ember text-white transition hover:bg-ember/90 {{ request()->routeIs('portfolio.create') ? 'ring-2 ring-ember/30' : '' }}" title="Post" aria-label="Post" wire:navigate>
                             <x-icon name="plus" class="size-5" />
                         </a>
-                        <a href="{{ route('profile.show') }}" class="flex size-9 items-center justify-center rounded-full bg-studio text-xs font-semibold text-gold {{ request()->routeIs('students.show') ? 'ring-2 ring-ember ring-offset-2' : '' }}" title="Profile" aria-label="Profile" wire:navigate>{{ auth()->user()->initials() }}</a>
+                        <a href="{{ route('profile.show') }}" class="flex size-9 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-semibold text-gold {{ request()->routeIs('students.show') ? 'ring-2 ring-ember ring-offset-2' : '' }}" title="Profile" aria-label="Profile" wire:navigate>
+                            @if (auth()->user()->avatarUrl())
+                                <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="size-full object-cover rounded-full">
+                            @else
+                                {{ auth()->user()->initials() }}
+                            @endif
+                        </a>
                         <x-logout-button />
                     </div>
                 </div>

@@ -4,7 +4,13 @@
             @auth
                 <div class="feed-card px-4 py-3">
                     <div class="flex items-center gap-3">
-                        <a href="{{ route('profile.show') }}" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-studio text-xs font-semibold text-gold" wire:navigate>{{ auth()->user()->initials() }}</a>
+                        <a href="{{ route('profile.show') }}" class="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-semibold text-gold" wire:navigate>
+                            @if (auth()->user()->avatarUrl())
+                                <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="size-full object-cover rounded-full">
+                            @else
+                                {{ auth()->user()->initials() }}
+                            @endif
+                        </a>
                         <a href="{{ route('portfolio.create') }}" class="flex-1 rounded-full bg-wall px-4 py-2.5 text-sm text-mist" wire:navigate>What's on your mind, {{ auth()->user()->name }}?</a>
                         <div class="hidden items-center gap-3 sm:flex">
                             <a href="{{ route('portfolio.create') }}" class="text-rose-400" title="Video" wire:navigate>
@@ -37,7 +43,11 @@
                                     <img src="{{ $status->imageUrl() }}" alt="" class="size-full object-cover">
                                 @endif
                                 <span class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></span>
-                                <span class="absolute left-2.5 top-2.5 flex size-7 items-center justify-center rounded-full bg-studio text-[10px] font-semibold text-gold ring-2 ring-amber-400">{{ $status->user->initials() }}</span>
+                                @if ($status->user->avatarUrl())
+                                    <img src="{{ $status->user->avatarUrl() }}" alt="{{ $status->user->name }}" class="absolute left-2.5 top-2.5 size-7 rounded-full object-cover ring-2 ring-amber-400">
+                                @else
+                                    <span class="absolute left-2.5 top-2.5 flex size-7 items-center justify-center rounded-full bg-studio text-[10px] font-semibold text-gold ring-2 ring-amber-400">{{ $status->user->initials() }}</span>
+                                @endif
                                 <span class="absolute inset-x-2.5 bottom-2.5 text-xs font-bold leading-tight text-white drop-shadow truncate">{{ $status->user->name }}</span>
                             </a>
                         @endforeach

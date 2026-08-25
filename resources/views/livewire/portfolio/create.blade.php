@@ -142,8 +142,12 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
 
                     <div class="absolute left-3 top-3 flex items-center gap-2">
-                        <span class="flex size-8 items-center justify-center rounded-full bg-studio text-[10px] font-bold text-gold ring-2 ring-amber-400">
-                            {{ auth()->user()->initials() }}
+                        <span class="flex size-8 items-center justify-center overflow-hidden rounded-full bg-studio text-[10px] font-bold text-gold ring-2 ring-amber-400">
+                            @if (auth()->user()->avatarUrl())
+                                <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="size-full object-cover rounded-full">
+                            @else
+                                {{ auth()->user()->initials() }}
+                            @endif
                         </span>
                         <span class="text-xs font-bold text-white drop-shadow">{{ auth()->user()->name }}</span>
                     </div>
@@ -162,8 +166,12 @@
                 {{-- Post Card Mockup --}}
                 <div class="rounded-3xl border border-ink/10 bg-white p-4 shadow-sm space-y-3">
                     <div class="flex items-center gap-3 border-b border-ink/8 pb-3">
-                        <span class="flex size-9 items-center justify-center rounded-full bg-studio text-xs font-bold text-gold">
-                            {{ auth()->user()->initials() }}
+                        <span class="flex size-9 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-bold text-gold">
+                            @if (auth()->user()->avatarUrl())
+                                <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="size-full object-cover rounded-full">
+                            @else
+                                {{ auth()->user()->initials() }}
+                            @endif
                         </span>
                         <div class="min-w-0">
                             <p class="text-xs font-bold text-ink truncate">{{ auth()->user()->name }}</p>

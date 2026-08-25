@@ -126,8 +126,12 @@
                         @foreach ($pendingStudents as $student)
                             <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="pend-{{ $student->id }}">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex size-10 items-center justify-center rounded-full bg-wall text-sm font-semibold text-ink">
-                                        {{ $student->initials() }}
+                                    <div class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-wall text-sm font-semibold text-ink">
+                                        @if ($student->avatarUrl())
+                                            <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                                        @else
+                                            {{ $student->initials() }}
+                                        @endif
                                     </div>
                                     <div>
                                         <p class="font-medium">{{ $student->name }}</p>
@@ -165,8 +169,12 @@
                         @foreach ($approvedStudents as $student)
                             <li class="flex items-center justify-between gap-4 px-5 py-3 text-sm" wire:key="appr-{{ $student->id }}">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex size-8 items-center justify-center rounded-full bg-wall text-xs font-semibold text-ink">
-                                        {{ $student->initials() }}
+                                    <div class="flex size-8 items-center justify-center overflow-hidden rounded-full bg-wall text-xs font-semibold text-ink">
+                                        @if ($student->avatarUrl())
+                                            <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                                        @else
+                                            {{ $student->initials() }}
+                                        @endif
                                     </div>
                                     <div>
                                         <p class="font-medium">{{ $student->name }}</p>

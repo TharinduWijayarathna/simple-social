@@ -20,7 +20,13 @@
             {{-- Story Header --}}
             <div class="flex items-center justify-between">
                 <a href="{{ route('students.show', $status->user) }}" class="flex items-center gap-3 group" wire:navigate>
-                    <span class="flex size-10 items-center justify-center rounded-full bg-studio text-xs font-bold text-gold ring-2 ring-amber-400 shadow-md transition group-hover:scale-105">{{ $status->user->initials() }}</span>
+                    <span class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-bold text-gold ring-2 ring-amber-400 shadow-md transition group-hover:scale-105">
+                        @if ($status->user->avatarUrl())
+                            <img src="{{ $status->user->avatarUrl() }}" alt="{{ $status->user->name }}" class="size-full object-cover rounded-full">
+                        @else
+                            {{ $status->user->initials() }}
+                        @endif
+                    </span>
                     <div>
                         <span class="block font-bold text-white text-sm drop-shadow">{{ $status->user->name }}</span>
                         <span class="block text-[11px] text-white/80 drop-shadow">{{ $status->created_at->diffForHumans() }} · 24h Campus Story</span>

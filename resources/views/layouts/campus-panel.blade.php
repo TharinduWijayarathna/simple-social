@@ -53,8 +53,12 @@
                 <div class="border-t border-ink/8 px-4 py-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
-                            <div class="flex size-8 items-center justify-center rounded-full bg-studio text-xs font-semibold text-gold">
-                                {{ auth()->user()->initials() }}
+                            <div class="flex size-8 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-semibold text-gold">
+                                @if (auth()->user()->avatarUrl())
+                                    <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="size-full object-cover rounded-full">
+                                @else
+                                    {{ auth()->user()->initials() }}
+                                @endif
                             </div>
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-medium">{{ auth()->user()->name }}</p>
