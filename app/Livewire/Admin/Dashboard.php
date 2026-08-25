@@ -71,8 +71,61 @@ class Dashboard extends Component
         $user->update(['status' => UserStatus::Rejected]);
     }
 
+    public function approveStudent(int $userId): void
+    {
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
+
+        $user = User::query()->where('role', Role::Student)->findOrFail($userId);
+        $user->update(['status' => UserStatus::Approved]);
+    }
+
+    public function rejectStudent(int $userId): void
+    {
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
+
+        $user = User::query()->where('role', Role::Student)->findOrFail($userId);
+        $user->update(['status' => UserStatus::Rejected]);
+    }
+
+    public function banStudent(int $userId): void
+    {
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
+
+        $user = User::query()->where('role', Role::Student)->findOrFail($userId);
+        $user->update(['status' => UserStatus::Banned]);
+    }
+
+    public function unbanStudent(int $userId): void
+    {
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
+
+        $user = User::query()->where('role', Role::Student)->findOrFail($userId);
+        $user->update(['status' => UserStatus::Approved]);
+    }
+
     public function render(): View
     {
+        $pendingStudents = User::query()
+            ->where('role', Role::Student)
+            ->where('status', UserStatus::Pending)
+            ->with(['campus', 'profile.primaryTalentModel'])
+            ->latest()
+            ->get();
+
+        $approvedStudents = User::query()
+            ->where('role', Role::Student)
+            ->where('status', UserStatus::Approved)
+            ->with(['campus', 'profile.primaryTalentModel'])
+            ->latest()
+            ->get();
+
+        $bannedStudents = User::query()
+            ->where('role', Role::Student)
+            ->where('status', UserStatus::Banned)
+            ->with(['campus', 'profile.primaryTalentModel'])
+            ->latest()
+            ->get();
+
         return view('livewire.admin.dashboard', [
             'totalUsers' => User::query()->count(),
             'totalStudents' => User::query()->students()->count(),
@@ -86,6 +139,9 @@ class Dashboard extends Component
                 ->with('profile')
                 ->latest()
                 ->get(),
+            'pendingStudents' => $pendingStudents,
+            'approvedStudents' => $approvedStudents,
+            'bannedStudents' => $bannedStudents,
             'categories' => Talent::query()
                 ->withCount(['portfolioItems as published_items_count' => fn ($query) => $query->published()])
                 ->orderByDesc('published_items_count')

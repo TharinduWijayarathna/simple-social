@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserStatus;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Auth\AdminLogin;
 use App\Livewire\Events\Show as EventsShow;
@@ -97,4 +98,58 @@ test('super admin can view campuses tab without lazy loading violations', functi
     $this->actingAs($superAdmin)
         ->get(route('admin.dashboard', ['tab' => 'campuses']))
         ->assertOk();
+});
+
+test('super admin can manage, approve, reject, ban and unban students across campuses', function () {
+    $superAdmin = User::factory()->superAdmin()->create();
+    $campus = User::factory()->campusAdmin()->create();
+
+    $pendingStudent = User::factory()->student()->create([
+        'status' => UserStatus::Pending,
+        'campus_id' => $campus->id,
+    ]);
+
+    $approvedStudent = User::factory()->student()->create([
+        'status' => UserStatus::Approved,
+        'campus_id' => $campus->id,
+    ]);
+
+    // View students tab as super admin
+    $this->actingAs($superAdmin)
+        ->get(route('admin.dashboard', ['tab' => 'students']))
+        ->assertOk()
+        ->assertSee($pendingStudent->name)
+        ->assertSee($approvedStudent->name);
+
+    // Approve pending student
+    Livewire::actingAs($superAdmin)
+        ->test(AdminDashboard::class)
+        ->call('approveStudent', $pendingStudent->id)
+        ->assertHasNoErrors();
+
+    expect($pendingStudent->fresh()->status)->toBe(UserStatus::Approved);
+
+    // Ban approved student
+    Livewire::actingAs($superAdmin)
+        ->test(AdminDashboard::class)
+        ->call('banStudent', $approvedStudent->id)
+        ->assertHasNoErrors();
+
+    expect($approvedStudent->fresh()->status)->toBe(UserStatus::Banned);
+
+    // Unban student
+    Livewire::actingAs($superAdmin)
+        ->test(AdminDashboard::class)
+        ->call('unbanStudent', $approvedStudent->id)
+        ->assertHasNoErrors();
+
+    expect($approvedStudent->fresh()->status)->toBe(UserStatus::Approved);
+
+    // Reject student
+    Livewire::actingAs($superAdmin)
+        ->test(AdminDashboard::class)
+        ->call('rejectStudent', $pendingStudent->id)
+        ->assertHasNoErrors();
+
+    expect($pendingStudent->fresh()->status)->toBe(UserStatus::Rejected);
 });
