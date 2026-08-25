@@ -38,7 +38,9 @@
                             <a href="{{ route('status.show', $status) }}" class="relative w-32 aspect-[9/16] shrink-0 overflow-hidden rounded-2xl border-2 border-amber-400/80 shadow-md transition hover:scale-[1.02]" wire:key="status-{{ $status->id }}" wire:navigate>
                                 @if ($status->isVideo())
                                     <video src="{{ $status->mediaUrl() }}" class="size-full object-cover aspect-[9/16]" muted></video>
-                                    <span class="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-black/60 text-[10px] text-white">🎥</span>
+                                    <span class="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-black/60 text-white">
+                                        <x-icon name="video" class="size-3" />
+                                    </span>
                                 @else
                                     <img src="{{ $status->imageUrl() }}" alt="" class="size-full object-cover">
                                 @endif
@@ -102,6 +104,69 @@
                     @endforeach
                 </ol>
             </section>
+
+            @foreach ($topRankings as $item)
+                @php
+                    $ranking = $item['ranking'];
+                    $leaders = $item['leaders'];
+                @endphp
+                <section class="overflow-hidden rounded-[1.5rem] border border-ink/8 bg-white shadow-sm">
+                    <div class="relative overflow-hidden bg-gradient-to-br from-ember via-ember/80 to-amber-500 px-5 py-4">
+                        <div class="relative z-10 flex items-center justify-between">
+                            <div>
+                                <h2 class="font-display text-lg tracking-tight text-white">{{ $ranking->title }}</h2>
+                                <p class="text-xs font-medium text-white/80 uppercase tracking-wide">{{ $ranking->talent->category }}</p>
+                            </div>
+                            <x-icon name="trophy" class="size-6 text-white/60" />
+                        </div>
+                        <div class="absolute -bottom-4 -right-4 size-16 rounded-full bg-white/10"></div>
+                    </div>
+                    
+                    @if ($leaders->isEmpty())
+                        <div class="px-5 py-6 text-center text-xs text-mist">
+                            No posts for this talent yet.
+                        </div>
+                    @else
+                        <ol class="divide-y divide-ink/6">
+                            @foreach ($leaders as $i => $student)
+                                <li class="flex items-center gap-3 px-4 py-2.5" wire:key="feed-rank-{{ $ranking->id }}-{{ $student->id }}">
+                                    <div class="flex w-5 shrink-0 items-center justify-center text-center">
+                                        @if ($i === 0)
+                                            <span class="flex size-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-amber-400">1</span>
+                                        @elseif ($i === 1)
+                                            <span class="flex size-5 items-center justify-center rounded-full bg-slate-400 text-[10px] font-bold text-white shadow-sm ring-1 ring-slate-300">2</span>
+                                        @elseif ($i === 2)
+                                            <span class="flex size-5 items-center justify-center rounded-full bg-amber-700 text-[10px] font-bold text-white shadow-sm ring-1 ring-amber-600">3</span>
+                                        @endif
+                                    </div>
+                                    <div class="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-studio text-[10px] font-semibold text-gold">
+                                        @if ($student->profile?->avatar_path)
+                                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($student->profile->avatar_path) }}"
+                                                 alt="{{ $student->name }}"
+                                                 class="size-full object-cover rounded-full">
+                                        @else
+                                            {{ $student->initials() }}
+                                        @endif
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <a href="{{ route('students.show', $student) }}"
+                                           class="block truncate text-xs font-semibold hover:text-ember transition-colors"
+                                           wire:navigate>
+                                            {{ $student->name }}
+                                        </a>
+                                    </div>
+                                    <div class="shrink-0 text-right">
+                                        <p class="text-xs font-bold text-ember">{{ number_format($student->talent_likes_total ?? 0) }}</p>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ol>
+                        <div class="border-t border-ink/6 px-4 py-2 text-center bg-wall/30">
+                            <a href="{{ route('rankings') }}" class="text-[11px] font-semibold uppercase tracking-wider text-mist hover:text-ember transition-colors" wire:navigate>View Full Ranking</a>
+                        </div>
+                    @endif
+                </section>
+            @endforeach
         </aside>
     </div>
 </div>

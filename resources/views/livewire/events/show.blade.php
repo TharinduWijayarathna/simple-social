@@ -24,9 +24,9 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-amber-400/20 pb-6">
                 <div>
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 px-3 py-1 text-xs font-bold text-amber-800">
-                        ✨ SELECTED CANDIDATE
+                        <x-icon name="sparkles" class="size-3.5 text-amber-700" /> SELECTED CANDIDATE
                     </span>
-                    <h2 class="mt-2 font-display text-2xl md:text-3xl text-ink">🎉 Congratulations! You have been chosen for this event!</h2>
+                    <h2 class="mt-2 font-display text-2xl md:text-3xl text-ink">Congratulations! You have been chosen for this event!</h2>
                     <p class="mt-1 text-sm text-mist">
                         Campus organizers have selected your application for 
                         <strong class="text-ink font-semibold">{{ $userApplication->talent?->name ?? $event->talent?->name ?? 'this event' }}</strong>.
@@ -304,8 +304,9 @@
                                         <button wire:click="declineCandidate({{ $app->id }})" class="rounded-xl border border-ink/15 px-3.5 py-2 text-xs font-semibold text-mist hover:text-red-600 hover:border-red-200">
                                             Decline
                                         </button>
-                                        <button wire:click="selectCandidate({{ $app->id }})" class="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition">
-                                            ✨ Select / Choose Student
+                                        <button wire:click="selectCandidate({{ $app->id }})" class="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition">
+                                            <x-icon name="sparkles" class="size-3.5 text-emerald-200" />
+                                            <span>Select / Choose Student</span>
                                         </button>
                                     @endif
                                 </div>

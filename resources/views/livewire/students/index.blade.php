@@ -35,8 +35,19 @@
                     
                     {{-- Profile Type Badge --}}
                     @if ($student->profile?->profile_type)
-                        <span class="absolute top-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold text-amber-300 backdrop-blur truncate max-w-[85%]">
-                            {{ $student->profile->profile_type }}
+                        <span class="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold text-amber-300 backdrop-blur truncate max-w-[85%]">
+                            @if (str_contains($student->profile->profile_type, 'Performing'))
+                                <x-icon name="microphone" class="size-3 text-amber-300" />
+                            @elseif (str_contains($student->profile->profile_type, 'Creative'))
+                                <x-icon name="paint-brush" class="size-3 text-amber-300" />
+                            @elseif (str_contains($student->profile->profile_type, 'Sports'))
+                                <x-icon name="trophy" class="size-3 text-amber-300" />
+                            @elseif (str_contains($student->profile->profile_type, 'Unique'))
+                                <x-icon name="sparkles" class="size-3 text-amber-300" />
+                            @else
+                                <x-icon name="user" class="size-3 text-amber-300" />
+                            @endif
+                            <span>{{ $student->profile->displayProfileType() }}</span>
                         </span>
                     @endif
 

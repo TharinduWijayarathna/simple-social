@@ -9,7 +9,9 @@
 
     @if ($rankingsWithLeaders->isEmpty())
         <div class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-ink/15 bg-white py-24 text-center">
-            <div class="mb-4 text-6xl">🏆</div>
+            <div class="mb-4 text-amber-500 flex justify-center">
+                <x-icon name="trophy" class="size-16" />
+            </div>
             <p class="text-xl font-semibold">No rankings yet</p>
             <p class="mt-2 text-mist">Your campus admin hasn't set up any talent rankings yet.</p>
         </div>
@@ -19,7 +21,6 @@
                 @php
                     $ranking = $item['ranking'];
                     $leaders = $item['leaders'];
-                    $medals = ['🥇', '🥈', '🥉'];
                 @endphp
                 <div class="overflow-hidden rounded-3xl border border-ink/8 bg-white shadow-sm">
 
@@ -31,7 +32,7 @@
                                 <h2 class="mt-0.5 text-xl font-bold text-white">{{ $ranking->title }}</h2>
                                 <p class="mt-1 text-sm text-white/70">{{ $ranking->talent->name }} · Top 10</p>
                             </div>
-                            <div class="text-4xl opacity-60">🏆</div>
+                            <x-icon name="trophy" class="size-10 text-white/60" />
                         </div>
                         {{-- Decorative circle --}}
                         <div class="absolute -bottom-6 -right-6 size-24 rounded-full bg-white/10"></div>
@@ -49,8 +50,12 @@
 
                                     {{-- Rank number / medal --}}
                                     <div class="flex w-7 shrink-0 items-center justify-center text-center">
-                                        @if ($i < 3)
-                                            <span class="text-xl">{{ $medals[$i] }}</span>
+                                        @if ($i === 0)
+                                            <span class="flex size-6 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white shadow-sm ring-2 ring-amber-300">1</span>
+                                        @elseif ($i === 1)
+                                            <span class="flex size-6 items-center justify-center rounded-full bg-slate-400 text-xs font-bold text-white shadow-sm ring-2 ring-slate-300">2</span>
+                                        @elseif ($i === 2)
+                                            <span class="flex size-6 items-center justify-center rounded-full bg-amber-700 text-xs font-bold text-white shadow-sm ring-2 ring-amber-600">3</span>
                                         @else
                                             <span class="text-sm font-bold text-mist">{{ $i + 1 }}</span>
                                         @endif

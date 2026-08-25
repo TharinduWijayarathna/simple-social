@@ -98,12 +98,18 @@
                 <div>
                     <label class="block text-sm font-semibold text-ink mb-2">Format Type</label>
                     <div class="grid grid-cols-4 gap-2">
-                        @foreach (['image' => '📷 Photo', 'video' => '🎥 Video Reel', 'audio' => '🎵 Audio Track', 'document' => '📄 Document'] as $key => $label)
+                        @foreach ([
+                            'image' => ['label' => 'Photo', 'icon' => 'photo'],
+                            'video' => ['label' => 'Video Reel', 'icon' => 'video'],
+                            'audio' => ['label' => 'Audio Track', 'icon' => 'music'],
+                            'document' => ['label' => 'Document', 'icon' => 'document']
+                        ] as $key => $data)
                             <button type="button" 
                                     wire:click="$set('media_type', '{{ $key }}')"
-                                    class="rounded-xl border py-2.5 text-xs font-bold transition text-center
+                                    class="flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 text-center transition
                                            {{ $media_type === $key ? 'border-ember bg-ember/10 text-ember' : 'border-ink/10 text-mist hover:text-ink' }}">
-                                {{ $label }}
+                                <x-icon name="{{ $data['icon'] }}" class="size-4.5" />
+                                <span class="text-[10px] font-bold">{{ $data['label'] }}</span>
                             </button>
                         @endforeach
                     </div>
@@ -118,7 +124,7 @@
             @endif
 
             <button type="submit" class="w-full rounded-2xl bg-ember py-3.5 font-bold text-white shadow-md transition hover:bg-ember/90">
-                {{ $upload_type === 'story' ? '🚀 Post 24h Campus Story' : '✨ Publish Portfolio Showcase' }}
+                {{ $upload_type === 'story' ? 'Post 24h Campus Story' : 'Publish Portfolio Showcase' }}
             </button>
         </div>
 
@@ -182,7 +188,10 @@
                     <div class="relative overflow-hidden rounded-2xl bg-wall/40 min-h-[160px] flex items-center justify-center p-2">
                         @if ($file && str_starts_with($file->getMimeType(), 'video/'))
                             <video src="{{ $file->temporaryUrl() }}" controls class="w-full h-auto max-h-72 object-contain rounded-2xl"></video>
-                            <span class="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white">REEL 🎥</span>
+                            <span class="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white">
+                                <x-icon name="video" class="size-3" />
+                                <span>REEL</span>
+                            </span>
                         @elseif ($file && str_starts_with($file->getMimeType(), 'image/'))
                             <img src="{{ $file->temporaryUrl() }}" alt="Preview" class="w-full h-auto max-h-72 object-contain rounded-2xl">
                         @else

@@ -43,7 +43,20 @@
             <div class="mt-4 text-sm space-y-2">
                 @if ($student->profile?->profile_type)
                     <div class="inline-flex items-center gap-2 rounded-full bg-amber-100/80 px-3.5 py-1 text-xs font-bold text-amber-900 shadow-sm border border-amber-300/50">
-                        {{ $student->profile->profile_type }}
+                        <span class="flex items-center gap-1">
+                            @if (str_contains($student->profile->profile_type, 'Performing'))
+                                <x-icon name="microphone" class="size-3.5 text-amber-700" />
+                            @elseif (str_contains($student->profile->profile_type, 'Creative'))
+                                <x-icon name="paint-brush" class="size-3.5 text-amber-700" />
+                            @elseif (str_contains($student->profile->profile_type, 'Sports'))
+                                <x-icon name="trophy" class="size-3.5 text-amber-700" />
+                            @elseif (str_contains($student->profile->profile_type, 'Unique'))
+                                <x-icon name="sparkles" class="size-3.5 text-amber-700" />
+                            @else
+                                <x-icon name="user" class="size-3.5 text-amber-700" />
+                            @endif
+                            <span>{{ $student->profile->displayProfileType() }}</span>
+                        </span>
                         @if ($student->profile->primaryTalentModel)
                             <span class="text-amber-700">· {{ $student->profile->primaryTalentModel->name }}</span>
                         @endif

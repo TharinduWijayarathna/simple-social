@@ -98,4 +98,9 @@ class Profile extends Model
 
         return $favorite ?? $this->talents->first();
     }
+
+    public function displayProfileType(): string
+    {
+        return str_replace(['🎤 ', '🎨 ', '🏆 ', '✨ ', '👤 '], '', $this->profile_type);
+    }
 }

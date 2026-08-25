@@ -79,5 +79,5 @@ test('feed page displays instagram reel video player for video posts', function 
         ->get(route('home'))
         ->assertSuccessful()
         ->assertSee('Sample Music Reel')
-        ->assertSee('REEL 🎥');
+        ->assertSee('REEL');
 });

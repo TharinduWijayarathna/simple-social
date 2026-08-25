@@ -93,11 +93,11 @@ class Index extends Component
             'students' => $students,
             'categories' => [
                 'All' => 'All Creators',
-                'Performing Arts' => '🎤 Performing Arts',
-                'Creative & Visual Arts' => '🎨 Creative Arts',
-                'Sports & Physical' => '🏆 Sports & Physical',
-                'Unique & Hidden' => '✨ Unique Talents',
-                'General User' => '👤 General',
+                'Performing Arts' => 'Performing Arts',
+                'Creative & Visual Arts' => 'Creative Arts',
+                'Sports & Physical' => 'Sports & Physical',
+                'Unique & Hidden' => 'Unique Talents',
+                'General User' => 'General',
             ],
             'explore' => ($this->search === '' && $this->category === 'All')
                 ? PortfolioItem::query()

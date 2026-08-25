@@ -25,14 +25,6 @@
             this.open = false;
             this.search = '';
         },
-        categoryIcon(cat) {
-            if (!cat) return '👤';
-            if (cat.includes('Performing')) return '🎤';
-            if (cat.includes('Creative')) return '🎨';
-            if (cat.includes('Sports')) return '🏆';
-            if (cat.includes('Unique')) return '✨';
-            return '👤';
-        },
         isCategoryActive(catName) {
             if (this.activeCategoryTab === 'All') return true;
             if (this.activeCategoryTab.includes('Performing') && catName.includes('Performing')) return true;
@@ -51,7 +43,23 @@
             @click="open = !open"
             class="field flex w-full items-center justify-between gap-2 text-left shadow-sm hover:border-amber-400 focus:outline-none transition">
         <span x-show="selectedName" class="flex items-center gap-2 truncate font-medium text-ink">
-            <span x-text="categoryIcon(selectedCategory)"></span>
+            <span class="flex items-center gap-1.5 shrink-0">
+                <template x-if="selectedCategory.includes('Performing')">
+                    <x-icon name="microphone" class="size-4 text-amber-500" />
+                </template>
+                <template x-if="selectedCategory.includes('Creative')">
+                    <x-icon name="paint-brush" class="size-4 text-violet-500" />
+                </template>
+                <template x-if="selectedCategory.includes('Sports')">
+                    <x-icon name="trophy" class="size-4 text-amber-500" />
+                </template>
+                <template x-if="selectedCategory.includes('Unique')">
+                    <x-icon name="sparkles" class="size-4 text-teal-500" />
+                </template>
+                <template x-if="!selectedCategory || (!selectedCategory.includes('Performing') && !selectedCategory.includes('Creative') && !selectedCategory.includes('Sports') && !selectedCategory.includes('Unique'))">
+                    <x-icon name="user" class="size-4 text-mist" />
+                </template>
+            </span>
             <span x-text="selectedName"></span>
             <span x-text="'(' + selectedCategory + ')'" class="text-xs text-mist font-normal"></span>
         </span>
@@ -76,10 +84,18 @@
         {{-- Category Filter Pills --}}
         <div class="flex gap-1 overflow-x-auto pb-2 border-b border-ink/8 text-[11px] font-bold scrollbar-none">
             <button type="button" @click="activeCategoryTab = 'All'" :class="activeCategoryTab === 'All' ? 'bg-amber-500 text-white shadow-sm' : 'bg-wall text-mist hover:text-ink'" class="rounded-lg px-2.5 py-1 transition shrink-0">All Categories</button>
-            <button type="button" @click="activeCategoryTab = 'Performing Arts'" :class="activeCategoryTab.includes('Performing') ? 'bg-amber-500 text-white shadow-sm' : 'bg-wall text-mist hover:text-ink'" class="rounded-lg px-2.5 py-1 transition shrink-0">🎤 Performing Arts</button>
-            <button type="button" @click="activeCategoryTab = 'Creative & Visual Arts'" :class="activeCategoryTab.includes('Creative') ? 'bg-amber-500 text-white shadow-sm' : 'bg-wall text-mist hover:text-ink'" class="rounded-lg px-2.5 py-1 transition shrink-0">🎨 Creative Arts</button>
-            <button type="button" @click="activeCategoryTab = 'Sports & Physical'" :class="activeCategoryTab.includes('Sports') ? 'bg-amber-500 text-white shadow-sm' : 'bg-wall text-mist hover:text-ink'" class="rounded-lg px-2.5 py-1 transition shrink-0">🏆 Sports</button>
-            <button type="button" @click="activeCategoryTab = 'Unique & Hidden'" :class="activeCategoryTab.includes('Unique') ? 'bg-amber-500 text-white shadow-sm' : 'bg-wall text-mist hover:text-ink'" class="rounded-lg px-2.5 py-1 transition shrink-0">✨ Unique Talents</button>
+            <button type="button" @click="activeCategoryTab = 'Performing Arts'" :class="activeCategoryTab.includes('Performing') ? 'bg-amber-500 text-white shadow-sm' : 'bg-wall text-mist hover:text-ink'" class="flex items-center gap-1 rounded-lg px-2.5 py-1 transition shrink-0">
+                <x-icon name="microphone" class="size-3.5" /> Performing Arts
+            </button>
+            <button type="button" @click="activeCategoryTab = 'Creative & Visual Arts'" :class="activeCategoryTab.includes('Creative') ? 'bg-amber-500 text-white shadow-sm' : 'bg-wall text-mist hover:text-ink'" class="flex items-center gap-1 rounded-lg px-2.5 py-1 transition shrink-0">
+                <x-icon name="paint-brush" class="size-3.5" /> Creative Arts
+            </button>
+            <button type="button" @click="activeCategoryTab = 'Sports & Physical'" :class="activeCategoryTab.includes('Sports') ? 'bg-amber-500 text-white shadow-sm' : 'bg-wall text-mist hover:text-ink'" class="flex items-center gap-1 rounded-lg px-2.5 py-1 transition shrink-0">
+                <x-icon name="trophy" class="size-3.5" /> Sports
+            </button>
+            <button type="button" @click="activeCategoryTab = 'Unique & Hidden'" :class="activeCategoryTab.includes('Unique') ? 'bg-amber-500 text-white shadow-sm' : 'bg-wall text-mist hover:text-ink'" class="flex items-center gap-1 rounded-lg px-2.5 py-1 transition shrink-0">
+                <x-icon name="sparkles" class="size-3.5" /> Unique Talents
+            </button>
         </div>
 
         {{-- Search Input --}}
@@ -109,11 +125,16 @@
                     
                     <div class="sticky top-0 bg-white px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5 border-b border-ink/5">
                         <span>
-                            @if (str_contains($category, 'Performing')) 🎤
-                            @elseif (str_contains($category, 'Creative')) 🎨
-                            @elseif (str_contains($category, 'Sports')) 🏆
-                            @elseif (str_contains($category, 'Unique')) ✨
-                            @else 👤
+                            @if (str_contains($category, 'Performing'))
+                                <x-icon name="microphone" class="size-3.5 text-amber-500" />
+                            @elseif (str_contains($category, 'Creative'))
+                                <x-icon name="paint-brush" class="size-3.5 text-violet-500" />
+                            @elseif (str_contains($category, 'Sports'))
+                                <x-icon name="trophy" class="size-3.5 text-amber-500" />
+                            @elseif (str_contains($category, 'Unique'))
+                                <x-icon name="sparkles" class="size-3.5 text-teal-500" />
+                            @else
+                                <x-icon name="user" class="size-3.5 text-mist" />
                             @endif
                         </span>
                         <span>{{ $category }}</span>

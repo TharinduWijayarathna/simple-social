@@ -77,7 +77,9 @@
         {{-- Rankings list --}}
         @if ($rankings->isEmpty())
             <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink/15 bg-white py-16 text-center">
-                <div class="mb-3 text-4xl">🏆</div>
+                <div class="mb-3 text-amber-500">
+                    <x-icon name="trophy" class="size-12" />
+                </div>
                 <p class="font-semibold">No rankings yet</p>
                 <p class="mt-1 text-sm text-mist">Create talent-based leaderboards for your campus students.</p>
                 @if (! $showForm)
@@ -97,7 +99,7 @@
                         <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="ranking-{{ $ranking->id }}">
                             <div class="flex items-center gap-3 min-w-0">
                                 <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ember/10">
-                                    <span class="text-lg">🏆</span>
+                                    <x-icon name="trophy" class="size-5 text-ember" />
                                 </div>
                                 <div class="min-w-0">
                                     <p class="truncate font-medium">{{ $ranking->title }}</p>
