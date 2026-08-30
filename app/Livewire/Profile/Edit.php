@@ -140,9 +140,11 @@ class Edit extends Component
 
     public function render(): View
     {
+        $campusId = auth()->user()->campus_id;
+
         return view('livewire.profile.edit', [
-            'talentCategories' => Talent::query()->orderBy('category')->orderBy('name')->get()->groupBy('category'),
-            'talents' => Talent::query()->orderBy('name')->get(),
+            'talentCategories' => Talent::query()->forCampus($campusId)->orderBy('category')->orderBy('name')->get()->groupBy('category'),
+            'talents' => Talent::query()->forCampus($campusId)->orderBy('name')->get(),
         ]);
     }
 }

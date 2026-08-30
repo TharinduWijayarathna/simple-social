@@ -42,6 +42,7 @@
         </form>
         <ul class="mt-4 flex flex-col gap-3">
             @foreach ($item->comments as $comment)
+                @continue($comment->user === null)
                 <li class="rounded-2xl bg-white p-4 text-sm" wire:key="comment-{{ $comment->id }}">
                     <p class="font-medium">{{ $comment->user->name }}</p>
                     <p class="mt-1">{{ $comment->body }}</p>

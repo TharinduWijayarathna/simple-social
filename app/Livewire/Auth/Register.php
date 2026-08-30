@@ -73,6 +73,7 @@ class Register extends Component
     public function talentCategories(): \Illuminate\Support\Collection
     {
         return Talent::query()
+            ->forCampus($this->campusId)
             ->orderBy('category')
             ->orderBy('name')
             ->get()
@@ -87,7 +88,11 @@ class Register extends Component
     #[Computed]
     public function allTalents(): Collection
     {
-        return Talent::query()->orderBy('category')->orderBy('name')->get();
+        return Talent::query()
+            ->forCampus($this->campusId)
+            ->orderBy('category')
+            ->orderBy('name')
+            ->get();
     }
 
     public function register(): void

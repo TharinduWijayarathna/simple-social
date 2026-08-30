@@ -47,7 +47,7 @@ class Show extends Component
 
         $posts = $this->student->portfolioItems()
             ->published()
-            ->with(['user:id,name', 'talent:id,name,slug,theme'])
+            ->with(['user.profile', 'talent:id,name,slug,theme'])
             ->withCount(['likes', 'comments'])
             ->latest('published_at')
             ->get();

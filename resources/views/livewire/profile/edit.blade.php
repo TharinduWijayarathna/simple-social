@@ -57,11 +57,11 @@
             <label class="flex flex-col gap-1 text-xs font-medium text-ink">
                 Profile Category Account
                 <select wire:model="profile_type" class="field text-xs" required>
-                    <option value="🎤 Performing Arts Creator Account">🎤 Performing Arts Creator Account (Singing, Music, Dance, Comedy)</option>
-                    <option value="🎨 Creative & Visual Arts Creator Account">🎨 Creative & Visual Arts Creator Account (Art, Photo, Design)</option>
-                    <option value="🏆 Sports & Physical Creator Account">🏆 Sports & Physical Creator Account (Cricket, Football, Yoga)</option>
-                    <option value="✨ Unique & Hidden Talents Creator Account">✨ Unique & Hidden Talents Creator Account (Cooking, Magic, Chess)</option>
-                    <option value="👤 General Student Account">👤 General Student Account</option>
+                    <option value="🎤 Performing Arts Creator Account">Performing Arts Creator Account (Singing, Music, Dance, Comedy)</option>
+                    <option value="🎨 Creative & Visual Arts Creator Account">Creative & Visual Arts Creator Account (Art, Photo, Design)</option>
+                    <option value="🏆 Sports & Physical Creator Account">Sports & Physical Creator Account (Cricket, Football, Yoga)</option>
+                    <option value="✨ Unique & Hidden Talents Creator Account">Unique & Hidden Talents Creator Account (Cooking, Magic, Chess)</option>
+                    <option value="👤 General Student Account">General Student Account</option>
                 </select>
                 @error('profile_type') <span class="text-ember text-xs">{{ $message }}</span> @enderror
             </label>

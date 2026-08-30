@@ -155,7 +155,7 @@ test('chosen student can see campus contact details on event page and index tab'
     // Event Show view
     $this->get(route('events.show', $event))
         ->assertSuccessful()
-        ->assertSee('🎉 Congratulations! You have been chosen for this event!')
+        ->assertSee('Congratulations! You have been chosen for this event!')
         ->assertSee('contact.campus@university.edu')
         ->assertSee('+1 (555) 999-8888')
         ->assertSee('Bring student ID and report to backstage.');

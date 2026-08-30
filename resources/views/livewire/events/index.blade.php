@@ -17,8 +17,8 @@
     @if ($chosenCount > 0 && $activeTab !== 'chosen')
         <div class="rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="flex size-10 items-center justify-center rounded-xl bg-amber-400 text-amber-950 font-bold text-lg">
-                    🎉
+                <div class="flex size-10 items-center justify-center rounded-xl bg-amber-400 text-amber-950">
+                    <x-icon name="sparkles" class="size-5 text-amber-950" />
                 </div>
                 <div>
                     <h3 class="font-bold text-ink text-sm">Congratulations! You've been chosen for {{ $chosenCount }} campus {{ Str::plural('event', $chosenCount) }}!</h3>
@@ -52,7 +52,8 @@
             <button wire:click="$set('activeTab', 'chosen')"
                     class="rounded-xl px-4 py-2 text-sm font-semibold transition shrink-0 flex items-center gap-2
                            {{ $activeTab === 'chosen' ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100' }}">
-                🎉 Chosen Events
+                <x-icon name="sparkles" class="size-4" />
+                Chosen Events
                 @if ($chosenCount > 0)
                     <span class="rounded-full bg-amber-900 px-2 py-0.5 text-[10px] font-bold text-white">{{ $chosenCount }}</span>
                 @endif
@@ -92,11 +93,17 @@
 
                     <div class="mt-6 border-t border-ink/8 pt-4 space-y-2 text-xs text-mist">
                         <div class="flex items-center justify-between">
-                            <span>📅 {{ $event->starts_at->format('D, M j · g:ia') }}</span>
+                            <span class="flex items-center gap-1">
+                                <x-icon name="calendar" class="size-3.5" />
+                                <span>{{ $event->starts_at->format('D, M j · g:ia') }}</span>
+                            </span>
                             <span class="font-semibold text-ink">{{ $event->applications_count }} applicants</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span>📍 {{ $event->location ?? 'Campus Grounds' }}</span>
+                            <span class="flex items-center gap-1">
+                                <x-icon name="map-pin" class="size-3.5" />
+                                <span>{{ $event->location ?? 'Campus Grounds' }}</span>
+                            </span>
                             <span>By {{ $event->organizer->name }}</span>
                         </div>
                     </div>
@@ -130,9 +137,12 @@
                              wire:key="my-app-{{ $app->id }}">
                             <div>
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="rounded-full px-2.5 py-0.5 text-xs font-bold capitalize
+                                    <span class="rounded-full px-2.5 py-0.5 text-xs font-bold capitalize flex items-center gap-1
                                                  {{ $app->isAccepted() ? 'bg-emerald-600 text-white' : ($app->isDeclined() ? 'bg-red-600 text-white' : 'bg-amber-500 text-white') }}">
-                                        {{ $app->isAccepted() ? '🎉 Chosen' : $app->status->value }}
+                                        @if ($app->isAccepted())
+                                            <x-icon name="sparkles" class="size-3" />
+                                        @endif
+                                        <span>{{ $app->isAccepted() ? 'Chosen' : $app->status->value }}</span>
                                     </span>
                                     <span class="text-xs text-mist">{{ $app->created_at->diffForHumans() }}</span>
                                 </div>
@@ -150,7 +160,10 @@
                             </div>
 
                             <div class="mt-6 flex items-center justify-between border-t border-ink/8 pt-4">
-                                <span class="text-xs text-mist">📅 {{ $app->event->starts_at->format('M j, g:ia') }}</span>
+                                <span class="flex items-center gap-1 text-xs text-mist">
+                                    <x-icon name="calendar" class="size-3.5" />
+                                    <span>{{ $app->event->starts_at->format('M j, g:ia') }}</span>
+                                </span>
                                 <a href="{{ route('events.show', $app->event) }}" class="text-xs font-bold text-ember hover:underline" wire:navigate>
                                     View Event Details →
                                 </a>
@@ -166,7 +179,10 @@
     @if ($activeTab === 'chosen')
         <div class="space-y-6">
             <div>
-                <h2 class="font-display text-2xl text-ink">🎉 Events You Have Been Chosen For</h2>
+                <h2 class="font-display text-2xl text-ink flex items-center gap-1.5">
+                    <x-icon name="sparkles" class="size-6 text-amber-500" />
+                    <span>Events You Have Been Chosen For</span>
+                </h2>
                 <p class="text-sm text-mist mt-1">Campus organizers selected you for these events. Review contact details and instructions below to connect with campus!</p>
             </div>
 
@@ -182,8 +198,9 @@
                              wire:key="chosen-app-{{ $app->id }}">
                             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ink/10 pb-6">
                                 <div>
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-amber-950">
-                                        ✨ SELECTED FOR THIS EVENT
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-amber-950">
+                                        <x-icon name="sparkles" class="size-3.5 text-amber-950" />
+                                        <span>SELECTED FOR THIS EVENT</span>
                                     </span>
                                     <h3 class="mt-3 font-display text-3xl text-ink">
                                         <a href="{{ route('events.show', $app->event) }}" class="hover:text-ember transition" wire:navigate>
@@ -208,8 +225,8 @@
                                 <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     @if ($app->event->contact_email)
                                         <div class="flex items-center gap-3 rounded-2xl bg-white p-4 border border-ink/10">
-                                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ember/10 text-ember font-bold">
-                                                ✉️
+                                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ember/10 text-ember">
+                                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                                             </div>
                                             <div>
                                                 <p class="text-xs text-mist">Campus Email</p>
@@ -222,8 +239,8 @@
 
                                     @if ($app->event->contact_phone)
                                         <div class="flex items-center gap-3 rounded-2xl bg-white p-4 border border-ink/10">
-                                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 font-bold">
-                                                📞
+                                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                                             </div>
                                             <div>
                                                 <p class="text-xs text-mist">Campus Phone / WhatsApp</p>
@@ -280,7 +297,10 @@
                                     </a>
                                 </h3>
 
-                                <p class="mt-1 text-xs text-mist">📅 {{ $ev->starts_at->format('l, M j, Y · g:ia') }}</p>
+                                <p class="mt-1 flex items-center gap-1 text-xs text-mist">
+                                    <x-icon name="calendar" class="size-3.5" />
+                                    <span>{{ $ev->starts_at->format('l, M j, Y · g:ia') }}</span>
+                                </p>
                             </div>
 
                             <div class="mt-6 flex items-center justify-between border-t border-ink/8 pt-4">

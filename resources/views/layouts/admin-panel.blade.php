@@ -30,6 +30,15 @@
                         </svg>
                         Overview
                     </a>
+                    <a href="{{ route('admin.dashboard', ['tab' => 'students']) }}"
+                       class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
+                              {{ request()->query('tab') === 'students' ? 'bg-white/10 text-gold' : 'text-white/60 hover:bg-white/8 hover:text-white' }}"
+                       wire:navigate>
+                        <svg class="size-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        Student Management
+                    </a>
                     <a href="{{ route('admin.dashboard', ['tab' => 'campuses']) }}"
                        class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
                               {{ request()->query('tab') === 'campuses' ? 'bg-white/10 text-gold' : 'text-white/60 hover:bg-white/8 hover:text-white' }}"
@@ -44,8 +53,12 @@
                 <div class="border-t border-white/8 px-4 py-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
-                            <div class="flex size-8 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold">
-                                {{ auth()->user()->initials() }}
+                            <div class="flex size-8 items-center justify-center overflow-hidden rounded-full bg-gold/20 text-xs font-semibold text-gold">
+                                @if (auth()->user()->avatarUrl())
+                                    <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="size-full object-cover rounded-full">
+                                @else
+                                    {{ auth()->user()->initials() }}
+                                @endif
                             </div>
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-medium text-paper">{{ auth()->user()->name }}</p>

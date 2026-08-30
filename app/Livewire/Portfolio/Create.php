@@ -80,8 +80,10 @@ class Create extends Component
 
     public function render(): View
     {
+        $campusId = auth()->user()->campus_id;
+
         return view('livewire.portfolio.create', [
-            'talents' => Talent::query()->orderBy('name')->get(),
+            'talents' => Talent::query()->forCampus($campusId)->orderBy('name')->get(),
         ]);
     }
 }

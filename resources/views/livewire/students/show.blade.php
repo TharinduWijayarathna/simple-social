@@ -4,7 +4,7 @@
             @if ($highlights->isNotEmpty())
                 <a href="{{ route('status.show', $highlights->first()) }}" class="flex size-24 items-center justify-center overflow-hidden rounded-full bg-studio text-2xl font-semibold text-gold ring-4 ring-amber-400 ring-offset-4 ring-offset-wall md:size-36 md:text-4xl shadow-md transition hover:scale-105" wire:navigate>
                     @if ($student->avatarUrl())
-                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full" referrerpolicy="no-referrer" onerror="this.style.display='none'">
                     @else
                         {{ $student->initials() }}
                     @endif
@@ -12,7 +12,7 @@
             @else
                 <span class="flex size-24 items-center justify-center overflow-hidden rounded-full bg-studio text-2xl font-semibold text-gold md:size-36 md:text-4xl shadow-md">
                     @if ($student->avatarUrl())
-                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full" referrerpolicy="no-referrer" onerror="this.style.display='none'">
                     @else
                         {{ $student->initials() }}
                     @endif
@@ -43,7 +43,20 @@
             <div class="mt-4 text-sm space-y-2">
                 @if ($student->profile?->profile_type)
                     <div class="inline-flex items-center gap-2 rounded-full bg-amber-100/80 px-3.5 py-1 text-xs font-bold text-amber-900 shadow-sm border border-amber-300/50">
-                        {{ $student->profile->profile_type }}
+                        <span class="flex items-center gap-1">
+                            @if (str_contains($student->profile->profile_type, 'Performing'))
+                                <x-icon name="microphone" class="size-3.5 text-amber-700" />
+                            @elseif (str_contains($student->profile->profile_type, 'Creative'))
+                                <x-icon name="paint-brush" class="size-3.5 text-amber-700" />
+                            @elseif (str_contains($student->profile->profile_type, 'Sports'))
+                                <x-icon name="trophy" class="size-3.5 text-amber-700" />
+                            @elseif (str_contains($student->profile->profile_type, 'Unique'))
+                                <x-icon name="sparkles" class="size-3.5 text-amber-700" />
+                            @else
+                                <x-icon name="user" class="size-3.5 text-amber-700" />
+                            @endif
+                            <span>{{ $student->profile->displayProfileType() }}</span>
+                        </span>
                         @if ($student->profile->primaryTalentModel)
                             <span class="text-amber-700">· {{ $student->profile->primaryTalentModel->name }}</span>
                         @endif
@@ -93,7 +106,13 @@
         <div class="mt-8 flex gap-5 overflow-x-auto p-2 pb-3">
             @foreach ($highlights as $status)
                 <a href="{{ route('status.show', $status) }}" class="flex w-16 shrink-0 flex-col items-center gap-1.5 transition hover:scale-105" wire:key="highlight-{{ $status->id }}" wire:navigate>
-                    <img src="{{ $status->imageUrl() }}" alt="" class="size-16 rounded-full object-cover ring-2 ring-amber-400 ring-offset-2 ring-offset-wall shadow-sm">
+                    <span class="relative flex size-16 overflow-hidden rounded-full bg-studio ring-2 ring-amber-400 ring-offset-2 ring-offset-wall shadow-sm">
+                        <img src="{{ $status->imageUrl() }}"
+                             alt=""
+                             class="size-full object-cover"
+                             referrerpolicy="no-referrer"
+                             onerror="this.onerror=null;this.src='https://picsum.photos/seed/hl{{ $status->id }}/200/200';">
+                    </span>
                     <span class="w-full truncate text-center text-[11px] font-semibold text-mist">{{ $status->created_at->isToday() ? 'Today' : $status->created_at->format('M j') }}</span>
                 </a>
             @endforeach

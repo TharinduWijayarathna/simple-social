@@ -82,6 +82,14 @@ class User extends Authenticatable
 
     public function avatarUrl(): ?string
     {
+        if ($this->relationLoaded('profile')) {
+            return $this->profile?->avatarUrl();
+        }
+
+        if ($this->preventsLazyLoading) {
+            return null;
+        }
+
         return $this->profile?->avatarUrl();
     }
 
@@ -280,6 +288,17 @@ class User extends Authenticatable
     {
         return $query->where('role', Role::Student)
             ->where('status', UserStatus::Approved)
+            ->where('campus_id', $campusId);
+    }
+
+    /**
+     * Banned students belonging to a specific campus admin.
+     */
+    #[Scope]
+    protected function bannedStudentsForCampus(Builder $query, int $campusId): Builder
+    {
+        return $query->where('role', Role::Student)
+            ->where('status', UserStatus::Banned)
             ->where('campus_id', $campusId);
     }
 }

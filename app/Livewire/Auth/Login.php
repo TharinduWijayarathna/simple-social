@@ -48,6 +48,13 @@ class Login extends Component
             return;
         }
 
+        if ($user->status === UserStatus::Banned) {
+            Auth::logout();
+            $this->addError('email', 'Your account has been banned. Please contact your campus administrator.');
+
+            return;
+        }
+
         session()->regenerate();
 
         $redirect = match ($user->role) {

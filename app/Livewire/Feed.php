@@ -2,10 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\CampusRanking;
 use App\Models\Event;
 use App\Models\PortfolioItem;
 use App\Models\Status;
 use App\Models\User;
+use App\Support\CampusRankingLeaders;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -20,18 +22,34 @@ class Feed extends Component
 
     public function render(): View
     {
+        $campusId = auth()->check() ? auth()->user()->campus_id : null;
+
+        $topRankings = $campusId
+            ? CampusRanking::query()
+                ->where('campus_id', $campusId)
+                ->where('is_active', true)
+                ->with('talent:id,name,category')
+                ->inRandomOrder()
+                ->limit(2)
+                ->get()
+                ->map(fn (CampusRanking $ranking): array => [
+                    'ranking' => $ranking,
+                    'leaders' => CampusRankingLeaders::for($ranking, $campusId, 10),
+                ])
+            : collect();
+
         return view('livewire.feed', [
             'posts' => PortfolioItem::query()
                 ->published()
                 ->with([
-                    'user:id,name',
+                    'user.profile',
                     'talent:id,name,slug,theme',
                 ])
                 ->latest('published_at')
                 ->paginate(12),
             'statuses' => Status::query()
                 ->active()
-                ->with('user:id,name')
+                ->with('user.profile')
                 ->latest()
                 ->get()
                 ->unique('user_id')
@@ -48,6 +66,7 @@ class Feed extends Component
                 ->orderByDesc('xp')
                 ->limit(5)
                 ->get(),
+            'topRankings' => $topRankings,
         ]);
     }
 }

@@ -37,7 +37,7 @@
             {{-- Reels Badge --}}
             <span class="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-black/60 px-3 py-1 text-[11px] font-bold text-white backdrop-blur pointer-events-none">
                 <svg class="size-3.5 text-rose-500 fill-current" viewBox="0 0 24 24"><path d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11z"/></svg>
-                REEL 🎥
+                REEL
             </span>
 
             {{-- Play/Pause Center Button Overlay --}}
@@ -114,6 +114,7 @@
 
         <ul class="mt-4 flex flex-col gap-2">
             @foreach ($item->comments->take(2) as $comment)
+                @continue($comment->user === null)
                 <li class="text-sm" wire:key="card-comment-{{ $comment->id }}">
                     <span class="font-semibold">{{ $comment->user->name }}</span>
                     <span class="text-mist"> {{ $comment->body }}</span>

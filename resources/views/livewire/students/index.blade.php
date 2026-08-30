@@ -26,6 +26,8 @@
                 <a href="{{ route('students.show', $student) }}" class="group block aspect-[3/4]" wire:navigate>
                     @if ($cover)
                         <img src="{{ $cover->displayUrl() }}" alt="" class="size-full object-cover transition duration-500 group-hover:scale-105">
+                    @elseif ($student->avatarUrl())
+                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover transition duration-500 group-hover:scale-105">
                     @else
                         <span class="flex size-full items-center justify-center text-4xl font-semibold text-gold">{{ $student->initials() }}</span>
                     @endif
@@ -33,16 +35,33 @@
                     
                     {{-- Profile Type Badge --}}
                     @if ($student->profile?->profile_type)
-                        <span class="absolute top-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold text-amber-300 backdrop-blur truncate max-w-[85%]">
-                            {{ $student->profile->profile_type }}
+                        <span class="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold text-amber-300 backdrop-blur truncate max-w-[85%]">
+                            @if (str_contains($student->profile->profile_type, 'Performing'))
+                                <x-icon name="microphone" class="size-3 text-amber-300" />
+                            @elseif (str_contains($student->profile->profile_type, 'Creative'))
+                                <x-icon name="paint-brush" class="size-3 text-amber-300" />
+                            @elseif (str_contains($student->profile->profile_type, 'Sports'))
+                                <x-icon name="trophy" class="size-3 text-amber-300" />
+                            @elseif (str_contains($student->profile->profile_type, 'Unique'))
+                                <x-icon name="sparkles" class="size-3 text-amber-300" />
+                            @else
+                                <x-icon name="user" class="size-3 text-amber-300" />
+                            @endif
+                            <span>{{ $student->profile->displayProfileType() }}</span>
                         </span>
                     @endif
 
                     <span class="absolute inset-x-3 bottom-14 flex min-w-0 items-center gap-2 text-white">
                         <span @class([
-                            'flex size-9 shrink-0 items-center justify-center rounded-full bg-studio text-[10px] font-semibold text-gold',
+                            'flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-studio text-[10px] font-semibold text-gold',
                             'ring-2 ring-amber-400 ring-offset-2 ring-offset-black/40' => $student->has_active_status,
-                        ])>{{ $student->initials() }}</span>
+                        ])>
+                            @if ($student->avatarUrl())
+                                <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
+                            @else
+                                {{ $student->initials() }}
+                            @endif
+                        </span>
                         <span class="min-w-0">
                             <span class="block truncate text-sm font-semibold leading-tight text-white drop-shadow">{{ $student->name }}</span>
                             <span class="block truncate text-[11px] text-white/80">
