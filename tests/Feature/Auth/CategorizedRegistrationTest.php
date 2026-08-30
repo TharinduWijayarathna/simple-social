@@ -6,9 +6,14 @@ use App\Livewire\Auth\Register;
 use App\Livewire\Students\Index;
 use App\Models\Talent;
 use App\Models\User;
+use App\Notifications\OtpVerificationNotification;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 test('student can register with batch, program, profile type and primary talent', function () {
+    Notification::fake();
+
     $campus = User::factory()->create([
         'role' => Role::CampusAdmin,
         'status' => UserStatus::Approved,
@@ -17,10 +22,21 @@ test('student can register with batch, program, profile type and primary talent'
     $talent = Talent::query()->where('category', 'Performing Arts')->first()
         ?? Talent::factory()->create(['category' => 'Performing Arts', 'name' => 'Singing']);
 
-    Livewire::test(Register::class)
+    $component = Livewire::test(Register::class)
         ->set('accountType', 'student')
         ->set('name', 'John Doe')
         ->set('email', 'johndoe@campus.edu')
+        ->call('sendOtp')
+        ->assertHasNoErrors();
+
+    $otp = Cache::get('otp:johndoe@campus.edu');
+
+    Notification::assertSentOnDemand(OtpVerificationNotification::class);
+
+    $component
+        ->set('otp', $otp)
+        ->call('verifyOtp')
+        ->assertHasNoErrors()
         ->set('universityId', '2024CS001')
         ->set('campusId', $campus->id)
         ->set('batch', 'Batch 2024')

@@ -9,13 +9,22 @@
                     <p class="mt-0.5 text-sm text-mist">Your campus at a glance.</p>
                 @elseif ($activeTab === 'students')
                     <h1 class="text-xl font-semibold">Student Management</h1>
-                    <p class="mt-0.5 text-sm text-mist">Approve or reject student registrations.</p>
+                    <p class="mt-0.5 text-sm text-mist">Approve, suspend, or remove students.</p>
                 @elseif ($activeTab === 'talents')
                     <h1 class="text-xl font-semibold">Talent Management</h1>
                     <p class="mt-0.5 text-sm text-mist">Manage custom talent categories and tags for your campus.</p>
-                @else
+                @elseif ($activeTab === 'events')
                     <h1 class="text-xl font-semibold">Event Management</h1>
                     <p class="mt-0.5 text-sm text-mist">Create and manage campus events.</p>
+                @elseif ($activeTab === 'moderation')
+                    <h1 class="text-xl font-semibold">Content Moderation</h1>
+                    <p class="mt-0.5 text-sm text-mist">Review reports and manage published work from your students.</p>
+                @elseif ($activeTab === 'analytics')
+                    <h1 class="text-xl font-semibold">Analytics</h1>
+                    <p class="mt-0.5 text-sm text-mist">Growth and engagement for your campus.</p>
+                @else
+                    <h1 class="text-xl font-semibold">Announcement</h1>
+                    <p class="mt-0.5 text-sm text-mist">Set a banner shown only to your students.</p>
                 @endif
             </div>
             @if ($activeTab === 'events')
@@ -64,6 +73,21 @@
                            {{ $activeTab === 'talents' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
                 Talents
             </button>
+            <button wire:click="$set('activeTab', 'moderation')"
+                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
+                           {{ $activeTab === 'moderation' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
+                Moderation
+            </button>
+            <button wire:click="$set('activeTab', 'analytics')"
+                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
+                           {{ $activeTab === 'analytics' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
+                Analytics
+            </button>
+            <button wire:click="$set('activeTab', 'announcement')"
+                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
+                           {{ $activeTab === 'announcement' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
+                Announcement
+            </button>
         </div>
     </div>
 
@@ -73,7 +97,7 @@
         {{-- ── OVERVIEW TAB ── --}}
         @if ($activeTab === 'overview')
 
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
                 <div class="rounded-2xl border border-ink/8 bg-white p-5">
                     <p class="text-xs font-medium uppercase tracking-wider text-mist">Students</p>
                     <p class="mt-2 text-3xl font-semibold">{{ $totalStudents }}</p>
@@ -88,6 +112,21 @@
                     <p class="text-xs font-medium uppercase tracking-wider text-mist">Events</p>
                     <p class="mt-2 text-3xl font-semibold">{{ $totalEvents }}</p>
                     <p class="mt-1 text-xs text-mist">Created by you</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">New students (30d)</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $newStudentsLast30Days }}</p>
+                    <p class="mt-1 text-xs text-mist">{{ $newStudentsLast7Days }} in the last 7 days</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Published (30d)</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $itemsPublishedLast30Days }}</p>
+                    <p class="mt-1 text-xs text-mist">Portfolio items from your students</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Reports</p>
+                    <p class="mt-2 text-3xl font-semibold {{ $reports->isNotEmpty() ? 'text-ember' : '' }}">{{ $reports->count() }}</p>
+                    <p class="mt-1 text-xs text-mist">Awaiting moderation</p>
                 </div>
             </div>
 
@@ -215,21 +254,22 @@
                 @endif
             </div>
 
-            {{-- Approved students --}}
+            {{-- Manage students --}}
             <div class="mt-6 rounded-2xl border border-ink/8 bg-white">
-                <div class="border-b border-ink/8 px-5 py-4 flex items-center justify-between">
-                    <div>
-                        <h2 class="font-semibold">Approved students</h2>
-                        <p class="text-sm text-mist">{{ $approvedStudents->count() }} active student{{ $approvedStudents->count() !== 1 ? 's' : '' }}</p>
-                    </div>
+                <div class="border-b border-ink/8 px-5 py-4">
+                    <h2 class="font-semibold">Manage students</h2>
+                    <p class="text-sm text-mist">Search, suspend, or remove students from your campus.</p>
+                    <input type="text" wire:model.live.debounce.400ms="studentSearch"
+                           placeholder="Search by name or email…"
+                           class="mt-3 w-full max-w-sm rounded-lg border border-ink/15 px-3 py-2 text-sm focus:border-ember focus:outline-none focus:ring-1 focus:ring-ember">
                 </div>
 
-                @if ($approvedStudents->isEmpty())
-                    <div class="px-5 py-10 text-center text-sm text-mist">No approved students yet.</div>
+                @if ($manageableStudents->isEmpty())
+                    <div class="px-5 py-10 text-center text-sm text-mist">No students found.</div>
                 @else
                     <ul class="divide-y divide-ink/8">
-                        @foreach ($approvedStudents as $student)
-                            <li class="flex items-center justify-between gap-4 px-5 py-3.5 text-sm" wire:key="appr-{{ $student->id }}">
+                        @foreach ($manageableStudents as $student)
+                            <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-3 text-sm" wire:key="appr-{{ $student->id }}">
                                 <div class="flex items-center gap-3">
                                     <div class="flex size-8 items-center justify-center overflow-hidden rounded-full bg-wall text-xs font-semibold text-ink">
                                         @if ($student->avatarUrl())
@@ -239,19 +279,31 @@
                                         @endif
                                     </div>
                                     <div>
-                                        <p class="font-medium flex items-center gap-2">
-                                            <span>{{ $student->name }}</span>
-                                            <a href="{{ route('students.show', $student) }}" class="text-[10px] text-ember hover:underline" wire:navigate>
-                                                View Profile ↗
-                                            </a>
+                                        <p class="font-medium">
+                                            {{ $student->name }}
+                                            @if ($student->status->value === 'banned')
+                                                <span class="ml-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-red-700">Suspended</span>
+                                            @endif
                                         </p>
-                                        <p class="text-xs text-mist">{{ $student->email }}</p>
+                                        <p class="text-xs text-mist">{{ $student->email }} · Joined {{ $student->created_at->format('M j, Y') }}</p>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs text-mist">{{ $student->created_at->format('M j, Y') }}</span>
-                                    <button wire:click="banStudent({{ $student->id }})" class="rounded-lg border border-red-200 text-red-600 px-3 py-1 text-xs font-semibold hover:bg-red-50 transition">
-                                        Ban Profile
+                                <div class="flex gap-2">
+                                    @if ($student->status->value === 'banned')
+                                        <button wire:click="unsuspendStudent({{ $student->id }})"
+                                                class="rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium transition hover:bg-ink/5">
+                                            Unsuspend
+                                        </button>
+                                    @else
+                                        <button wire:click="suspendStudent({{ $student->id }})"
+                                                class="rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium transition hover:bg-ink/5">
+                                            Suspend
+                                        </button>
+                                    @endif
+                                    <button wire:click="removeStudent({{ $student->id }})"
+                                            wire:confirm="Remove this student from your campus? This cannot be undone."
+                                            class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">
+                                        Remove
                                     </button>
                                 </div>
                             </li>
@@ -260,50 +312,8 @@
                 @endif
             </div>
 
-            {{-- Banned students --}}
-            <div class="mt-6 rounded-2xl border border-red-200 bg-white">
-                <div class="border-b border-red-100 bg-red-50/50 px-5 py-4 rounded-t-2xl">
-                    <h2 class="font-semibold text-red-950">Banned Students</h2>
-                    <p class="text-sm text-red-800/80">{{ $bannedStudents->count() }} banned student{{ $bannedStudents->count() !== 1 ? 's' : '' }}</p>
-                </div>
+            <div class="mt-4">{{ $manageableStudents->links() }}</div>
 
-                @if ($bannedStudents->isEmpty())
-                    <div class="px-5 py-10 text-center text-sm text-mist">No banned students.</div>
-                @else
-                    <ul class="divide-y divide-ink/8">
-                        @foreach ($bannedStudents as $student)
-                            <li class="flex items-center justify-between gap-4 px-5 py-3 text-sm" wire:key="bann-{{ $student->id }}">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex size-8 items-center justify-center overflow-hidden rounded-full bg-wall text-xs font-semibold text-ink">
-                                        @if ($student->avatarUrl())
-                                            <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="size-full object-cover rounded-full">
-                                        @else
-                                            {{ $student->initials() }}
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <p class="font-medium flex items-center gap-2 text-ink/70">
-                                            <span class="line-through">{{ $student->name }}</span>
-                                            <a href="{{ route('students.show', $student) }}" class="text-[10px] text-ember hover:underline" wire:navigate>
-                                                View Profile ↗
-                                            </a>
-                                        </p>
-                                        <p class="text-xs text-mist">{{ $student->email }}</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs text-mist">Banned</span>
-                                    <button wire:click="unbanStudent({{ $student->id }})" class="rounded-lg bg-red-600 text-white px-3 py-1 text-xs font-semibold hover:bg-red-700 transition shadow-sm">
-                                        Unban
-                                    </button>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-            </div>
-
-        {{-- ── TALENTS TAB ── --}}
         {{-- ── TALENTS & CATEGORIES TAB ── --}}
         @elseif ($activeTab === 'talents')
 
@@ -318,7 +328,7 @@
                     <button type="button"
                             wire:click="$set('talentSubTab', 'categories')"
                             class="rounded-xl px-4 py-2 text-xs font-bold transition shadow-sm border {{ $talentSubTab === 'categories' ? 'bg-ember text-white border-ember' : 'bg-white text-ink border-ink/10 hover:bg-wall' }}">
-                        Talent Categories ({{ $categories->count() }})
+                        Talent Categories ({{ $talentCategories->count() }})
                     </button>
                 </div>
 
@@ -394,7 +404,7 @@
                                 <label class="block text-xs font-semibold text-ink">Category</label>
                                 <select wire:model="talentCategory" class="field mt-1 w-full" required>
                                     <option value="">Select a Category</option>
-                                    @foreach ($categories as $cat)
+                                    @foreach ($talentCategories as $cat)
                                         <option value="{{ $cat->name }}">{{ $cat->name }}</option>
                                     @endforeach
                                 </select>
@@ -442,11 +452,11 @@
                         </div>
                     </div>
 
-                    @if ($categories->isEmpty())
+                    @if ($talentCategories->isEmpty())
                         <div class="px-5 py-10 text-center text-sm text-mist">No categories found. Click "+ Add New Category" to create one.</div>
                     @else
                         <div class="divide-y divide-ink/8 max-h-[600px] overflow-y-auto">
-                            @foreach ($categories as $cat)
+                            @foreach ($talentCategories as $cat)
                                 <div class="flex items-center justify-between gap-4 px-5 py-4" wire:key="cat-list-{{ $cat->id }}">
                                     <div class="min-w-0">
                                         <div class="flex items-center gap-2">
@@ -523,7 +533,7 @@
             @endif
 
         {{-- ── EVENTS TAB ── --}}
-        @else
+        @elseif ($activeTab === 'events')
 
             @if ($events->isEmpty())
                 <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink/15 bg-white py-20 text-center">
@@ -621,6 +631,190 @@
                     @endif
                 </div>
             @endif
+
+        {{-- ── MODERATION TAB ── --}}
+        @elseif ($activeTab === 'moderation')
+
+            <div class="grid gap-6 lg:grid-cols-2">
+                {{-- Reports queue --}}
+                <div class="rounded-2xl border border-ink/8 bg-white">
+                    <div class="border-b border-ink/8 px-5 py-4">
+                        <h2 class="font-semibold">Reports queue</h2>
+                    </div>
+                    <ul class="divide-y divide-ink/8">
+                        @forelse ($reports as $report)
+                            <li class="px-5 py-4 text-sm" wire:key="mod-rep-{{ $report->id }}">
+                                <p><span class="font-medium">{{ $report->reporter->name }}</span> <span class="text-mist">· {{ $report->reason }}</span></p>
+                                @if ($report->details)
+                                    <p class="mt-0.5 text-mist">{{ Str::limit($report->details, 80) }}</p>
+                                @endif
+                                <div class="mt-3 flex gap-2">
+                                    <button wire:click="moderateReport({{ $report->id }}, 'dismissed')"
+                                            class="rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium transition hover:bg-ink/5">
+                                        Dismiss
+                                    </button>
+                                    <button wire:click="moderateReport({{ $report->id }}, 'actioned')"
+                                            class="rounded-lg bg-ember px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-ember/90">
+                                        Take down
+                                    </button>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="px-5 py-6 text-center text-sm text-mist">Queue is clear ✓</li>
+                        @endforelse
+                    </ul>
+                </div>
+
+                {{-- Recently published work --}}
+                <div class="rounded-2xl border border-ink/8 bg-white">
+                    <div class="border-b border-ink/8 px-5 py-4">
+                        <h2 class="font-semibold">Recently published work</h2>
+                    </div>
+                    <ul class="divide-y divide-ink/8">
+                        @forelse ($recentItems as $item)
+                            <li class="px-5 py-4 text-sm" wire:key="item-{{ $item->id }}">
+                                <p><span class="font-medium">{{ $item->title }}</span> <span class="text-mist">· by {{ $item->user->name }}</span></p>
+                                <div class="mt-3 flex gap-2">
+                                    <button wire:click="unpublishItem({{ $item->id }})"
+                                            class="rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium transition hover:bg-ink/5">
+                                        Unpublish
+                                    </button>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="px-5 py-6 text-center text-sm text-mist">Nothing published yet.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
+        {{-- ── ANALYTICS TAB ── --}}
+        @elseif ($activeTab === 'analytics')
+
+            <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Students</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $totalStudents }}</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">New (7 days)</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $newStudentsLast7Days }}</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">New (30 days)</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $newStudentsLast30Days }}</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Events</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $totalEvents }}</p>
+                </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">XP earned (30d)</p>
+                    <p class="mt-2 text-3xl font-semibold text-ember">{{ number_format($xpEarnedLast30Days) }}</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Published (30d)</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $itemsPublishedLast30Days }}</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Applications</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $eventApplicationsTotal }}</p>
+                </div>
+                <div class="rounded-2xl border border-ink/8 bg-white p-5">
+                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Accepted</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $eventApplicationsAccepted }}</p>
+                </div>
+            </div>
+
+            <div class="mt-6 grid gap-6 lg:grid-cols-2">
+                {{-- Weekly publishing trend --}}
+                <div class="rounded-2xl border border-ink/8 bg-white">
+                    <div class="border-b border-ink/8 px-5 py-4">
+                        <h2 class="font-semibold">Published work, last 6 weeks</h2>
+                    </div>
+                    <div class="flex items-end gap-3 px-5 py-6">
+                        @php $maxCount = max(1, $weeklyPublishedCounts->max('count')); @endphp
+                        @foreach ($weeklyPublishedCounts as $week)
+                            <div class="flex flex-1 flex-col items-center gap-2" wire:key="week-{{ $week['label'] }}">
+                                <span class="text-xs font-semibold text-ink">{{ $week['count'] }}</span>
+                                <div class="flex h-24 w-full items-end rounded-md bg-wall">
+                                    <div class="w-full rounded-md bg-ember transition-all"
+                                         style="height: {{ max(4, ($week['count'] / $maxCount) * 100) }}%"></div>
+                                </div>
+                                <span class="text-[10px] text-mist">{{ $week['label'] }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Top students --}}
+                <div class="rounded-2xl border border-ink/8 bg-white">
+                    <div class="border-b border-ink/8 px-5 py-4">
+                        <h2 class="font-semibold">Top students by rank</h2>
+                    </div>
+                    <ul class="divide-y divide-ink/8">
+                        @forelse ($topStudents as $student)
+                            <li class="flex items-center justify-between px-5 py-3 text-sm" wire:key="top-{{ $student->id }}">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-4 text-xs font-semibold text-mist">#{{ $student->current_rank }}</span>
+                                    <div class="flex size-8 items-center justify-center rounded-full bg-wall text-xs font-semibold text-ink">
+                                        {{ $student->initials() }}
+                                    </div>
+                                    <span class="font-medium">{{ $student->name }}</span>
+                                </div>
+                                <span class="font-semibold text-ember">{{ number_format($student->xp) }} XP</span>
+                            </li>
+                        @empty
+                            <li class="px-5 py-6 text-center text-sm text-mist">No ranked students yet.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-6 rounded-2xl border border-ink/8 bg-white">
+                <div class="border-b border-ink/8 px-5 py-4">
+                    <h2 class="font-semibold">Talent rooms by published work</h2>
+                </div>
+                <ul class="divide-y divide-ink/8">
+                    @forelse ($categories as $category)
+                        <li class="flex items-center justify-between px-5 py-3 text-sm" wire:key="an-cat-{{ $category->id }}">
+                            <span>{{ $category->name }}</span>
+                            <span class="font-semibold text-ember">{{ $category->published_items_count }}</span>
+                        </li>
+                    @empty
+                        <li class="px-5 py-6 text-center text-sm text-mist">No published work yet.</li>
+                    @endforelse
+                </ul>
+            </div>
+
+        {{-- ── ANNOUNCEMENT TAB ── --}}
+        @else
+
+            <div class="max-w-xl rounded-2xl border border-ink/8 bg-white">
+                <div class="border-b border-ink/8 px-5 py-4">
+                    <h2 class="font-semibold">Campus announcement</h2>
+                    <p class="text-sm text-mist">Shown as a banner to your students only.</p>
+                </div>
+                <form wire:submit="saveAnnouncement" class="space-y-4 px-5 py-5">
+                    <label class="flex items-center gap-2 text-sm font-medium">
+                        <input type="checkbox" wire:model="announcementEnabled" class="rounded border-ink/20">
+                        Enable announcement banner
+                    </label>
+                    <div>
+                        <textarea wire:model="announcementMessage" rows="3" maxlength="280"
+                                  placeholder="e.g. Open mic night this Friday at 7pm."
+                                  class="w-full rounded-lg border border-ink/15 px-3 py-2 text-sm focus:border-ember focus:outline-none focus:ring-1 focus:ring-ember"></textarea>
+                        @error('announcementMessage') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <button type="submit"
+                            class="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90">
+                        Save announcement
+                    </button>
+                </form>
+            </div>
 
         @endif
     </div>

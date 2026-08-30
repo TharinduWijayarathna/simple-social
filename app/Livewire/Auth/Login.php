@@ -50,7 +50,7 @@ class Login extends Component
 
         if ($user->status === UserStatus::Banned) {
             Auth::logout();
-            $this->addError('email', 'Your account has been banned. Please contact your campus administrator.');
+            $this->addError('email', 'Your account has been suspended. Please contact support.');
 
             return;
         }

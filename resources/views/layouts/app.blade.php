@@ -53,6 +53,23 @@
             </header>
         @endauth
 
+        @if (\App\Models\Setting::get('announcement_enabled') === '1' && filled(\App\Models\Setting::get('announcement_message')))
+            <div class="bg-gold/15 px-4 py-2.5 text-center text-sm font-medium text-studio">
+                {{ \App\Models\Setting::get('announcement_message') }}
+            </div>
+        @endif
+
+        @auth
+            @php
+                $campusAdminId = auth()->user()->isStudent() ? auth()->user()->campus_id : null;
+            @endphp
+            @if ($campusAdminId && \App\Models\Setting::get("campus_announcement_enabled_{$campusAdminId}") === '1' && filled(\App\Models\Setting::get("campus_announcement_message_{$campusAdminId}")))
+                <div class="bg-ember/10 px-4 py-2.5 text-center text-sm font-medium text-ember">
+                    {{ \App\Models\Setting::get("campus_announcement_message_{$campusAdminId}") }}
+                </div>
+            @endif
+        @endauth
+
         <main class="pb-20 md:pb-8">
             {{ $slot }}
         </main>

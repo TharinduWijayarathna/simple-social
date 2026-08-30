@@ -52,9 +52,51 @@
 
             <label class="flex flex-col gap-1 text-sm font-medium">
                 {{ $accountType === 'campus' ? 'Work email' : 'University email' }}
-                <input wire:model="email" type="email" class="field" placeholder="alex@campus.edu" required>
+                <input wire:model.live="email" type="email" class="field" placeholder="alex@campus.edu" {{ $otpSent && !$otpVerified ? 'readonly' : '' }} required>
                 @error('email') <span class="text-ember text-xs">{{ $message }}</span> @enderror
             </label>
+
+            @if ($accountType === 'student')
+                {{-- Email OTP verification --}}
+                <div class="p-4 rounded-2xl bg-ink/5 border border-ink/8 space-y-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-mist">Email Verification</h3>
+
+                    @if ($otpVerified)
+                        <p class="flex items-center gap-2 text-sm text-emerald-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            {{ $email }} is verified.
+                        </p>
+                    @else
+                        @if (! $otpSent)
+                            <button type="button" wire:click="sendOtp" wire:loading.attr="disabled" wire:target="sendOtp" class="btn-dark text-sm">
+                                <span wire:loading.remove wire:target="sendOtp">Send verification code</span>
+                                <span wire:loading wire:target="sendOtp">Sending…</span>
+                            </button>
+                        @else
+                            <div class="flex flex-col gap-2 md:flex-row md:items-start">
+                                <label class="flex flex-1 flex-col gap-1 text-sm font-medium">
+                                    Verification code
+                                    <input wire:model="otp" type="text" inputmode="numeric" maxlength="6" class="field" placeholder="6-digit code">
+                                    @error('otp') <span class="text-ember text-xs">{{ $message }}</span> @enderror
+                                </label>
+                                <div class="flex gap-2 md:mt-6">
+                                    <button type="button" wire:click="verifyOtp" wire:loading.attr="disabled" wire:target="verifyOtp" class="btn-primary text-sm whitespace-nowrap">Verify</button>
+                                    <button type="button" wire:click="sendOtp" wire:loading.attr="disabled" wire:target="sendOtp" class="text-sm text-mist underline whitespace-nowrap">Resend</button>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($otpStatus)
+                            <p class="text-xs text-emerald-600">{{ $otpStatus }}</p>
+                        @endif
+                        @if ($otpError)
+                            <p class="text-xs text-ember">{{ $otpError }}</p>
+                        @endif
+                    @endif
+                </div>
+            @endif
 
             @if ($accountType === 'student')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -143,9 +185,12 @@
                 <input wire:model="password_confirmation" type="password" class="field" required>
             </label>
 
-            <button type="submit" class="btn-primary mt-2">
+            <button type="submit" class="btn-primary mt-2" {{ $accountType === 'student' && ! $otpVerified ? 'disabled' : '' }}>
                 {{ $accountType === 'campus' ? 'Request campus access' : 'Create your studio' }}
             </button>
+            @if ($accountType === 'student' && ! $otpVerified)
+                <p class="text-xs text-mist -mt-2">Verify your email above to enable registration.</p>
+            @endif
 
             <p class="text-sm text-mist">Already here? <a href="{{ route('login') }}" class="text-ember" wire:navigate>Sign in</a></p>
         </form>

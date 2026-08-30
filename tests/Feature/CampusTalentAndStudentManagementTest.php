@@ -112,7 +112,7 @@ test('custom talents are scoped to the correct campus', function () {
         ->assertDontSee('Magic Show');
 });
 
-test('campus admin can ban and unban student profiles', function () {
+test('campus admin can suspend and unsuspend student profiles', function () {
     $admin = User::factory()->create([
         'role' => Role::CampusAdmin,
         'status' => UserStatus::Approved,
@@ -128,14 +128,14 @@ test('campus admin can ban and unban student profiles', function () {
 
     $this->actingAs($admin);
 
-    // Ban the student
+    // Suspend the student
     Livewire::test(Dashboard::class)
         ->set('activeTab', 'students')
-        ->call('banStudent', $student->id);
+        ->call('suspendStudent', $student->id);
 
     expect($student->fresh()->status)->toBe(UserStatus::Banned);
 
-    // Banned student cannot login
+    // Suspended student cannot login
     Auth::logout();
     Livewire::test(Login::class)
         ->set('email', $student->email)
@@ -143,11 +143,11 @@ test('campus admin can ban and unban student profiles', function () {
         ->call('login')
         ->assertHasErrors(['email']);
 
-    // Unban the student
+    // Unsuspend the student
     $this->actingAs($admin);
     Livewire::test(Dashboard::class)
         ->set('activeTab', 'students')
-        ->call('unbanStudent', $student->id);
+        ->call('unsuspendStudent', $student->id);
 
     expect($student->fresh()->status)->toBe(UserStatus::Approved);
 });

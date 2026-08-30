@@ -4,15 +4,20 @@ namespace App\Livewire\Campus;
 
 use App\Actions\AwardXp;
 use App\Enums\EventApplicationStatus;
+use App\Enums\ReportStatus;
 use App\Enums\Role;
 use App\Enums\TalentTheme;
 use App\Enums\UserStatus;
 use App\Enums\XpEventType;
 use App\Models\Event;
 use App\Models\EventApplication;
+use App\Models\PortfolioItem;
+use App\Models\Report;
+use App\Models\Setting;
 use App\Models\Talent;
 use App\Models\TalentCategory;
 use App\Models\User;
+use App\Models\XpEvent;
 use App\Notifications\EventApplicationSelectedNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
@@ -21,13 +26,19 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Layout('layouts::campus-panel')]
 #[Title('Campus Dashboard')]
 class Dashboard extends Component
 {
+    use WithPagination;
+
     #[Url(as: 'tab')]
     public string $activeTab = 'overview';
+
+    #[Url(as: 'q')]
+    public string $studentSearch = '';
 
     public ?int $selectedEventId = null;
 
@@ -53,9 +64,26 @@ class Dashboard extends Component
 
     public bool $showTalentForm = false;
 
+    public string $announcementMessage = '';
+
+    public bool $announcementEnabled = false;
+
     public function mount(): void
     {
         abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        $this->announcementMessage = Setting::get($this->announcementMessageKey(), '') ?? '';
+        $this->announcementEnabled = Setting::get($this->announcementEnabledKey()) === '1';
+    }
+
+    protected function announcementMessageKey(): string
+    {
+        return 'campus_announcement_message_'.auth()->id();
+    }
+
+    protected function announcementEnabledKey(): string
+    {
+        return 'campus_announcement_enabled_'.auth()->id();
     }
 
     public function selectEvent(int $eventId): void
@@ -88,28 +116,80 @@ class Dashboard extends Component
         $user->update(['status' => UserStatus::Rejected]);
     }
 
-    public function banStudent(int $userId): void
+    public function suspendStudent(int $userId): void
     {
         abort_unless(auth()->user()->canOrganizeEvents(), 403);
 
         $user = User::query()
-            ->where('campus_id', auth()->user()->campus_id)
-            ->where('role', Role::Student)
+            ->approvedStudentsForCampus(auth()->id())
             ->findOrFail($userId);
 
         $user->update(['status' => UserStatus::Banned]);
     }
 
-    public function unbanStudent(int $userId): void
+    public function unsuspendStudent(int $userId): void
     {
         abort_unless(auth()->user()->canOrganizeEvents(), 403);
 
         $user = User::query()
-            ->where('campus_id', auth()->user()->campus_id)
             ->where('role', Role::Student)
+            ->where('campus_id', auth()->id())
+            ->where('status', UserStatus::Banned)
             ->findOrFail($userId);
 
         $user->update(['status' => UserStatus::Approved]);
+    }
+
+    public function removeStudent(int $userId): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        $user = User::query()
+            ->where('role', Role::Student)
+            ->where('campus_id', auth()->id())
+            ->findOrFail($userId);
+
+        $user->delete();
+    }
+
+    public function unpublishItem(int $itemId): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        PortfolioItem::query()->findOrFail($itemId)->update(['published_at' => null]);
+    }
+
+    public function moderateReport(int $reportId, string $status): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        $report = Report::query()
+            ->whereHasMorph('reportable', [PortfolioItem::class], function ($query) {
+                $query->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()));
+            })
+            ->findOrFail($reportId);
+
+        $report->update(['status' => ReportStatus::from($status)]);
+
+        if ($report->status === ReportStatus::Actioned) {
+            $report->loadMissing('reportable');
+
+            if ($report->reportable instanceof PortfolioItem) {
+                $report->reportable->update(['published_at' => null]);
+            }
+        }
+    }
+
+    public function saveAnnouncement(): void
+    {
+        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+
+        $this->validate([
+            'announcementMessage' => ['nullable', 'string', 'max:280'],
+        ]);
+
+        Setting::set($this->announcementMessageKey(), $this->announcementMessage);
+        Setting::set($this->announcementEnabledKey(), $this->announcementEnabled ? '1' : '0');
     }
 
     public function openCategoryForm(?int $categoryId = null): void
@@ -373,10 +453,32 @@ class Dashboard extends Component
             ->latest()
             ->get();
 
-        $bannedStudents = User::query()
-            ->bannedStudentsForCampus($campusUser->id)
-            ->with('profile.primaryTalentModel')
+        $manageableStudents = User::query()
+            ->where('role', Role::Student)
+            ->where('campus_id', auth()->id())
+            ->whereIn('status', [UserStatus::Approved, UserStatus::Banned])
+            ->when($this->studentSearch !== '', fn ($query) => $query->where(fn ($query) => $query
+                ->where('name', 'like', "%{$this->studentSearch}%")
+                ->orWhere('email', 'like', "%{$this->studentSearch}%")))
             ->latest()
+            ->paginate(15, pageName: 'studentsPage');
+
+        $recentItems = PortfolioItem::query()
+            ->published()
+            ->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()))
+            ->with('user:id,name')
+            ->latest('published_at')
+            ->limit(20)
+            ->get();
+
+        $reports = Report::query()
+            ->pending()
+            ->whereHasMorph('reportable', [PortfolioItem::class], function ($query) {
+                $query->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()));
+            })
+            ->with(['reporter:id,name', 'reportable'])
+            ->latest()
+            ->limit(20)
             ->get();
 
         $talents = Talent::query()
@@ -385,10 +487,17 @@ class Dashboard extends Component
             ->orderBy('name')
             ->get();
 
-        $categories = TalentCategory::query()
+        $talentCategories = TalentCategory::query()
             ->forCampus($campusId)
             ->withCount(['talents' => fn ($q) => $q->forCampus($campusId)])
             ->orderBy('name')
+            ->get();
+
+        $categories = Talent::query()
+            ->withCount(['portfolioItems as published_items_count' => fn ($query) => $query
+                ->published()
+                ->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()))])
+            ->orderByDesc('published_items_count')
             ->get();
 
         return view('livewire.campus.dashboard', [
@@ -396,13 +505,59 @@ class Dashboard extends Component
             'selectedEvent' => $selectedEvent,
             'pendingStudents' => $pendingStudents,
             'approvedStudents' => $approvedStudents,
-            'bannedStudents' => $bannedStudents,
+            'manageableStudents' => $manageableStudents,
             'talents' => $talents,
-            'categories' => $categories,
+            'talentCategories' => $talentCategories,
             'totalStudents' => $approvedStudents->count(),
             'totalPending' => $pendingStudents->count(),
-            'totalBanned' => $bannedStudents->count(),
             'totalEvents' => $events->count(),
+            'recentItems' => $recentItems,
+            'reports' => $reports,
+            'categories' => $categories,
+            'newStudentsLast7Days' => User::query()
+                ->where('role', Role::Student)
+                ->where('campus_id', auth()->id())
+                ->where('created_at', '>=', now()->subDays(7))
+                ->count(),
+            'newStudentsLast30Days' => User::query()
+                ->where('role', Role::Student)
+                ->where('campus_id', auth()->id())
+                ->where('created_at', '>=', now()->subDays(30))
+                ->count(),
+            'topStudents' => User::query()
+                ->approvedStudentsForCampus(auth()->id())
+                ->ranked()
+                ->limit(5)
+                ->get(),
+            'xpEarnedLast30Days' => XpEvent::query()
+                ->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()))
+                ->where('created_at', '>=', now()->subDays(30))
+                ->sum('points'),
+            'itemsPublishedLast30Days' => PortfolioItem::query()
+                ->published()
+                ->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()))
+                ->where('published_at', '>=', now()->subDays(30))
+                ->count(),
+            'eventApplicationsTotal' => EventApplication::query()
+                ->whereHas('event', fn ($query) => $query->whereBelongsTo($campusUser, 'organizer'))
+                ->count(),
+            'eventApplicationsAccepted' => EventApplication::query()
+                ->whereHas('event', fn ($query) => $query->whereBelongsTo($campusUser, 'organizer'))
+                ->where('status', EventApplicationStatus::Accepted)
+                ->count(),
+            'weeklyPublishedCounts' => collect(range(5, 0))->map(function (int $weeksAgo) {
+                $start = now()->subWeeks($weeksAgo)->startOfWeek();
+                $end = now()->subWeeks($weeksAgo)->endOfWeek();
+
+                return [
+                    'label' => $start->format('M j'),
+                    'count' => PortfolioItem::query()
+                        ->published()
+                        ->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()))
+                        ->whereBetween('published_at', [$start, $end])
+                        ->count(),
+                ];
+            }),
         ]);
     }
 }
