@@ -1,0 +1,45 @@
+@startuml
+' Simpler architecture diagram inspired by the reference image
+skinparam backgroundColor #F8F3FF
+skinparam shadowing false
+skinparam linetype ortho
+skinparam rectangle {
+  BackgroundColor #F3E8FF
+  BorderColor #7C3AED
+  FontColor #1F2937
+  RoundCorner 12
+}
+skinparam component {
+  BackgroundColor #F5F3FF
+  BorderColor #8B5CF6
+  FontColor #1F2937
+}
+skinparam database {
+  BackgroundColor #EEE7FF
+  BorderColor #7C3AED
+  FontColor #1F2937
+}
+skinparam arrowColor #6D28D9
+
+left to right direction
+
+rectangle "Client Side\nWeb Browser" as Client
+
+rectangle "Server" as Server {
+  rectangle "Presentation Layer\nLaravel + Livewire\nRoutes + Middleware" as Presentation
+  rectangle "Business Logic\nAuth, Feed, Profiles,\nEvents, Collaborations" as Logic
+  rectangle "Data Layer\nModels + Services" as DataLayer
+}
+
+database "Database\nMySQL" as DB
+component "Cache\nRedis" as Redis
+component "Storage\nFiles / Media" as Storage
+
+Client --> Presentation : HTTP / Livewire requests
+Presentation --> Logic : UI actions
+Logic --> DataLayer : business operations
+DataLayer --> DB : queries
+Logic --> Redis : session / cache
+Logic --> Storage : uploads / media
+
+@enduml

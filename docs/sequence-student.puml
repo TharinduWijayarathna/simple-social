@@ -1,0 +1,117 @@
+@startuml
+' Student activity sequence diagram for VibeCraft
+skinparam backgroundColor #F8F3FF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #6D28D9
+  LifeLineBorderColor #8B5CF6
+  LifeLineBackgroundColor #F5F3FF
+  ParticipantBorderColor #7C3AED
+  ParticipantBackgroundColor #F3E8FF
+  ActorBorderColor #7C3AED
+  ActorBackgroundColor #EDE9FE
+  BoxBorderColor #7C3AED
+  BoxBackgroundColor #F8F3FF
+  MessageAlign center
+}
+
+actor Student
+participant Browser
+participant FeedPage
+participant ProfilePage
+participant PortfolioPage
+participant StatusPage
+participant StudentsPage
+participant CollaborationsPage
+participant LeaderboardPage
+participant EventPage
+participant UserModel
+participant Storage
+
+Student -> Browser: Login and open home page
+Browser -> FeedPage: Load student-only feed
+FeedPage -> UserModel: Get statuses, likes, follows
+UserModel --> FeedPage: Feed items
+FeedPage -> Student: Show social feed
+
+alt Student wants to post status
+    Student -> StatusPage: Create new status
+    StatusPage -> Storage: Upload media if provided
+    Storage --> StatusPage: Media saved
+    StatusPage -> UserModel: Store status
+    UserModel --> StatusPage: Status created
+    StatusPage -> Student: Confirmation
+else Student skips posting
+    StatusPage -> Student: Return to feed
+end
+
+Student -> ProfilePage: Open profile / edit profile
+ProfilePage -> UserModel: Load profile and talent data
+UserModel --> ProfilePage: Profile details
+ProfilePage -> Student: Display editable profile
+
+alt Student updates profile
+    Student -> ProfilePage: Save changes
+    ProfilePage -> UserModel: Update profile
+    UserModel --> ProfilePage: Saved
+else Validation fails
+    ProfilePage -> Student: Show validation errors
+end
+
+Student -> PortfolioPage: Open portfolio
+PortfolioPage -> UserModel: Load portfolio items
+UserModel --> PortfolioPage: Portfolio list
+PortfolioPage -> Student: Display media items
+
+alt Student adds portfolio item
+    Student -> PortfolioPage: Create portfolio item
+    PortfolioPage -> Storage: Upload file/media
+    Storage --> PortfolioPage: File stored
+    PortfolioPage -> UserModel: Save item
+    UserModel --> PortfolioPage: Item created
+else File too large or invalid type
+    PortfolioPage -> Student: Show fallback upload error
+end
+
+Student -> StudentsPage: Browse other students
+StudentsPage -> UserModel: Query users and ranks
+UserModel --> StudentsPage: Student directory
+Student -> StudentsPage: Follow / view profile
+StudentsPage -> UserModel: Save follow relationship
+UserModel --> StudentsPage: Follow updated
+
+Student -> CollaborationsPage: Open collaborations
+CollaborationsPage -> UserModel: Load open collaborations
+UserModel --> CollaborationsPage: Collaboration list
+
+alt Student joins or requests collaboration
+    Student -> CollaborationsPage: Send collaboration request
+    CollaborationsPage -> UserModel: Create request
+    UserModel --> CollaborationsPage: Request queued
+else Request blocked or already exists
+    CollaborationsPage -> Student: Show duplicate/fallback notice
+end
+
+Student -> LeaderboardPage: View leaderboard
+LeaderboardPage -> UserModel: Get ranked students
+UserModel --> LeaderboardPage: Ranked results
+LeaderboardPage -> Student: Display leaderboard
+
+Student -> EventPage: Open event list / event details
+EventPage -> UserModel: Load available events
+UserModel --> EventPage: Event data
+
+alt Student RSVPs to event
+    Student -> EventPage: Submit RSVP
+    EventPage -> UserModel: Save event application
+    UserModel --> EventPage: RSVP confirmed
+else Event full or closed
+    EventPage -> Student: Show fallback message
+end
+
+Student -> Browser: Open wearable glance page
+Browser -> FeedPage: Load wearable data / notification summary
+FeedPage -> UserModel: Fetch glance info
+UserModel --> FeedPage: Summary data
+FeedPage -> Student: Show glance / wearable status
+@enduml

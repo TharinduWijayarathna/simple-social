@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VibeCraft Wireframes</title>
+    <style>
+      :root {
+        --bg: #f3f4f6;
+        --panel: #ffffff;
+        --panel-soft: #ececec;
+        --panel-strong: #dfe3e8;
+        --line: #cfcfcf;
+        --text: #1f1f1f;
+        --muted: #6d6d6d;
+        --dark: #2b2b2b;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 1.4;
+      }
+
+      .page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px 20px 60px;
+      }
+
+      .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 28px 0 16px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--dark);
+      }
+
+      .grid {
+        display: grid;
+        gap: 24px;
+      }
+
+      .two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .three-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .four-col { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+      .wireframe {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--line);
+        background: #f7f7f7;
+      }
+
+      .brand {
+        width: 120px;
+        height: 24px;
+        background: var(--panel-strong);
+        border-radius: 12px;
+      }
+
+      .nav {
+        display: flex;
+        gap: 10px;
+      }
+
+      .nav-item {
+        width: 72px;
+        height: 14px;
+        background: var(--panel-soft);
+        border-radius: 10px;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--panel-strong);
+      }
+
+      .btn {
+        width: 70px;
+        height: 32px;
+        border-radius: 10px;
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+      }
+
+      .shell {
+        padding: 20px;
+      }
+
+      .feed-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 290px;
+        gap: 22px;
+      }
+
+      .composer {
+        margin-bottom: 18px;
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 16px;
+      }
+
+      .composer-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .story-row {
+        display: flex;
+        gap: 12px;
+        margin: 16px 0 18px;
+      }
+
+      .story {
+        width: 110px;
+        height: 160px;
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+      }
+
+      .post {
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .post-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mini-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--panel-strong);
+      }
+
+      .text-line {
+        height: 12px;
+        background: var(--panel-strong);
+        border-radius: 999px;
+        margin-bottom: 10px;
+      }
+
+      .text-line.short { width: 45%; }
+      .text-line.medium { width: 70%; }
+      .text-line.long { width: 95%; }
+
+      .media-box {
+        height: 210px;
+        border-radius: 18px;
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+        margin: 14px 0;
+      }
+
+      .right-rail {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .card {
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 16px;
+      }
+
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--panel-strong);
+      }
+
+      .people-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .person-card {
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+      }
+
+      .person-cover {
+        height: 200px;
+        background: var(--panel-strong);
+      }
+
+      .person-body {
+        padding: 12px;
+      }
+
+      .profile-header {
+        display: flex;
+        gap: 18px;
+        padding: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: var(--panel-strong);
+        flex-shrink: 0;
+      }
+
+      .profile-info {
+        flex: 1;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 12px;
+        padding: 12px 18px 0;
+      }
+
+      .tab {
+        width: 120px;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+      }
+
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        padding: 18px;
+      }
+
+      .gallery-item {
+        height: 150px;
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+      }
+
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        padding: 18px;
+      }
+
+      .stat-box {
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      .event-list {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 18px;
+        padding: 18px;
+      }
+
+      .event-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .event-menu-item {
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        min-height: 78px;
+      }
+
+      .event-detail {
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18px;
+      }
+
+      .form-box {
+        padding: 18px;
+      }
+
+      .field {
+        height: 40px;
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        margin-bottom: 10px;
+      }
+
+      .field.long { height: 90px; }
+
+      .two-column-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .admin-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        padding: 18px;
+      }
+
+      .table {
+        padding: 18px;
+      }
+
+      .table-row {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr 1fr 1fr;
+        gap: 12px;
+        padding: 12px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .table-row:first-child { border-top: none; }
+
+      .badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--panel-strong);
+        font-size: 12px;
+        border: 1px solid var(--line);
+      }
+
+      .login-shell {
+        max-width: 980px;
+        margin: 40px auto;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        overflow: hidden;
+      }
+
+      .login-layout {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+
+      .login-hero {
+        min-height: 520px;
+        background: var(--panel-soft);
+        border-right: 1px solid var(--line);
+        padding: 30px;
+      }
+
+      .login-form {
+        padding: 36px 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .login-box {
+        width: 100%;
+        max-width: 340px;
+      }
+
+      .mobile-nav {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 10px 8px 0;
+      }
+
+      .mobile-tab {
+        flex: 1;
+        height: 34px;
+        border-radius: 10px;
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+      }
+
+      @media (max-width: 980px) {
+        .two-col, .three-col, .four-col, .feed-layout, .event-list, .login-layout, .people-grid, .admin-grid, .stats-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h2 class="section-title">VibeCraft wireframes</h2>
+
+      <div class="wireframe">
+        <div class="topbar">
+          <div class="brand"></div>
+          <div class="nav">
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+          </div>
+          <div class="actions">
+            <div class="btn"></div>
+            <div class="avatar"></div>
+          </div>
+        </div>
+
+        <div class="shell">
+          <div class="feed-layout">
+            <div>
+              <div class="composer">
+                <div class="composer-row">
+                  <div class="mini-avatar"></div>
+                  <div style="flex:1; height:42px; border-radius:999px; background:#dfe3e8; border:1px solid var(--line);"></div>
+                </div>
+                <div class="story-row">
+                  <div class="story"></div>
+                  <div class="story"></div>
+                  <div class="story"></div>
+                </div>
+              </div>
+
+              <div class="post">
+                <div class="post-header">
+                  <div class="post-meta">
+                    <div class="mini-avatar"></div>
+                    <div>
+                      <div class="text-line medium"></div>
+                      <div class="text-line short"></div>
+                    </div>
+                  </div>
+                  <div class="btn" style="width:56px; height:24px;"></div>
+                </div>
+                <div class="text-line long"></div>
+                <div class="text-line"></div>
+                <div class="text-line short"></div>
+                <div class="media-box"></div>
+                <div class="text-line short" style="width:35%;"></div>
+              </div>
+
+              <div class="post">
+                <div class="post-header">
+                  <div class="post-meta">
+                    <div class="mini-avatar"></div>
+                    <div>
+                      <div class="text-line medium"></div>
+                      <div class="text-line short"></div>
+                    </div>
+                  </div>
+                  <div class="btn" style="width:56px; height:24px;"></div>
+                </div>
+                <div class="text-line long"></div>
+                <div class="text-line"></div>
+                <div class="media-box" style="height:180px;"></div>
+              </div>
+            </div>
+
+            <aside class="right-rail">
+              <div class="card">
+                <div class="text-line medium" style="width:55%;"></div>
+                <div class="list" style="margin-top:14px;">
+                  <div class="list-item"></div>
+                  <div class="list-item"></div>
+                  <div class="list-item"></div>
+                </div>
+              </div>
+
+              <div class="card" style="background:#f0f0f0;">
+                <div class="text-line medium" style="width:60%;"></div>
+                <div class="list" style="margin-top:14px;">
+                  <div class="list-item"></div>
+                  <div class="list-item"></div>
+                  <div class="list-item"></div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Student directory</div>
+      <div class="wireframe">
+        <div class="shell">
+          <div style="height:40px; width:100%; background:#e7e7e7; border:1px solid var(--line); border-radius:999px; margin-bottom:16px;"></div>
+          <div class="mobile-nav">
+            <div class="mobile-tab"></div>
+            <div class="mobile-tab"></div>
+            <div class="mobile-tab"></div>
+            <div class="mobile-tab"></div>
+          </div>
+
+          <div class="people-grid" style="margin-top:18px;">
+            <div class="person-card">
+              <div class="person-cover"></div>
+              <div class="person-body">
+                <div class="text-line medium"></div>
+                <div class="text-line short"></div>
+              </div>
+            </div>
+            <div class="person-card">
+              <div class="person-cover"></div>
+              <div class="person-body">
+                <div class="text-line medium"></div>
+                <div class="text-line short"></div>
+              </div>
+            </div>
+            <div class="person-card">
+              <div class="person-cover"></div>
+              <div class="person-body">
+                <div class="text-line medium"></div>
+                <div class="text-line short"></div>
+              </div>
+            </div>
+            <div class="person-card">
+              <div class="person-cover"></div>
+              <div class="person-body">
+                <div class="text-line medium"></div>
+                <div class="text-line short"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Student profile</div>
+      <div class="wireframe">
+        <div class="profile-header">
+          <div class="profile-avatar"></div>
+          <div class="profile-info">
+            <div class="text-line medium" style="width:28%; height:18px;"></div>
+            <div class="text-line long" style="margin-top:12px; width:60%;"></div>
+            <div class="text-line" style="margin-top:12px; width:80%;"></div>
+            <div class="text-line short" style="margin-top:12px; width:35%;"></div>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab"></div>
+          <div class="tab"></div>
+          <div class="tab"></div>
+        </div>
+        <div class="gallery-grid">
+          <div class="gallery-item"></div>
+          <div class="gallery-item"></div>
+          <div class="gallery-item"></div>
+          <div class="gallery-item"></div>
+          <div class="gallery-item"></div>
+          <div class="gallery-item"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Events</div>
+      <div class="wireframe">
+        <div class="shell">
+          <div class="event-list">
+            <div class="event-menu">
+              <div class="event-menu-item"></div>
+              <div class="event-menu-item"></div>
+              <div class="event-menu-item"></div>
+            </div>
+            <div class="event-detail">
+              <div class="text-line medium" style="width:35%; height:18px;"></div>
+              <div class="text-line long" style="margin-top:14px; width:80%;"></div>
+              <div class="text-line" style="width:90%;"></div>
+              <div class="text-line short" style="width:50%;"></div>
+              <div class="media-box" style="height:170px; margin-top:20px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Portfolio create / upload</div>
+      <div class="wireframe">
+        <div class="form-box">
+          <div class="two-column-form">
+            <div>
+              <div class="text-line medium" style="width:50%; height:18px;"></div>
+              <div class="field"></div>
+              <div class="field"></div>
+              <div class="field long"></div>
+            </div>
+            <div>
+              <div class="text-line medium" style="width:45%; height:18px;"></div>
+              <div class="media-box" style="height:220px;"></div>
+              <div class="field"></div>
+              <div class="field"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Campus dashboard</div>
+      <div class="wireframe">
+        <div class="shell">
+          <div class="stats-row">
+            <div class="stat-box"><div class="text-line medium" style="width:60%;"></div><div class="text-line" style="margin-top:14px; width:45%;"></div></div>
+            <div class="stat-box"><div class="text-line medium" style="width:60%;"></div><div class="text-line" style="margin-top:14px; width:45%;"></div></div>
+            <div class="stat-box"><div class="text-line medium" style="width:60%;"></div><div class="text-line" style="margin-top:14px; width:45%;"></div></div>
+          </div>
+          <div class="table">
+            <div class="table-row">
+              <div class="text-line long"></div>
+              <div class="text-line"></div>
+              <div class="text-line"></div>
+              <div class="badge"></div>
+            </div>
+            <div class="table-row">
+              <div class="text-line long"></div>
+              <div class="text-line"></div>
+              <div class="text-line"></div>
+              <div class="badge"></div>
+            </div>
+            <div class="table-row">
+              <div class="text-line long"></div>
+              <div class="text-line"></div>
+              <div class="text-line"></div>
+              <div class="badge"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Admin dashboard</div>
+      <div class="wireframe">
+        <div class="shell">
+          <div class="admin-grid">
+            <div class="stat-box"><div class="text-line medium" style="width:60%;"></div><div class="text-line short" style="margin-top:12px; width:30%;"></div></div>
+            <div class="stat-box"><div class="text-line medium" style="width:60%;"></div><div class="text-line short" style="margin-top:12px; width:30%;"></div></div>
+            <div class="stat-box"><div class="text-line medium" style="width:60%;"></div><div class="text-line short" style="margin-top:12px; width:30%;"></div></div>
+          </div>
+          <div class="table">
+            <div class="table-row">
+              <div class="text-line long"></div>
+              <div class="text-line"></div>
+              <div class="text-line"></div>
+              <div class="badge"></div>
+            </div>
+            <div class="table-row">
+              <div class="text-line long"></div>
+              <div class="text-line"></div>
+              <div class="text-line"></div>
+              <div class="badge"></div>
+            </div>
+            <div class="table-row">
+              <div class="text-line long"></div>
+              <div class="text-line"></div>
+              <div class="text-line"></div>
+              <div class="badge"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Login / sign in</div>
+      <div class="wireframe login-shell">
+        <div class="login-layout">
+          <div class="login-hero">
+            <div class="brand" style="width:100px;"></div>
+            <div class="text-line medium" style="margin-top:30px; width:65%; height:22px;"></div>
+            <div class="text-line long" style="margin-top:18px; width:80%;"></div>
+            <div class="text-line" style="margin-top:10px; width:72%;"></div>
+            <div style="margin-top:32px; width:100%; height:220px; background:#dfe3e8; border:1px solid var(--line); border-radius:18px;"></div>
+          </div>
+          <div class="login-form">
+            <div class="login-box">
+              <div class="text-line medium" style="width:35%; height:20px;"></div>
+              <div class="field" style="margin-top:20px;"></div>
+              <div class="field"></div>
+              <div class="field" style="width:110px; margin-top:18px;"></div>
+              <div class="field" style="margin-top:22px; height:42px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

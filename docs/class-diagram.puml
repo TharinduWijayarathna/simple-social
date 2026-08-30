@@ -1,0 +1,97 @@
+@startuml
+' Simplified class diagram for VibeCraft
+skinparam backgroundColor #F8F3FF
+skinparam shadowing false
+skinparam class {
+  BackgroundColor #F3E8FF
+  BorderColor #7C3AED
+  ArrowColor #6D28D9
+  FontColor #1F2937
+  RoundCorner 12
+}
+skinparam linetype ortho
+hide methods
+hide stereotypes
+
+class User {
+  +id
+  +name
+  +email
+  +role
+  +xp
+}
+
+class Profile {
+  +id
+  +headline
+  +bio
+}
+
+class Talent {
+  +id
+  +name
+}
+
+class Status {
+  +id
+  +caption
+  +image_path
+}
+
+class PortfolioItem {
+  +id
+  +title
+  +media_type
+}
+
+class Event {
+  +id
+  +title
+  +location
+  +starts_at
+}
+
+class Collaboration {
+  +id
+  +title
+  +status
+}
+
+class Achievement {
+  +id
+  +name
+}
+
+class Device {
+  +id
+  +platform
+  +token
+}
+
+class Follow
+class Like
+class Comment
+class Share
+class Rating
+class Report
+
+User "1" --> "1" Profile
+User "1" --> "0..*" Device
+User "1" --> "0..*" Status
+User "1" --> "0..*" PortfolioItem
+User "1" --> "0..*" Event
+User "1" --> "0..*" Collaboration
+User "1" --> "0..*" Follow
+User "1" --> "0..*" Like
+User "1" --> "0..*" Comment
+User "1" --> "0..*" Share
+User "1" --> "0..*" Rating
+User "1" --> "0..*" Report
+User "1" --> "0..*" Achievement
+
+Profile "0..*" --> "1" Talent
+PortfolioItem "0..*" --> "1" Talent
+Event "0..*" --> "1" Talent
+Collaboration "0..*" --> "1" Talent
+
+@enduml

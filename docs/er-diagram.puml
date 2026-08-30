@@ -1,0 +1,311 @@
+@startuml
+' ER diagram for VibeCraft
+skinparam backgroundColor #F8F3FF
+skinparam shadowing false
+skinparam entity {
+  BackgroundColor #F3E8FF
+  BorderColor #7C3AED
+  FontColor #1F2937
+  RoundCorner 12
+}
+skinparam arrowColor #6D28D9
+skinparam linetype ortho
+
+entity "users" as users {
+  * id: bigint PK
+  --
+  name
+  email
+  university_id
+  campus_id FK
+  password
+  role
+  status
+  xp
+  current_rank
+  previous_rank
+}
+
+entity "profiles" as profiles {
+  * id: bigint PK
+  --
+  user_id FK
+  headline
+  bio
+  faculty
+  department
+  program
+  profile_type
+  primary_talent_id FK
+  birthday
+  location
+  experience_level
+  avatar_path
+}
+
+table "talents" as talents {
+  * id: bigint PK
+  --
+  name
+  slug
+  description
+  theme
+  category
+}
+
+entity "profile_talent" as profile_talent {
+  * id: bigint PK
+  --
+  profile_id FK
+  talent_id FK
+  is_favorite
+}
+
+entity "portfolio_items" as portfolio_items {
+  * id: bigint PK
+  --
+  user_id FK
+  talent_id FK
+  title
+  description
+  media_type
+  file_path
+  thumbnail_path
+  mime_type
+  file_size
+  published_at
+}
+
+entity "statuses" as statuses {
+  * id: bigint PK
+  --
+  user_id FK
+  caption
+  image_path
+  media_type
+  expires_at
+}
+
+entity "likes" as likes {
+  * id: bigint PK
+  --
+  user_id FK
+  likeable_id
+  likeable_type
+  created_at
+}
+
+entity "comments" as comments {
+  * id: bigint PK
+  --
+  user_id FK
+  commentable_id
+  commentable_type
+  body
+}
+
+entity "follows" as follows {
+  * id: bigint PK
+  --
+  follower_id FK
+  following_id FK
+  created_at
+}
+
+entity "ratings" as ratings {
+  * id: bigint PK
+  --
+  user_id FK
+  rateable_id
+  rateable_type
+  score
+}
+
+entity "shares" as shares {
+  * id: bigint PK
+  --
+  user_id FK
+  portfolio_item_id FK
+}
+
+entity "xp_events" as xp_events {
+  * id: bigint PK
+  --
+  user_id FK
+  type
+  points
+  source_id
+  source_type
+}
+
+entity "achievements" as achievements {
+  * id: bigint PK
+  --
+  name
+  slug
+  description
+  icon
+  xp_reward
+  criteria_type
+  criteria_value
+}
+
+entity "user_achievements" as user_achievements {
+  * id: bigint PK
+  --
+  user_id FK
+  achievement_id FK
+  unlocked_at
+}
+
+entity "events" as events {
+  * id: bigint PK
+  --
+  organizer_id FK
+  talent_id FK
+  title
+  description
+  location
+  starts_at
+  ends_at
+  application_deadline
+  capacity
+  is_published
+}
+
+entity "event_applications" as event_applications {
+  * id: bigint PK
+  --
+  event_id FK
+  user_id FK
+  status
+  message
+}
+
+entity "event_invitations" as event_invitations {
+  * id: bigint PK
+  --
+  event_id FK
+  user_id FK
+  invited_by FK
+  status
+}
+
+entity "event_talents" as event_talents {
+  * id: bigint PK
+  --
+  event_id FK
+  talent_id FK
+  slots
+  notes
+}
+
+entity "collaborations" as collaborations {
+  * id: bigint PK
+  --
+  owner_id FK
+  talent_id FK
+  title
+  description
+  status
+  credit_notes
+}
+
+entity "collaboration_members" as collaboration_members {
+  * id: bigint PK
+  --
+  collaboration_id FK
+  user_id FK
+  member_role
+  credit
+}
+
+entity "collaboration_requests" as collaboration_requests {
+  * id: bigint PK
+  --
+  collaboration_id FK
+  user_id FK
+  message
+  status
+}
+
+entity "devices" as devices {
+  * id: bigint PK
+  --
+  user_id FK
+  name
+  type
+  platform
+  token_hash
+  push_token
+  last_seen_at
+  revoked_at
+}
+
+entity "reports" as reports {
+  * id: bigint PK
+  --
+  reporter_id FK
+  reportable_id
+  reportable_type
+  reason
+  details
+  status
+  moderator_notes
+}
+
+entity "notifications" as notifications {
+  * id: bigint PK
+  --
+  notifiable_id
+  notifiable_type
+  type
+  data
+  read_at
+}
+
+users ||--o| profiles
+users ||--o{ statuses
+users ||--o{ portfolio_items
+users ||--o{ likes
+users ||--o{ comments
+users ||--o{ follows
+users ||--o{ ratings
+users ||--o{ shares
+users ||--o{ xp_events
+users ||--o{ user_achievements
+users ||--o{ events
+users ||--o{ event_applications
+users ||--o{ event_invitations
+users ||--o{ collaboration_members
+users ||--o{ collaboration_requests
+users ||--o{ devices
+users ||--o{ reports
+users ||--o{ notifications
+users }o--o| users : campus_id
+
+profiles ||--o{ profile_talent
+profiles }o--o| talents : primary_talent_id
+
+talents ||--o{ portfolio_items
+talents ||--o{ events
+talents ||--o{ collaborations
+talents ||--o{ event_talents
+
+portfolio_items ||--o{ likes
+portfolio_items ||--o{ comments
+portfolio_items ||--o{ ratings
+portfolio_items ||--o{ reports
+portfolio_items ||--o{ shares
+
+events ||--o{ event_applications
+events ||--o{ event_invitations
+events ||--o{ event_talents
+events ||--o{ notifications
+
+collaborations ||--o{ collaboration_members
+collaborations ||--o{ collaboration_requests
+
+achievements ||--o{ user_achievements
+
+@enduml

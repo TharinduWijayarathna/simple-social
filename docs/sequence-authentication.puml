@@ -1,0 +1,59 @@
+@startuml
+' Authentication sequence diagram for VibeCraft
+skinparam backgroundColor #F8F3FF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #6D28D9
+  LifeLineBorderColor #8B5CF6
+  LifeLineBackgroundColor #F5F3FF
+  ParticipantBorderColor #7C3AED
+  ParticipantBackgroundColor #F3E8FF
+  ActorBorderColor #7C3AED
+  ActorBackgroundColor #EDE9FE
+  BoxBorderColor #7C3AED
+  BoxBackgroundColor #F8F3FF
+  MessageAlign center
+}
+
+actor User
+participant Browser
+participant LoginPage
+participant AuthMiddleware
+participant UserModel
+participant SessionStore
+
+User -> Browser: Open /login or /admin/login
+Browser -> LoginPage: Load login form
+LoginPage -> User: Request email and password
+User -> LoginPage: Submit credentials
+
+alt Credentials valid
+    LoginPage -> AuthMiddleware: Attempt authentication
+    AuthMiddleware -> UserModel: Validate user + password
+    UserModel --> AuthMiddleware: User authenticated
+    AuthMiddleware -> SessionStore: Create session
+    SessionStore --> AuthMiddleware: Session created
+    AuthMiddleware --> Browser: Redirect to home/dashboard
+    Browser -> User: Access granted
+
+    alt User role is student
+        Browser -> Browser: Redirect to / (Feed)
+    else User role is campus_admin
+        Browser -> Browser: Redirect to /campus
+    else User role is super_admin
+        Browser -> Browser: Redirect to /admin
+    end
+
+else Credentials invalid
+    UserModel --> AuthMiddleware: Authentication failed
+    AuthMiddleware --> LoginPage: Return validation error
+    LoginPage -> User: Show error and allow retry
+    User -> LoginPage: Retry credentials
+end
+
+alt Account is pending or blocked
+    UserModel --> AuthMiddleware: User status not approved
+    AuthMiddleware --> Browser: Redirect with access denied message
+    Browser -> User: Show fallback message
+end
+@enduml

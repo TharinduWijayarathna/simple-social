@@ -1,0 +1,73 @@
+@startuml
+' Super admin sequence diagram for VibeCraft
+skinparam backgroundColor #F8F3FF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #6D28D9
+  LifeLineBorderColor #8B5CF6
+  LifeLineBackgroundColor #F5F3FF
+  ParticipantBorderColor #7C3AED
+  ParticipantBackgroundColor #F3E8FF
+  ActorBorderColor #7C3AED
+  ActorBackgroundColor #EDE9FE
+  BoxBorderColor #7C3AED
+  BoxBackgroundColor #F8F3FF
+  MessageAlign center
+}
+
+actor SuperAdmin
+participant Browser
+participant AdminLoginPage
+participant AdminDashboard
+participant UserModel
+participant AchievementService
+participant RankingService
+participant NotificationService
+
+SuperAdmin -> Browser: Open /admin/login
+Browser -> AdminLoginPage: Load admin login form
+SuperAdmin -> AdminLoginPage: Submit credentials
+
+alt Credentials valid and role = super_admin
+    AdminLoginPage -> UserModel: Authenticate admin account
+    UserModel --> AdminLoginPage: Admin confirmed
+    AdminLoginPage -> Browser: Redirect to /admin
+    Browser -> AdminDashboard: Load global admin dashboard
+    AdminDashboard -> UserModel: Fetch system metrics and users
+    UserModel --> AdminDashboard: Admin data
+    AdminDashboard -> SuperAdmin: Display dashboard
+else Invalid credentials
+    AdminLoginPage -> SuperAdmin: Show login error and retry
+else Role mismatch
+    AdminLoginPage -> Browser: Redirect to home
+    Browser -> SuperAdmin: Access denied fallback
+end
+
+SuperAdmin -> AdminDashboard: Open leaderboards and platform overview
+AdminDashboard -> RankingService: Recompute rankings
+RankingService -> UserModel: Update current_rank and previous_rank
+UserModel --> RankingService: Rank data saved
+RankingService --> AdminDashboard: Rankings refreshed
+
+SuperAdmin -> AdminDashboard: Trigger achievement evaluation
+AdminDashboard -> AchievementService: Evaluate achievements for users
+AchievementService -> UserModel: Check XP and milestones
+UserModel --> AchievementService: Achievement state
+AchievementService --> AdminDashboard: Awards issued or skipped
+
+alt No achievement conditions met
+    AchievementService -> SuperAdmin: No new awards to assign
+else New awards unlocked
+    AchievementService -> NotificationService: Send user notifications
+    NotificationService -> SuperAdmin: Notify system update complete
+end
+
+SuperAdmin -> AdminDashboard: Review system health
+AdminDashboard -> UserModel: Query pending users and campus activity
+UserModel --> AdminDashboard: Summary data
+AdminDashboard -> SuperAdmin: Show monitoring results
+
+alt Data unavailable
+    AdminDashboard -> SuperAdmin: Show empty-state fallback
+end
+@enduml

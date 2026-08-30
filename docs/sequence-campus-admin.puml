@@ -1,0 +1,74 @@
+@startuml
+' Campus admin sequence diagram for VibeCraft
+skinparam backgroundColor #F8F3FF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #6D28D9
+  LifeLineBorderColor #8B5CF6
+  LifeLineBackgroundColor #F5F3FF
+  ParticipantBorderColor #7C3AED
+  ParticipantBackgroundColor #F3E8FF
+  ActorBorderColor #7C3AED
+  ActorBackgroundColor #EDE9FE
+  BoxBorderColor #7C3AED
+  BoxBackgroundColor #F8F3FF
+  MessageAlign center
+}
+
+actor CampusAdmin
+participant Browser
+participant CampusDashboard
+participant EventCreatePage
+participant EventModel
+participant UserModel
+participant NotificationService
+participant DeviceService
+
+CampusAdmin -> Browser: Login as campus_admin
+Browser -> CampusDashboard: Check role and access
+alt Not campus admin or not authenticated
+    CampusDashboard -> Browser: Redirect to home or login
+    Browser -> CampusAdmin: Access denied fallback
+else Authorized
+    CampusDashboard -> UserModel: Load campus students and metrics
+    UserModel --> CampusDashboard: Campus summary
+    CampusDashboard -> CampusAdmin: Show dashboard
+end
+
+CampusAdmin -> EventCreatePage: Open create event page
+EventCreatePage -> CampusAdmin: Request event details
+CampusAdmin -> EventCreatePage: Fill title, description, date, capacity
+
+alt Event form is valid
+    EventCreatePage -> EventModel: Save new event
+    EventModel --> EventCreatePage: Event created
+    EventCreatePage -> CampusAdmin: Confirmation message
+else Validation fails
+    EventCreatePage -> CampusAdmin: Show validation errors and retry
+end
+
+CampusAdmin -> Browser: Open event list
+Browser -> EventModel: Load published and upcoming campus events
+EventModel --> Browser: Event details
+Browser -> CampusAdmin: Display event schedule
+
+alt Campus admin updates event
+    CampusAdmin -> EventCreatePage: Modify event details
+    EventCreatePage -> EventModel: Save changes
+    EventModel --> EventCreatePage: Updated
+else Event not found or removed
+    EventCreatePage -> CampusAdmin: Show fallback not found message
+end
+
+CampusAdmin -> DeviceService: Issue or refresh wearable/device token
+DeviceService -> UserModel: Attach device registration
+UserModel --> DeviceService: Token stored
+DeviceService --> CampusAdmin: Device token confirmed
+
+alt Device registration fails
+    DeviceService -> CampusAdmin: Show retry or error fallback
+end
+
+CampusAdmin -> NotificationService: Trigger campus-related notifications
+NotificationService -> CampusAdmin: Delivery status
+@enduml
