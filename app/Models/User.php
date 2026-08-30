@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
  * @property string $email
  * @property string|null $university_id
  * @property int|null $campus_id
+ * @property string|null $campus_name
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property Role $role
@@ -39,7 +40,7 @@ use Illuminate\Support\Str;
  * @property-read Profile|null $profile
  * @property-read User|null $campus
  */
-#[Fillable(['name', 'email', 'password', 'role', 'status', 'university_id', 'campus_id', 'xp', 'current_rank', 'previous_rank'])]
+#[Fillable(['name', 'email', 'password', 'role', 'status', 'university_id', 'campus_id', 'campus_name', 'xp', 'current_rank', 'previous_rank'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -69,6 +70,15 @@ class User extends Authenticatable
             'current_rank' => 'integer',
             'previous_rank' => 'integer',
         ];
+    }
+
+    /**
+     * The institution name for a campus admin (e.g. "ICBT"), falling back to
+     * their personal name for accounts created before campus_name existed.
+     */
+    public function displayCampusName(): string
+    {
+        return $this->campus_name ?? $this->name;
     }
 
     public function initials(): string

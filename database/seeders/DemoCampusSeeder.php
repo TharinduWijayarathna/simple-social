@@ -50,6 +50,8 @@ class DemoCampusSeeder extends Seeder
         /** @var Collection<int, User> $allStudents */
         $allStudents = collect();
 
+        $globalOffset = 0;
+
         foreach ($campuses as $campus) {
             $students = $this->createStudentsForCampus(
                 campus: $campus['admin'],
@@ -57,7 +59,10 @@ class DemoCampusSeeder extends Seeder
                 campusLabel: $campus['name'],
                 count: $campus['student_count'],
                 talents: $talents,
+                globalOffset: $globalOffset,
             );
+
+            $globalOffset += $campus['student_count'];
 
             $allStudents = $allStudents->merge($students);
             $this->seedCampusEvents($campus['admin'], $talents, $campus['name']);
@@ -70,7 +75,7 @@ class DemoCampusSeeder extends Seeder
 
         $this->writeCredentialsMarkdown($admin, $campuses, $allStudents);
 
-        $this->command?->info('Demo data ready: 3 campuses, '.$allStudents->count().' students.');
+        $this->command?->info('Demo data ready: '.count($campuses).' campuses, '.$allStudents->count().' students.');
         $this->command?->info('Credentials written to DEMO_ACCOUNTS.md');
     }
 
@@ -120,22 +125,22 @@ class DemoCampusSeeder extends Seeder
                 'headline' => 'ICBT campus desk — open mics & gallery nights',
             ],
             [
+                'key' => 'nibm',
+                'name' => 'NIBM',
+                'student_count' => 20,
+                'admin_name' => 'Nadeesha Fernando',
+                'admin_email' => 'campus.nibm@vibecraft.test',
+                'location' => 'Colombo 06',
+                'headline' => 'NIBM creative & tech talent desk',
+            ],
+            [
                 'key' => 'nsbm',
                 'name' => 'NSBM',
-                'student_count' => 10,
+                'student_count' => 20,
                 'admin_name' => 'Ruwan Jayawardena',
                 'admin_email' => 'campus.nsbm@vibecraft.test',
                 'location' => 'Homagama',
                 'headline' => 'NSBM green campus talent desk',
-            ],
-            [
-                'key' => 'sliit',
-                'name' => 'SLIIT',
-                'student_count' => 10,
-                'admin_name' => 'Nadeesha Fernando',
-                'admin_email' => 'campus.sliit@vibecraft.test',
-                'location' => 'Malabe',
-                'headline' => 'SLIIT creative & tech talent desk',
             ],
         ];
 
@@ -148,6 +153,7 @@ class DemoCampusSeeder extends Seeder
                 'password' => Hash::make(self::PASSWORD),
                 'status' => UserStatus::Approved,
                 'university_id' => strtoupper($definition['key']).'-ADMIN',
+                'campus_name' => $definition['name'],
             ]);
 
             $admin->profile->update([
@@ -188,12 +194,13 @@ class DemoCampusSeeder extends Seeder
         string $campusLabel,
         int $count,
         Collection $talents,
+        int $globalOffset,
     ): Collection {
         $names = $this->sriLankanNames();
         $students = collect();
 
         for ($i = 0; $i < $count; $i++) {
-            $name = $names[($campusKey === 'icbt' ? $i : ($campusKey === 'nsbm' ? $i + 20 : $i + 30)) % count($names)];
+            $name = $names[($globalOffset + $i) % count($names)];
             $emailLocal = Str::of($name)
                 ->lower()
                 ->replace(' ', '.')
@@ -234,7 +241,7 @@ class DemoCampusSeeder extends Seeder
                     ExperienceLevel::Advanced,
                 ]),
                 'primary_talent_id' => $primary->id,
-                'avatar_path' => $this->avatarUrl($i + ($campusKey === 'icbt' ? 0 : ($campusKey === 'nsbm' ? 40 : 60))),
+                'avatar_path' => $this->avatarUrl($globalOffset + $i),
             ]);
 
             $sync = collect([$primary, ...$extras])->unique('id')->values()->mapWithKeys(
@@ -256,7 +263,7 @@ class DemoCampusSeeder extends Seeder
                 $this->createPortfolioItem($student, $extraTalent, 10 + $extraIndex);
             }
 
-            $this->createStory($student, $primary, $i + ($campusKey === 'icbt' ? 0 : ($campusKey === 'nsbm' ? 40 : 60)));
+            $this->createStory($student, $primary, $globalOffset + $i);
 
             $this->credentials[] = [
                 'name' => $student->name,
@@ -318,11 +325,19 @@ class DemoCampusSeeder extends Seeder
                 'title' => $campusName.' Open Mic Night',
                 'description' => 'Sing, spit verses, or bring your band. Sign up at the campus desk.',
                 'location' => $campusName.' Main Hall',
+                'cover' => 'photo-1470229722913-7c0e2dbbafd3',
             ],
             [
                 'title' => $campusName.' Art Walk',
                 'description' => 'Gallery night for painters, photographers, and digital artists.',
                 'location' => $campusName.' Gallery',
+                'cover' => 'photo-1460661419201-fd4cecdf8a8b',
+            ],
+            [
+                'title' => $campusName.' Sports Fest',
+                'description' => 'Inter-batch matches, fitness challenges, and a talent showcase on the field.',
+                'location' => $campusName.' Sports Complex',
+                'cover' => 'photo-1461896836934-ffe607ba6851',
             ],
         ];
 
@@ -335,11 +350,7 @@ class DemoCampusSeeder extends Seeder
                 'title' => $event['title'],
                 'description' => $event['description'],
                 'location' => $event['location'],
-                'cover_image' => $this->unsplash(
-                    $index === 0 ? 'photo-1470229722913-7c0e2dbbafd3' : 'photo-1460661419201-fd4cecdf8a8b',
-                    1200,
-                    630,
-                ),
+                'cover_image' => $this->unsplash($event['cover'], 1200, 630),
                 'starts_at' => $startsAt,
                 'ends_at' => $startsAt->copy()->addHours(3),
                 'application_deadline' => $startsAt->copy()->subDay(),
@@ -580,10 +591,14 @@ class DemoCampusSeeder extends Seeder
             $lines[] = "| {$campus['name']} | {$a->name} | `{$a->email}` | `password` | `/login` → campus desk |";
         }
 
+        $breakdown = collect($campuses)
+            ->map(fn (array $campus): string => $campus['name'].' '.$students->where('campus_id', $campus['admin']->id)->count())
+            ->implode(' · ');
+
         $lines[] = '';
         $lines[] = '## Students by campus';
         $lines[] = '';
-        $lines[] = 'Total: **'.$students->count().'** students (ICBT 20 · NSBM 10 · SLIIT 10).';
+        $lines[] = 'Total: **'.$students->count().'** students ('.$breakdown.').';
         $lines[] = '';
 
         foreach ($campuses as $campus) {
@@ -666,6 +681,21 @@ class DemoCampusSeeder extends Seeder
             'Melani Hapuarachchi',
             'Janith Withanage',
             'Oshadi Meegoda',
+            'Ravindu Jayasekara',
+            'Thisuri Wanigasekara',
+            'Chanaka Wimalasena',
+            'Poornima Rajakaruna',
+            'Sahan Weragoda',
+            'Dilini Katugampala',
+            'Nadun Illangakoon',
+            'Vishwa Attanayake',
+            'Ashan Peiris',
+            'Chathurangi Suraweera',
+            'Danushka Kariyawasam',
+            'Yasodha Balasuriya',
+            'Hasindu Ratnayake',
+            'Sanduni Wijayasinghe',
+            'Lahiru Manamperi',
         ];
     }
 

@@ -19,12 +19,12 @@ php artisan migrate:fresh --seed
 | Campus | Name | Email | Password | Portal |
 | --- | --- | --- | --- | --- |
 | ICBT | Chamari Wickramasinghe | `campus.icbt@vibecraft.test` | `password` | `/login` → campus desk |
+| NIBM | Nadeesha Fernando | `campus.nibm@vibecraft.test` | `password` | `/login` → campus desk |
 | NSBM | Ruwan Jayawardena | `campus.nsbm@vibecraft.test` | `password` | `/login` → campus desk |
-| SLIIT | Nadeesha Fernando | `campus.sliit@vibecraft.test` | `password` | `/login` → campus desk |
 
 ## Students by campus
 
-Total: **40** students (ICBT 20 · NSBM 10 · SLIIT 10).
+Total: **60** students (ICBT 20 · NIBM 20 · NSBM 20).
 
 ### ICBT (20)
 
@@ -51,41 +51,58 @@ Total: **40** students (ICBT 20 · NSBM 10 · SLIIT 10).
 | Sandun Rajapaksa | `sandun.rajapaksa@icbt.vibecraft.test` | `ICBT-019` | `password` |
 | Kavindi Samarasinghe | `kavindi.samarasinghe@icbt.vibecraft.test` | `ICBT-020` | `password` |
 
-### NSBM (10)
+### NIBM (20)
 
 | Name | Email | University ID | Password |
 | --- | --- | --- | --- |
-| Kavindu Ekanayake | `kavindu.ekanayake@nsbm.vibecraft.test` | `NSBM-001` | `password` |
-| Nilushi Fonseka | `nilushi.fonseka@nsbm.vibecraft.test` | `NSBM-002` | `password` |
-| Malith Cooray | `malith.cooray@nsbm.vibecraft.test` | `NSBM-003` | `password` |
-| Amaya Ranasinghe | `amaya.ranasinghe@nsbm.vibecraft.test` | `NSBM-004` | `password` |
-| Asanka Mendis | `asanka.mendis@nsbm.vibecraft.test` | `NSBM-005` | `password` |
-| Yasara de Silva | `yasara.de.silva@nsbm.vibecraft.test` | `NSBM-006` | `password` |
-| Duminda Jayasuriya | `duminda.jayasuriya@nsbm.vibecraft.test` | `NSBM-007` | `password` |
-| Anushka Gamage | `anushka.gamage@nsbm.vibecraft.test` | `NSBM-008` | `password` |
-| Hasitha Nanayakkara | `hasitha.nanayakkara@nsbm.vibecraft.test` | `NSBM-009` | `password` |
-| Sanduni Alwis | `sanduni.alwis@nsbm.vibecraft.test` | `NSBM-010` | `password` |
+| Kavindu Ekanayake | `kavindu.ekanayake@nibm.vibecraft.test` | `NIBM-001` | `password` |
+| Nilushi Fonseka | `nilushi.fonseka@nibm.vibecraft.test` | `NIBM-002` | `password` |
+| Malith Cooray | `malith.cooray@nibm.vibecraft.test` | `NIBM-003` | `password` |
+| Amaya Ranasinghe | `amaya.ranasinghe@nibm.vibecraft.test` | `NIBM-004` | `password` |
+| Asanka Mendis | `asanka.mendis@nibm.vibecraft.test` | `NIBM-005` | `password` |
+| Yasara de Silva | `yasara.de.silva@nibm.vibecraft.test` | `NIBM-006` | `password` |
+| Duminda Jayasuriya | `duminda.jayasuriya@nibm.vibecraft.test` | `NIBM-007` | `password` |
+| Anushka Gamage | `anushka.gamage@nibm.vibecraft.test` | `NIBM-008` | `password` |
+| Hasitha Nanayakkara | `hasitha.nanayakkara@nibm.vibecraft.test` | `NIBM-009` | `password` |
+| Sanduni Alwis | `sanduni.alwis@nibm.vibecraft.test` | `NIBM-010` | `password` |
+| Praveen Kulasekara | `praveen.kulasekara@nibm.vibecraft.test` | `NIBM-011` | `password` |
+| Nethmi Rodrigo | `nethmi.rodrigo@nibm.vibecraft.test` | `NIBM-012` | `password` |
+| Lakshan Pieris | `lakshan.pieris@nibm.vibecraft.test` | `NIBM-013` | `password` |
+| Hiruni Dias | `hiruni.dias@nibm.vibecraft.test` | `NIBM-014` | `password` |
+| Buddika Seneviratne | `buddika.seneviratne@nibm.vibecraft.test` | `NIBM-015` | `password` |
+| Piumi Chandrasekara | `piumi.chandrasekara@nibm.vibecraft.test` | `NIBM-016` | `password` |
+| Roshan Athukorala | `roshan.athukorala@nibm.vibecraft.test` | `NIBM-017` | `password` |
+| Shanika Bogahawatta | `shanika.bogahawatta@nibm.vibecraft.test` | `NIBM-018` | `password` |
+| Gayan Hettiarachchi | `gayan.hettiarachchi@nibm.vibecraft.test` | `NIBM-019` | `password` |
+| Imasha Kaluarachchi | `imasha.kaluarachchi@nibm.vibecraft.test` | `NIBM-020` | `password` |
 
-### SLIIT (10)
+### NSBM (20)
 
 | Name | Email | University ID | Password |
 | --- | --- | --- | --- |
-| Praveen Kulasekara | `praveen.kulasekara@sliit.vibecraft.test` | `SLIIT-001` | `password` |
-| Nethmi Rodrigo | `nethmi.rodrigo@sliit.vibecraft.test` | `SLIIT-002` | `password` |
-| Lakshan Pieris | `lakshan.pieris@sliit.vibecraft.test` | `SLIIT-003` | `password` |
-| Hiruni Dias | `hiruni.dias@sliit.vibecraft.test` | `SLIIT-004` | `password` |
-| Buddika Seneviratne | `buddika.seneviratne@sliit.vibecraft.test` | `SLIIT-005` | `password` |
-| Piumi Chandrasekara | `piumi.chandrasekara@sliit.vibecraft.test` | `SLIIT-006` | `password` |
-| Roshan Athukorala | `roshan.athukorala@sliit.vibecraft.test` | `SLIIT-007` | `password` |
-| Shanika Bogahawatta | `shanika.bogahawatta@sliit.vibecraft.test` | `SLIIT-008` | `password` |
-| Gayan Hettiarachchi | `gayan.hettiarachchi@sliit.vibecraft.test` | `SLIIT-009` | `password` |
-| Imasha Kaluarachchi | `imasha.kaluarachchi@sliit.vibecraft.test` | `SLIIT-010` | `password` |
+| Sanjaya Wijeratne | `sanjaya.wijeratne@nsbm.vibecraft.test` | `NSBM-001` | `password` |
+| Tharushi Maduranga | `tharushi.maduranga@nsbm.vibecraft.test` | `NSBM-002` | `password` |
+| Viraj Gunawardana | `viraj.gunawardana@nsbm.vibecraft.test` | `NSBM-003` | `password` |
+| Nadeesha Kumari | `nadeesha.kumari@nsbm.vibecraft.test` | `NSBM-004` | `password` |
+| Chaminda Basnayake | `chaminda.basnayake@nsbm.vibecraft.test` | `NSBM-005` | `password` |
+| Ayomi Tennakoon | `ayomi.tennakoon@nsbm.vibecraft.test` | `NSBM-006` | `password` |
+| Suresh Ranatunga | `suresh.ranatunga@nsbm.vibecraft.test` | `NSBM-007` | `password` |
+| Melani Hapuarachchi | `melani.hapuarachchi@nsbm.vibecraft.test` | `NSBM-008` | `password` |
+| Janith Withanage | `janith.withanage@nsbm.vibecraft.test` | `NSBM-009` | `password` |
+| Oshadi Meegoda | `oshadi.meegoda@nsbm.vibecraft.test` | `NSBM-010` | `password` |
+| Ravindu Jayasekara | `ravindu.jayasekara@nsbm.vibecraft.test` | `NSBM-011` | `password` |
+| Thisuri Wanigasekara | `thisuri.wanigasekara@nsbm.vibecraft.test` | `NSBM-012` | `password` |
+| Chanaka Wimalasena | `chanaka.wimalasena@nsbm.vibecraft.test` | `NSBM-013` | `password` |
+| Poornima Rajakaruna | `poornima.rajakaruna@nsbm.vibecraft.test` | `NSBM-014` | `password` |
+| Sahan Weragoda | `sahan.weragoda@nsbm.vibecraft.test` | `NSBM-015` | `password` |
+| Dilini Katugampala | `dilini.katugampala@nsbm.vibecraft.test` | `NSBM-016` | `password` |
+| Nadun Illangakoon | `nadun.illangakoon@nsbm.vibecraft.test` | `NSBM-017` | `password` |
+| Vishwa Attanayake | `vishwa.attanayake@nsbm.vibecraft.test` | `NSBM-018` | `password` |
+| Ashan Peiris | `ashan.peiris@nsbm.vibecraft.test` | `NSBM-019` | `password` |
+| Chathurangi Suraweera | `chathurangi.suraweera@nsbm.vibecraft.test` | `NSBM-020` | `password` |
 
 ## Quick login tips
 
 - Student / campus admin: http://127.0.0.1:8000/login
 - Super admin: http://127.0.0.1:8000/admin/login
 - Demo images use [Unsplash](https://unsplash.com) URLs (avatars, portfolio, stories, event covers).
-
-
-

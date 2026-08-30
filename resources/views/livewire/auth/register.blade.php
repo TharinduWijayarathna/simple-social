@@ -111,7 +111,7 @@
                         <select wire:model="campusId" class="field" required>
                             <option value="">Select your campus…</option>
                             @foreach ($this->campuses as $campus)
-                                <option value="{{ $campus->id }}">{{ $campus->name }}</option>
+                                <option value="{{ $campus->id }}">{{ $campus->displayCampusName() }}</option>
                             @endforeach
                         </select>
                         @error('campusId') <span class="text-ember text-xs">{{ $message }}</span> @enderror

@@ -208,7 +208,7 @@
                                             <p class="font-medium flex items-center gap-2">
                                                 <span>{{ $student->name }}</span>
                                                 @if ($student->campus)
-                                                    <span class="rounded-full bg-wall px-2 py-0.5 text-[10px] font-bold text-mist">{{ $student->campus->name }}</span>
+                                                    <span class="rounded-full bg-wall px-2 py-0.5 text-[10px] font-bold text-mist">{{ $student->campus?->displayCampusName() }}</span>
                                                 @endif
                                                 <button type="button" @click="expanded = !expanded" class="text-xs text-ember font-semibold hover:underline">
                                                     <span x-text="expanded ? 'Hide Details' : 'View Details'"></span>
@@ -299,7 +299,7 @@
                                         <p class="font-medium flex items-center gap-2">
                                             <span>{{ $student->name }}</span>
                                             @if ($student->campus)
-                                                <span class="rounded-full bg-wall px-2 py-0.5 text-[10px] font-bold text-mist">{{ $student->campus->name }}</span>
+                                                <span class="rounded-full bg-wall px-2 py-0.5 text-[10px] font-bold text-mist">{{ $student->campus?->displayCampusName() }}</span>
                                             @endif
                                             <a href="{{ route('students.show', $student) }}" class="text-[10px] text-ember hover:underline" wire:navigate>
                                                 View Profile ↗
@@ -345,7 +345,7 @@
                                         <p class="font-medium flex items-center gap-2 text-ink/70">
                                             <span class="line-through">{{ $student->name }}</span>
                                             @if ($student->campus)
-                                                <span class="rounded-full bg-wall px-2 py-0.5 text-[10px] font-bold text-mist">{{ $student->campus->name }}</span>
+                                                <span class="rounded-full bg-wall px-2 py-0.5 text-[10px] font-bold text-mist">{{ $student->campus?->displayCampusName() }}</span>
                                             @endif
                                             <a href="{{ route('students.show', $student) }}" class="text-[10px] text-ember hover:underline" wire:navigate>
                                                 View Profile ↗

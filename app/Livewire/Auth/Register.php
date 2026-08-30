@@ -78,8 +78,8 @@ class Register extends Component
         return User::query()
             ->where('role', Role::CampusAdmin)
             ->where('status', UserStatus::Approved)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+            ->orderByRaw('COALESCE(campus_name, name)')
+            ->get(['id', 'name', 'campus_name']);
     }
 
     /**
