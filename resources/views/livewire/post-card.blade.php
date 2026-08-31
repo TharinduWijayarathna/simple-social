@@ -64,7 +64,17 @@
         </div>
     @else
         <a href="{{ route('portfolio.show', $item) }}" class="block overflow-hidden bg-wall/30 rounded-2xl" wire:navigate>
-            <img src="{{ $item->displayUrl() }}" alt="{{ $item->title }}" class="w-full h-auto max-h-[750px] object-contain mx-auto rounded-2xl">
+            <img src="{{ $item->displayUrl() }}"
+                 alt="{{ $item->title }}"
+                 class="w-full h-auto max-h-[750px] object-contain mx-auto rounded-2xl"
+                 onerror="this.classList.add('hidden'); this.nextElementSibling.style.display='grid';">
+            <div class="min-h-64 place-items-center bg-linear-to-br from-studio to-ember p-8 text-center text-paper" style="display: none;">
+                <div>
+                    <x-icon name="photo" class="mx-auto size-10 text-gold" />
+                    <p class="mt-3 font-display text-xl">{{ $item->title }}</p>
+                    <p class="mt-1 text-sm text-paper/70">Preview unavailable</p>
+                </div>
+            </div>
         </a>
     @endif
 

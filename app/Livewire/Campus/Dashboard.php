@@ -457,6 +457,7 @@ class Dashboard extends Component
             ->where('role', Role::Student)
             ->where('campus_id', auth()->id())
             ->whereIn('status', [UserStatus::Approved, UserStatus::Banned])
+            ->with('profile.primaryTalentModel')
             ->when($this->studentSearch !== '', fn ($query) => $query->where(fn ($query) => $query
                 ->where('name', 'like', "%{$this->studentSearch}%")
                 ->orWhere('email', 'like', "%{$this->studentSearch}%")))
