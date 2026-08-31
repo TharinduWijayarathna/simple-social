@@ -13,7 +13,7 @@
         <div class="flex min-h-screen lg:h-screen lg:overflow-hidden">
 
             {{-- Sidebar --}}
-            <aside class="hidden w-60 shrink-0 flex-col border-r border-ink/10 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen">
+            <aside class="hidden w-60 flex-none flex-col border-r border-ink/10 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen">
                 <div class="flex h-16 shrink-0 items-center gap-2 border-b border-ink/8 px-5">
                     <span class="font-display text-xl text-studio">VibeCraft</span>
                     <span class="rounded-md bg-ember/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ember">Campus</span>
@@ -94,9 +94,9 @@
                 </nav>
 
                 <div class="border-t border-ink/8 px-4 py-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2.5">
-                            <div class="flex size-8 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-semibold text-gold">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                            <div class="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-studio text-xs font-semibold text-gold">
                                 @if (auth()->user()->avatarUrl())
                                     <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="size-full object-cover rounded-full">
                                 @else
@@ -108,7 +108,7 @@
                                 <p class="text-xs text-mist">Campus Admin</p>
                             </div>
                         </div>
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" class="shrink-0">
                             @csrf
                             <button type="submit"
                                     class="flex size-8 items-center justify-center rounded-lg text-mist transition hover:bg-ink/5 hover:text-ink"
