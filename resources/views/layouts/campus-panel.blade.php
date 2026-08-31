@@ -10,16 +10,16 @@
         @livewireStyles
     </head>
     <body class="min-h-screen bg-wall text-ink antialiased">
-        <div class="flex min-h-screen">
+        <div class="flex min-h-screen lg:h-screen lg:overflow-hidden">
 
             {{-- Sidebar --}}
-            <aside class="hidden w-60 flex-shrink-0 flex-col border-r border-ink/10 bg-white lg:flex">
-                <div class="flex h-16 items-center gap-2 border-b border-ink/8 px-5">
+            <aside class="hidden w-60 shrink-0 flex-col border-r border-ink/10 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen">
+                <div class="flex h-16 shrink-0 items-center gap-2 border-b border-ink/8 px-5">
                     <span class="font-display text-xl text-studio">VibeCraft</span>
                     <span class="rounded-md bg-ember/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ember">Campus</span>
                 </div>
 
-                <nav class="flex-1 px-3 py-5 space-y-0.5">
+                <nav class="min-h-0 flex-1 overflow-y-auto px-3 py-5 space-y-0.5">
                     <p class="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-mist">Management</p>
                     <a href="{{ route('campus.dashboard') }}"
                        class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
@@ -124,15 +124,23 @@
 
             {{-- Mobile top bar --}}
             <div class="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-ink/10 bg-white px-4 lg:hidden">
-                <div class="flex items-center gap-3">
+                <div class="flex shrink-0 items-center gap-3">
                     <span class="font-display text-lg text-studio">VibeCraft</span>
                     <span class="rounded-md bg-ember/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ember">Campus</span>
                 </div>
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('campus.dashboard', ['tab' => 'students']) }}" class="text-xs {{ request()->query('tab') === 'students' ? 'text-ember font-medium' : 'text-mist' }}">Students</a>
-                    <a href="{{ route('campus.dashboard', ['tab' => 'events']) }}" class="text-xs {{ request()->query('tab') === 'events' ? 'text-ember font-medium' : 'text-mist' }}">Events</a>
-                    <a href="{{ route('campus.dashboard', ['tab' => 'talents']) }}" class="text-xs {{ request()->query('tab') === 'talents' ? 'text-ember font-medium' : 'text-mist' }}">Talents</a>
-                    <a href="{{ route('campus.rankings') }}" class="text-xs {{ request()->routeIs('campus.rankings') ? 'text-ember font-medium' : 'text-mist' }}">Rankings</a>
+                <div class="min-w-0 flex-1 overflow-x-auto">
+                    <nav class="flex min-w-max items-center gap-3">
+                        <a href="{{ route('campus.dashboard') }}" class="text-xs {{ request()->routeIs('campus.dashboard') && ! request()->query('tab') ? 'font-medium text-ember' : 'text-mist' }}">Overview</a>
+                        <a href="{{ route('campus.dashboard', ['tab' => 'students']) }}" class="text-xs {{ request()->query('tab') === 'students' ? 'text-ember font-medium' : 'text-mist' }}">Students</a>
+                        <a href="{{ route('campus.dashboard', ['tab' => 'events']) }}" class="text-xs {{ request()->query('tab') === 'events' ? 'text-ember font-medium' : 'text-mist' }}">Events</a>
+                        <a href="{{ route('campus.dashboard', ['tab' => 'talents']) }}" class="text-xs {{ request()->query('tab') === 'talents' ? 'text-ember font-medium' : 'text-mist' }}">Talents</a>
+                        <a href="{{ route('campus.dashboard', ['tab' => 'moderation']) }}" class="text-xs {{ request()->query('tab') === 'moderation' ? 'text-ember font-medium' : 'text-mist' }}">Moderation</a>
+                        <a href="{{ route('campus.dashboard', ['tab' => 'analytics']) }}" class="text-xs {{ request()->query('tab') === 'analytics' ? 'text-ember font-medium' : 'text-mist' }}">Analytics</a>
+                        <a href="{{ route('campus.dashboard', ['tab' => 'announcement']) }}" class="text-xs {{ request()->query('tab') === 'announcement' ? 'text-ember font-medium' : 'text-mist' }}">Announcement</a>
+                        <a href="{{ route('campus.rankings') }}" class="text-xs {{ request()->routeIs('campus.rankings') ? 'text-ember font-medium' : 'text-mist' }}">Rankings</a>
+                    </nav>
+                </div>
+                <div class="shrink-0">
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-mist hover:text-ink">
@@ -145,7 +153,7 @@
             </div>
 
             {{-- Main content --}}
-            <main class="flex-1 overflow-y-auto pt-14 lg:pt-0">
+            <main class="min-w-0 flex-1 overflow-y-auto pt-14 lg:pt-0">
                 {{ $slot }}
             </main>
         </div>

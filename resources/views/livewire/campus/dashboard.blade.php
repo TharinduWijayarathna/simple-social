@@ -1,8 +1,8 @@
 <div class="flex flex-col min-h-full">
 
     {{-- Page header --}}
-    <div class="border-b border-ink/10 bg-white px-6 py-5">
-        <div class="flex items-center justify-between">
+    <div class="h-16 border-b border-ink/10 bg-white px-6">
+        <div class="flex h-full items-center justify-between">
             <div>
                 @if ($activeTab === 'overview')
                     <h1 class="text-xl font-semibold">Overview</h1>
@@ -48,47 +48,6 @@
             @endif
         </div>
 
-        {{-- Tab bar --}}
-        <div class="mt-4 flex gap-1 -mb-5">
-            <button wire:click="$set('activeTab', 'overview')"
-                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
-                           {{ $activeTab === 'overview' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
-                Overview
-            </button>
-            <button wire:click="$set('activeTab', 'students')"
-                    class="flex items-center gap-2 border-b-2 px-4 pb-4 text-sm font-medium transition
-                           {{ $activeTab === 'students' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
-                Students
-                @if ($totalPending > 0)
-                    <span class="rounded-full bg-ember px-1.5 py-0.5 text-[10px] font-bold text-white">{{ $totalPending }}</span>
-                @endif
-            </button>
-            <button wire:click="$set('activeTab', 'events')"
-                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
-                           {{ $activeTab === 'events' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
-                Events
-            </button>
-            <button wire:click="$set('activeTab', 'talents')"
-                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
-                           {{ $activeTab === 'talents' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
-                Talents
-            </button>
-            <button wire:click="$set('activeTab', 'moderation')"
-                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
-                           {{ $activeTab === 'moderation' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
-                Moderation
-            </button>
-            <button wire:click="$set('activeTab', 'analytics')"
-                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
-                           {{ $activeTab === 'analytics' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
-                Analytics
-            </button>
-            <button wire:click="$set('activeTab', 'announcement')"
-                    class="border-b-2 px-4 pb-4 text-sm font-medium transition
-                           {{ $activeTab === 'announcement' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
-                Announcement
-            </button>
-        </div>
     </div>
 
     {{-- Content --}}
