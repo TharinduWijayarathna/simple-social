@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\TalentTheme;
 use App\Models\Talent;
+use App\Models\TalentCategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -82,6 +83,11 @@ class TalentSeeder extends Seeder
         ];
 
         foreach ($categories as $categoryName => $group) {
+            TalentCategory::query()->firstOrCreate([
+                'name' => $categoryName,
+                'campus_id' => null,
+            ]);
+
             foreach ($group['items'] as $talentName) {
                 Talent::query()->updateOrCreate(
                     ['slug' => Str::slug($talentName)],

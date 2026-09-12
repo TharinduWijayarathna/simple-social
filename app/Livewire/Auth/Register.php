@@ -4,12 +4,14 @@ namespace App\Livewire\Auth;
 
 use App\Enums\Role;
 use App\Enums\UserStatus;
+use App\Models\Profile;
 use App\Models\Talent;
 use App\Models\User;
 use App\Notifications\OtpVerificationNotification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -33,8 +35,17 @@ class Register extends Component
     /** Student card / university ID number */
     public string $universityId = '';
 
-    /** ID of the selected campus admin (students only) */
+    /** ID of the selected campus (students only) */
     public ?int $campusId = null;
+
+    /** Campus registration details */
+    public string $campusName = '';
+
+    public string $campusPhone = '';
+
+    public string $campusAddress = '';
+
+    public string $campusWebsite = '';
 
     /** Campus & Batch Details */
     public string $batch = '';
@@ -68,7 +79,7 @@ class Register extends Component
     private const int OTP_RESEND_SECONDS = 60;
 
     /**
-     * Load approved campus admins for the dropdown.
+     * Load approved campuses for the dropdown.
      *
      * @return Collection<int, User>
      */
@@ -76,7 +87,7 @@ class Register extends Component
     public function campuses(): Collection
     {
         return User::query()
-            ->where('role', Role::CampusAdmin)
+            ->where('role', Role::Campus)
             ->where('status', UserStatus::Approved)
             ->orderByRaw('COALESCE(campus_name, name)')
             ->get(['id', 'name', 'campus_name']);
@@ -197,32 +208,39 @@ class Register extends Component
             return;
         }
 
-        $role = $isStudent ? Role::Student : Role::CampusAdmin;
-
-        $user = User::query()->create([
-            'name' => $this->name,
-            'email' => $this->email,
-            'password' => $this->password,
-            'role' => $role,
-            'status' => UserStatus::Pending,
-            'university_id' => $isStudent ? $this->universityId : null,
-            'campus_id' => $isStudent ? $this->campusId : null,
-        ]);
-
-        if ($isStudent) {
-            $profile = $user->profile()->create([
-                'batch' => $this->batch ?: null,
-                'program' => $this->program ?: null,
-                'faculty' => $this->faculty ?: null,
-                'department' => $this->department ?: null,
-                'profile_type' => $this->profileType,
-                'primary_talent_id' => $this->primaryTalentId,
+        DB::transaction(function () use ($isStudent): void {
+            $user = User::query()->create([
+                'name' => $this->name,
+                'email' => $this->email,
+                'password' => $this->password,
+                'role' => $isStudent ? Role::Student : Role::Campus,
+                'status' => UserStatus::Pending,
+                'university_id' => $isStudent ? $this->universityId : null,
+                'campus_id' => $isStudent ? $this->campusId : null,
+                'campus_name' => $isStudent ? null : $this->campusName,
+                'campus_phone' => $isStudent ? null : $this->campusPhone,
+                'campus_address' => $isStudent ? null : $this->campusAddress,
+                'campus_website' => ! $isStudent && $this->campusWebsite !== '' ? $this->campusWebsite : null,
             ]);
 
-            if ($this->primaryTalentId) {
-                $profile->talents()->attach($this->primaryTalentId, ['is_favorite' => true]);
+            if ($isStudent) {
+                $profile = Profile::query()->create([
+                    'user_id' => $user->id,
+                    'batch' => $this->batch ?: null,
+                    'program' => $this->program ?: null,
+                    'faculty' => $this->faculty ?: null,
+                    'department' => $this->department ?: null,
+                    'profile_type' => $this->profileType,
+                    'primary_talent_id' => $this->primaryTalentId,
+                ]);
+
+                if ($this->primaryTalentId) {
+                    $profile->talents()->attach($this->primaryTalentId, ['is_favorite' => true]);
+                }
+            } else {
+                Profile::query()->create(['user_id' => $user->id]);
             }
-        }
+        });
 
         // Do NOT log the user in — they must be approved first.
         $this->submitted = true;
@@ -234,6 +252,7 @@ class Register extends Component
     private function validationRules(bool $isStudent): array
     {
         $rules = [
+            'accountType' => ['required', Rule::in(['student', 'campus'])],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -241,13 +260,18 @@ class Register extends Component
 
         if ($isStudent) {
             $rules['universityId'] = ['required', 'string', 'max:50'];
-            $rules['campusId'] = ['required', 'integer', Rule::exists('users', 'id')->where('role', Role::CampusAdmin->value)->where('status', UserStatus::Approved->value)];
+            $rules['campusId'] = ['required', 'integer', Rule::exists('users', 'id')->where('role', Role::Campus->value)->where('status', UserStatus::Approved->value)];
             $rules['batch'] = ['nullable', 'string', 'max:100'];
             $rules['program'] = ['nullable', 'string', 'max:255'];
             $rules['faculty'] = ['nullable', 'string', 'max:255'];
             $rules['department'] = ['nullable', 'string', 'max:255'];
             $rules['profileType'] = ['required', 'string', 'max:255'];
             $rules['primaryTalentId'] = ['nullable', 'integer', 'exists:talents,id'];
+        } else {
+            $rules['campusName'] = ['required', 'string', 'max:255', Rule::unique('users', 'campus_name')->where('role', Role::Campus->value)];
+            $rules['campusPhone'] = ['required', 'string', 'max:30'];
+            $rules['campusAddress'] = ['required', 'string', 'max:500'];
+            $rules['campusWebsite'] = ['nullable', 'url:http,https', 'max:255'];
         }
 
         return $rules;

@@ -8,9 +8,9 @@
             </div>
             <h1 class="font-display text-3xl">Application submitted</h1>
             @if ($accountType === 'campus')
-                <p class="mt-3 text-mist">Your campus account is pending super admin approval. You'll be able to log in once it's approved.</p>
+                <p class="mt-3 text-mist">Your campus registration is pending super admin approval. Once approved, students can select your campus during registration.</p>
             @else
-                <p class="mt-3 text-mist">Your account is pending campus approval. You'll be able to log in once your campus admin approves you.</p>
+                <p class="mt-3 text-mist">Your account is pending campus approval. You'll be able to log in once your campus approves you.</p>
             @endif
             <a href="{{ route('login') }}" class="btn-dark mt-8 inline-block" wire:navigate>Back to sign in</a>
         </div>
@@ -28,33 +28,61 @@
             <button type="button"
                 wire:click="$set('accountType', 'campus')"
                 class="flex-1 rounded-lg py-2 text-sm font-medium transition {{ $accountType === 'campus' ? 'bg-white text-ink shadow-sm' : 'text-mist hover:text-ink' }}">
-                Campus Admin
+                Campus
             </button>
         </div>
 
         @if ($accountType === 'campus')
             <p class="mt-3 rounded-lg bg-ember/8 px-4 py-3 text-sm text-ember">
-                Campus admin accounts require super admin approval before you can log in.
+                Register your campus details. A super admin will review the campus before it becomes available to students.
             </p>
         @else
             <p class="mt-3 rounded-lg bg-ink/5 px-4 py-3 text-sm text-mist">
-                Student accounts require campus admin approval before you can log in.
+                Student accounts require campus approval before you can log in.
             </p>
         @endif
 
         <form wire:submit="register" class="mt-6 flex flex-col gap-4">
 
             <label class="flex flex-col gap-1 text-sm font-medium">
-                Full name
+                {{ $accountType === 'campus' ? 'Contact person' : 'Full name' }}
                 <input wire:model="name" type="text" class="field" placeholder="e.g. Alex Morgan" required>
                 @error('name') <span class="text-ember text-xs">{{ $message }}</span> @enderror
             </label>
 
             <label class="flex flex-col gap-1 text-sm font-medium">
-                {{ $accountType === 'campus' ? 'Work email' : 'University email' }}
+                {{ $accountType === 'campus' ? 'Official campus email' : 'University email' }}
                 <input wire:model.live="email" type="email" class="field" placeholder="alex@campus.edu" {{ $otpSent && !$otpVerified ? 'readonly' : '' }} required>
                 @error('email') <span class="text-ember text-xs">{{ $message }}</span> @enderror
             </label>
+
+            @if ($accountType === 'campus')
+                <div class="grid grid-cols-1 gap-4 rounded-2xl border border-ink/8 bg-wall/60 p-4 md:grid-cols-2">
+                    <label class="flex flex-col gap-1 text-sm font-medium md:col-span-2">
+                        Campus name
+                        <input wire:model="campusName" type="text" class="field" placeholder="e.g. National Institute of Business Management" required>
+                        @error('campusName') <span class="text-ember text-xs">{{ $message }}</span> @enderror
+                    </label>
+
+                    <label class="flex flex-col gap-1 text-sm font-medium">
+                        Campus phone
+                        <input wire:model="campusPhone" type="tel" class="field" placeholder="e.g. +94 11 234 5678" required>
+                        @error('campusPhone') <span class="text-ember text-xs">{{ $message }}</span> @enderror
+                    </label>
+
+                    <label class="flex flex-col gap-1 text-sm font-medium">
+                        Website <span class="font-normal text-mist">(optional)</span>
+                        <input wire:model="campusWebsite" type="url" class="field" placeholder="https://campus.edu">
+                        @error('campusWebsite') <span class="text-ember text-xs">{{ $message }}</span> @enderror
+                    </label>
+
+                    <label class="flex flex-col gap-1 text-sm font-medium md:col-span-2">
+                        Campus address
+                        <textarea wire:model="campusAddress" class="field min-h-24" placeholder="Full campus address" required></textarea>
+                        @error('campusAddress') <span class="text-ember text-xs">{{ $message }}</span> @enderror
+                    </label>
+                </div>
+            @endif
 
             @if ($accountType === 'student')
                 {{-- Email OTP verification --}}
@@ -111,7 +139,7 @@
                         <select wire:model="campusId" class="field" required>
                             <option value="">Select your campus…</option>
                             @foreach ($this->campuses as $campus)
-                                <option value="{{ $campus->id }}">{{ $campus->displayCampusName() }}</option>
+                                <option value="{{ $campus->id }}" wire:key="campus-option-{{ $campus->id }}">{{ $campus->displayCampusName() }}</option>
                             @endforeach
                         </select>
                         @error('campusId') <span class="text-ember text-xs">{{ $message }}</span> @enderror
@@ -186,7 +214,7 @@
             </label>
 
             <button type="submit" class="btn-primary mt-2" {{ $accountType === 'student' && ! $otpVerified ? 'disabled' : '' }}>
-                {{ $accountType === 'campus' ? 'Request campus access' : 'Create your studio' }}
+                {{ $accountType === 'campus' ? 'Submit campus registration' : 'Create your studio' }}
             </button>
             @if ($accountType === 'student' && ! $otpVerified)
                 <p class="text-xs text-mist -mt-2">Verify your email above to enable registration.</p>

@@ -13,7 +13,7 @@
                 <x-icon name="trophy" class="size-16" />
             </div>
             <p class="text-xl font-semibold">No rankings yet</p>
-            <p class="mt-2 text-mist">Your campus admin hasn't set up any talent rankings yet.</p>
+            <p class="mt-2 text-mist">Your campus hasn't set up any talent rankings yet.</p>
         </div>
     @else
         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

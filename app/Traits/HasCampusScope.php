@@ -37,7 +37,7 @@ trait HasCampusScope
                     return;
                 }
 
-                $campusId = $user->role === Role::CampusAdmin ? $user->id : $user->campus_id;
+                $campusId = $user->role === Role::Campus ? $user->id : $user->campus_id;
 
                 if ($campusId === null) {
                     return;

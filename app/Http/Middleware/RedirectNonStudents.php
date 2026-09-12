@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 class RedirectNonStudents
 {
     /**
-     * Redirect campus admins and super admins away from the student-facing
+     * Redirect campuses and super admins away from the student-facing
      * social routes to their dedicated dashboards.
      *
      * @param  Closure(Request): (Response)  $next
@@ -20,7 +20,7 @@ class RedirectNonStudents
         $user = $request->user();
 
         if ($user !== null) {
-            if ($user->role === Role::CampusAdmin) {
+            if ($user->role === Role::Campus) {
                 return redirect()->route('campus.dashboard');
             }
 

@@ -49,16 +49,16 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function campusAdmin(): static
+    public function campus(): static
     {
         return $this->state(fn (array $attributes): array => [
-            'role' => Role::CampusAdmin,
+            'role' => Role::Campus,
         ]);
     }
 
     public function organizer(): static
     {
-        return $this->campusAdmin();
+        return $this->campus();
     }
 
     public function superAdmin(): static

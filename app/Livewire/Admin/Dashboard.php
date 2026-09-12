@@ -67,22 +67,26 @@ class Dashboard extends Component
 
         abort_if($user->is(auth()->user()), 403);
 
-        $user->update(['role' => Role::from($role)]);
+        $newRole = Role::from($role);
+
+        abort_if($newRole === Role::Campus, 403);
+
+        $user->update(['role' => $newRole]);
     }
 
-    public function approveCampusAdmin(int $userId): void
+    public function approveCampus(int $userId): void
     {
         abort_unless(auth()->user()->isSuperAdmin(), 403);
 
-        $user = User::query()->where('role', Role::CampusAdmin)->findOrFail($userId);
+        $user = User::query()->where('role', Role::Campus)->findOrFail($userId);
         $user->update(['status' => UserStatus::Approved]);
     }
 
-    public function rejectCampusAdmin(int $userId): void
+    public function rejectCampus(int $userId): void
     {
         abort_unless(auth()->user()->isSuperAdmin(), 403);
 
-        $user = User::query()->where('role', Role::CampusAdmin)->findOrFail($userId);
+        $user = User::query()->where('role', Role::Campus)->findOrFail($userId);
         $user->update(['status' => UserStatus::Rejected]);
     }
 
@@ -208,13 +212,13 @@ class Dashboard extends Component
         return view('livewire.admin.dashboard', [
             'totalUsers' => User::query()->count(),
             'totalStudents' => User::query()->students()->count(),
-            'totalCampusAdmins' => User::query()->where('role', Role::CampusAdmin)->where('status', UserStatus::Approved)->count(),
+            'totalCampuses' => User::query()->where('role', Role::Campus)->where('status', UserStatus::Approved)->count(),
             'totalItems' => PortfolioItem::query()->published()->count(),
             'totalEvents' => Event::query()->published()->count(),
             'totalBanned' => User::query()->where('status', UserStatus::Banned)->count(),
-            'pendingCampusAdmins' => User::query()->pendingCampusAdmins()->with('profile')->latest()->get(),
-            'approvedCampusAdmins' => User::query()
-                ->where('role', Role::CampusAdmin)
+            'pendingCampuses' => User::query()->pendingCampuses()->with('profile')->latest()->get(),
+            'approvedCampuses' => User::query()
+                ->where('role', Role::Campus)
                 ->where('status', UserStatus::Approved)
                 ->with('profile')
                 ->latest()

@@ -91,7 +91,7 @@ class DemoCampusSeeder extends Seeder
 
         $admin->profile->update([
             'headline' => 'Platform steward for Sri Lankan campuses',
-            'bio' => 'Approves campus admins and keeps VibeCraft fair across ICBT, NSBM, and SLIIT.',
+            'bio' => 'Approves campuses and keeps VibeCraft fair across ICBT, NSBM, and SLIIT.',
             'faculty' => 'Student Affairs',
             'location' => 'Colombo',
             'experience_level' => ExperienceLevel::Advanced,
@@ -147,7 +147,7 @@ class DemoCampusSeeder extends Seeder
         $campuses = [];
 
         foreach ($definitions as $index => $definition) {
-            $admin = User::factory()->campusAdmin()->create([
+            $admin = User::factory()->campus()->create([
                 'name' => $definition['admin_name'],
                 'email' => $definition['admin_email'],
                 'password' => Hash::make(self::PASSWORD),
@@ -158,7 +158,7 @@ class DemoCampusSeeder extends Seeder
 
             $admin->profile->update([
                 'headline' => $definition['headline'],
-                'bio' => 'Campus admin for '.$definition['name'].'. Approves students and publishes campus events.',
+                'bio' => $definition['name'].' campus account. Approves students and publishes campus events.',
                 'faculty' => 'Student Affairs',
                 'location' => $definition['location'],
                 'experience_level' => ExperienceLevel::Advanced,
@@ -168,7 +168,7 @@ class DemoCampusSeeder extends Seeder
             $this->credentials[] = [
                 'name' => $admin->name,
                 'email' => $admin->email,
-                'role' => 'Campus Admin',
+                'role' => 'Campus',
                 'campus' => $definition['name'],
                 'password' => self::PASSWORD,
             ];
@@ -580,7 +580,7 @@ class DemoCampusSeeder extends Seeder
             '| --- | --- | --- | --- |',
             "| {$admin->name} | `{$admin->email}` | `password` | `/admin/login` |",
             '',
-            '## Campus Admins',
+            '## Campuses',
             '',
             '| Campus | Name | Email | Password | Portal |',
             '| --- | --- | --- | --- | --- |',
@@ -617,7 +617,7 @@ class DemoCampusSeeder extends Seeder
 
         $lines[] = '## Quick login tips';
         $lines[] = '';
-        $lines[] = '- Student / campus admin: http://127.0.0.1:8000/login';
+        $lines[] = '- Student / campus: http://127.0.0.1:8000/login';
         $lines[] = '- Super admin: http://127.0.0.1:8000/admin/login';
         $lines[] = '- Demo images use [Unsplash](https://unsplash.com) URLs (avatars, portfolio, stories, event covers).';
         $lines[] = '';

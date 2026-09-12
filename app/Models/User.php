@@ -27,6 +27,9 @@ use Illuminate\Support\Str;
  * @property string|null $university_id
  * @property int|null $campus_id
  * @property string|null $campus_name
+ * @property string|null $campus_phone
+ * @property string|null $campus_address
+ * @property string|null $campus_website
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property Role $role
@@ -40,7 +43,7 @@ use Illuminate\Support\Str;
  * @property-read Profile|null $profile
  * @property-read User|null $campus
  */
-#[Fillable(['name', 'email', 'password', 'role', 'status', 'university_id', 'campus_id', 'campus_name', 'xp', 'current_rank', 'previous_rank'])]
+#[Fillable(['name', 'email', 'password', 'role', 'status', 'university_id', 'campus_id', 'campus_name', 'campus_phone', 'campus_address', 'campus_website', 'xp', 'current_rank', 'previous_rank'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -73,7 +76,7 @@ class User extends Authenticatable
     }
 
     /**
-     * The institution name for a campus admin (e.g. "ICBT"), falling back to
+     * The institution name for a campus (e.g. "ICBT"), falling back to
      * their personal name for accounts created before campus_name existed.
      */
     public function displayCampusName(): string
@@ -83,7 +86,7 @@ class User extends Authenticatable
 
     public function initials(): string
     {
-        $initials = Str::initials($this->name, true);
+        $initials = Str::initials($this->isCampus() ? $this->displayCampusName() : $this->name, true);
 
         return Str::length($initials) > 1
             ? Str::substr($initials, 0, 1).Str::substr($initials, -1)
@@ -108,9 +111,9 @@ class User extends Authenticatable
         return $this->role === Role::Student;
     }
 
-    public function isCampusAdmin(): bool
+    public function isCampus(): bool
     {
-        return $this->role === Role::CampusAdmin;
+        return $this->role === Role::Campus;
     }
 
     public function isSuperAdmin(): bool
@@ -135,7 +138,7 @@ class User extends Authenticatable
 
     public function isOrganizer(): bool
     {
-        return $this->isCampusAdmin();
+        return $this->isCampus();
     }
 
     public function isAdmin(): bool
@@ -145,7 +148,7 @@ class User extends Authenticatable
 
     public function canOrganizeEvents(): bool
     {
-        return $this->isCampusAdmin() || $this->isSuperAdmin();
+        return $this->isCampus() || $this->isSuperAdmin();
     }
 
     public function rankChange(): int
@@ -163,7 +166,7 @@ class User extends Authenticatable
     }
 
     /**
-     * The campus this student belongs to (campus admin user).
+     * The campus this student belongs to.
      */
     public function campus(): BelongsTo
     {
@@ -171,7 +174,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Students that belong to this campus admin.
+     * Students that belong to this campus.
      */
     public function campusStudents(): HasMany
     {
@@ -274,13 +277,13 @@ class User extends Authenticatable
     }
 
     #[Scope]
-    protected function pendingCampusAdmins(Builder $query): Builder
+    protected function pendingCampuses(Builder $query): Builder
     {
-        return $query->where('role', Role::CampusAdmin)->where('status', UserStatus::Pending);
+        return $query->where('role', Role::Campus)->where('status', UserStatus::Pending);
     }
 
     /**
-     * Pending students belonging to a specific campus admin.
+     * Pending students belonging to a specific campus.
      */
     #[Scope]
     protected function pendingStudentsForCampus(Builder $query, int $campusId): Builder
@@ -291,7 +294,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Approved students belonging to a specific campus admin.
+     * Approved students belonging to a specific campus.
      */
     #[Scope]
     protected function approvedStudentsForCampus(Builder $query, int $campusId): Builder
@@ -302,7 +305,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Banned students belonging to a specific campus admin.
+     * Banned students belonging to a specific campus.
      */
     #[Scope]
     protected function bannedStudentsForCampus(Builder $query, int $campusId): Builder

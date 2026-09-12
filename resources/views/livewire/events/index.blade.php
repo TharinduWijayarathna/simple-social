@@ -15,16 +15,16 @@
 
     {{-- Campus announcement --}}
     @php
-        $campusAdminId = auth()->check() && auth()->user()->isStudent() ? auth()->user()->campus_id : null;
+        $campusId = auth()->check() && auth()->user()->isStudent() ? auth()->user()->campus_id : null;
     @endphp
-    @if ($campusAdminId && \App\Models\Setting::get("campus_announcement_enabled_{$campusAdminId}") === '1' && filled(\App\Models\Setting::get("campus_announcement_message_{$campusAdminId}")))
+    @if ($campusId && \App\Models\Setting::get("campus_announcement_enabled_{$campusId}") === '1' && filled(\App\Models\Setting::get("campus_announcement_message_{$campusId}")))
         <div class="rounded-2xl border border-ember/20 bg-ember/10 p-5 flex items-center gap-3">
             <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ember text-white">
                 <x-icon name="megaphone" class="size-5" />
             </div>
             <div>
                 <h3 class="font-bold text-ink text-sm">Campus announcement</h3>
-                <p class="mt-0.5 text-sm text-ink/80">{{ \App\Models\Setting::get("campus_announcement_message_{$campusAdminId}") }}</p>
+                <p class="mt-0.5 text-sm text-ink/80">{{ \App\Models\Setting::get("campus_announcement_message_{$campusId}") }}</p>
             </div>
         </div>
     @endif

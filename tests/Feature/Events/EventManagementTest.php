@@ -12,8 +12,8 @@ use App\Notifications\EventApplicationSelectedNotification;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
-test('campus admin can view create event page', function () {
-    $campusAdmin = User::factory()->campusAdmin()->create();
+test('campus can view create event page', function () {
+    $campusAdmin = User::factory()->campus()->create();
 
     $this->actingAs($campusAdmin)
         ->get(route('events.create'))
@@ -28,8 +28,8 @@ test('students cannot access create event page', function () {
         ->assertForbidden();
 });
 
-test('campus admin can create an event with full details and talent requirements', function () {
-    $campusAdmin = User::factory()->campusAdmin()->create();
+test('campus can create an event with full details and talent requirements', function () {
+    $campusAdmin = User::factory()->campus()->create();
     $talent = Talent::factory()->create(['name' => 'Photographer']);
 
     $this->actingAs($campusAdmin);
@@ -69,7 +69,7 @@ test('campus admin can create an event with full details and talent requirements
 });
 
 test('student can apply for an event with specific talent role and pitch message', function () {
-    $campusAdmin = User::factory()->campusAdmin()->create();
+    $campusAdmin = User::factory()->campus()->create();
     $talent = Talent::factory()->create(['name' => 'Singer']);
     $event = Event::factory()->create([
         'organizer_id' => $campusAdmin->id,
@@ -95,10 +95,10 @@ test('student can apply for an event with specific talent role and pitch message
     ]);
 });
 
-test('campus admin can select applicant and trigger notification with contact details', function () {
+test('campus can select applicant and trigger notification with contact details', function () {
     Notification::fake();
 
-    $campusAdmin = User::factory()->campusAdmin()->create();
+    $campusAdmin = User::factory()->campus()->create();
     $talent = Talent::factory()->create(['name' => 'Vocalist']);
     $event = Event::factory()->create([
         'organizer_id' => $campusAdmin->id,
@@ -134,7 +134,7 @@ test('campus admin can select applicant and trigger notification with contact de
 });
 
 test('chosen student can see campus contact details on event page and index tab', function () {
-    $campusAdmin = User::factory()->campusAdmin()->create();
+    $campusAdmin = User::factory()->campus()->create();
     $event = Event::factory()->create([
         'organizer_id' => $campusAdmin->id,
         'is_published' => true,

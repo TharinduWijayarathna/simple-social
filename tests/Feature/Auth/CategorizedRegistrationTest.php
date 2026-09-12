@@ -15,7 +15,7 @@ test('student can register with batch, program, profile type and primary talent'
     Notification::fake();
 
     $campus = User::factory()->create([
-        'role' => Role::CampusAdmin,
+        'role' => Role::Campus,
         'status' => UserStatus::Approved,
     ]);
 
@@ -62,7 +62,7 @@ test('student can register with batch, program, profile type and primary talent'
 
 test('students directory allows filtering by talent category', function () {
     $campus = User::factory()->create([
-        'role' => Role::CampusAdmin,
+        'role' => Role::Campus,
         'status' => UserStatus::Approved,
     ]);
 

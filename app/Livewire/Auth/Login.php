@@ -59,7 +59,7 @@ class Login extends Component
 
         $redirect = match ($user->role) {
             Role::SuperAdmin => route('admin.dashboard'),
-            Role::CampusAdmin => route('campus.dashboard'),
+            Role::Campus => route('campus.dashboard'),
             default => route('home'),
         };
 

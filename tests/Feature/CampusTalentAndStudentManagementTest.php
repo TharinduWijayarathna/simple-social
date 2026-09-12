@@ -13,15 +13,16 @@ use App\Models\PortfolioItem;
 use App\Models\Talent;
 use App\Models\TalentCategory;
 use App\Models\User;
+use Database\Seeders\TalentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-test('campus admin can manage custom talents for their campus', function () {
+test('campus can manage custom talents', function () {
     $admin = User::factory()->create([
-        'role' => Role::CampusAdmin,
+        'role' => Role::Campus,
         'status' => UserStatus::Approved,
     ]);
 
@@ -71,13 +72,13 @@ test('campus admin can manage custom talents for their campus', function () {
 
 test('custom talents are scoped to the correct campus', function () {
     $admin1 = User::factory()->create([
-        'role' => Role::CampusAdmin,
+        'role' => Role::Campus,
         'status' => UserStatus::Approved,
     ]);
     $admin1->update(['campus_id' => $admin1->id]);
 
     $admin2 = User::factory()->create([
-        'role' => Role::CampusAdmin,
+        'role' => Role::Campus,
         'status' => UserStatus::Approved,
     ]);
     $admin2->update(['campus_id' => $admin2->id]);
@@ -112,9 +113,9 @@ test('custom talents are scoped to the correct campus', function () {
         ->assertDontSee('Magic Show');
 });
 
-test('campus admin can suspend and unsuspend student profiles', function () {
+test('campus can suspend and unsuspend student profiles', function () {
     $admin = User::factory()->create([
-        'role' => Role::CampusAdmin,
+        'role' => Role::Campus,
         'status' => UserStatus::Approved,
     ]);
     $admin->update(['campus_id' => $admin->id]);
@@ -152,9 +153,9 @@ test('campus admin can suspend and unsuspend student profiles', function () {
     expect($student->fresh()->status)->toBe(UserStatus::Approved);
 });
 
-test('campus admin can edit and delete system default talents', function () {
+test('campus can edit and delete system default talents', function () {
     $admin = User::factory()->create([
-        'role' => Role::CampusAdmin,
+        'role' => Role::Campus,
         'status' => UserStatus::Approved,
     ]);
     $admin->update(['campus_id' => $admin->id]);
@@ -187,9 +188,9 @@ test('campus admin can edit and delete system default talents', function () {
     ]);
 });
 
-test('campus admin can manage talent categories separately', function () {
+test('campus can manage talent categories separately', function () {
     $admin = User::factory()->create([
-        'role' => Role::CampusAdmin,
+        'role' => Role::Campus,
         'status' => UserStatus::Approved,
     ]);
     $admin->update(['campus_id' => $admin->id]);
@@ -245,9 +246,33 @@ test('campus admin can manage talent categories separately', function () {
     expect($talent->fresh()->category)->toBe('General User');
 });
 
-test('campus admin rankings section shows all student ranks with points and likes count', function () {
+test('seeded talent categories are displayed with their existing talent relationships', function () {
+    $admin = User::factory()->campus()->create();
+    $admin->update(['campus_id' => $admin->id]);
+
+    $this->seed(TalentSeeder::class);
+    $this->actingAs($admin);
+
+    $performingArts = TalentCategory::query()
+        ->where('name', 'Performing Arts')
+        ->whereNull('campus_id')
+        ->firstOrFail();
+
+    expect($performingArts->talents)->toHaveCount(10)
+        ->and($performingArts->talents->pluck('category')->unique()->values()->all())
+        ->toBe(['Performing Arts']);
+
+    Livewire::test(Dashboard::class)
+        ->set('activeTab', 'talents')
+        ->set('talentSubTab', 'categories')
+        ->assertSee('Talent Categories (5)')
+        ->assertSee('Performing Arts')
+        ->assertSee('10 talents assigned');
+});
+
+test('campus rankings section shows all student ranks with points and likes count', function () {
     $admin = User::factory()->create([
-        'role' => Role::CampusAdmin,
+        'role' => Role::Campus,
         'status' => UserStatus::Approved,
     ]);
     $admin->update(['campus_id' => $admin->id]);

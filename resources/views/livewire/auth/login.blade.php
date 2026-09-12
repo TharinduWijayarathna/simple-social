@@ -16,6 +16,6 @@
         <button type="submit" class="btn-dark">
             Open the feed
         </button>
-        <p class="text-sm text-mist">New on campus? <a href="{{ route('register') }}" class="text-ember" wire:navigate>Create a studio</a></p>
+        <p class="text-sm text-mist">New here? <a href="{{ route('register') }}" class="text-ember" wire:navigate>Register as Student or Campus</a></p>
     </form>
 </div>

@@ -104,8 +104,8 @@
                                 @endif
                             </div>
                             <div class="min-w-0">
-                                <p class="truncate text-sm font-medium">{{ auth()->user()->name }}</p>
-                                <p class="text-xs text-mist">Campus Admin</p>
+                                <p class="truncate text-sm font-medium">{{ auth()->user()->displayCampusName() }}</p>
+                                <p class="text-xs text-mist">Campus</p>
                             </div>
                         </div>
                         <form method="POST" action="{{ route('logout') }}">

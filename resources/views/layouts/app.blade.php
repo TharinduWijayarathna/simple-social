@@ -67,11 +67,11 @@
 
         @auth
             @php
-                $campusAdminId = auth()->user()->isStudent() ? auth()->user()->campus_id : null;
+                $campusId = auth()->user()->isStudent() ? auth()->user()->campus_id : null;
             @endphp
-            @if ($campusAdminId && \App\Models\Setting::get("campus_announcement_enabled_{$campusAdminId}") === '1' && filled(\App\Models\Setting::get("campus_announcement_message_{$campusAdminId}")))
+            @if ($campusId && \App\Models\Setting::get("campus_announcement_enabled_{$campusId}") === '1' && filled(\App\Models\Setting::get("campus_announcement_message_{$campusId}")))
                 <div class="bg-ember/10 px-4 py-2.5 text-center text-sm font-medium text-ember">
-                    {{ \App\Models\Setting::get("campus_announcement_message_{$campusAdminId}") }}
+                    {{ \App\Models\Setting::get("campus_announcement_message_{$campusId}") }}
                 </div>
             @endif
         @endauth

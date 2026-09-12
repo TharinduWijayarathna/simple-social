@@ -10,9 +10,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('students can only see resources belonging to their own campus', function () {
-    // Create Campuses (Campus Admin users)
-    $campusA = User::factory()->campusAdmin()->create(['name' => 'ICBT Campus']);
-    $campusB = User::factory()->campusAdmin()->create(['name' => 'SLIIT Campus']);
+    // Create campus accounts.
+    $campusA = User::factory()->campus()->create(['name' => 'ICBT Campus']);
+    $campusB = User::factory()->campus()->create(['name' => 'SLIIT Campus']);
 
     // Create Students for Campus A
     $studentA1 = User::factory()->student()->create([

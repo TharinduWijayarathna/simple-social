@@ -429,7 +429,7 @@ class Dashboard extends Component
         $campusId = $campusUser->campus_id ?? $campusUser->id;
 
         $events = Event::query()
-            ->when($campusUser->isCampusAdmin(), fn ($query) => $query->whereBelongsTo($campusUser, 'organizer'))
+            ->when($campusUser->isCampus(), fn ($query) => $query->whereBelongsTo($campusUser, 'organizer'))
             ->with(['talent:id,name', 'organizer.profile'])
             ->withCount('applications')
             ->latest('starts_at')

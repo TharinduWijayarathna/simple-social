@@ -15,7 +15,7 @@
                         @break
                     @case('campuses')
                         <h1 class="text-xl font-semibold">Campus Management</h1>
-                        <p class="mt-0.5 text-sm text-mist">Review campus admin applications and manage approved campuses.</p>
+                        <p class="mt-0.5 text-sm text-mist">Review campus registrations and manage approved campuses.</p>
                         @break
                     @case('users')
                         <h1 class="text-xl font-semibold">User Management</h1>
@@ -35,10 +35,10 @@
                         @break
                 @endswitch
             </div>
-            @if ($activeTab === 'campuses' && $pendingCampusAdmins->isNotEmpty())
+            @if ($activeTab === 'campuses' && $pendingCampuses->isNotEmpty())
                 <span class="flex items-center gap-1.5 rounded-full bg-ember/10 px-3 py-1 text-xs font-semibold text-ember">
                     <span class="size-2 rounded-full bg-ember"></span>
-                    {{ $pendingCampusAdmins->count() }} pending
+                    {{ $pendingCampuses->count() }} pending
                 </span>
             @elseif ($activeTab === 'students' && $pendingStudents->isNotEmpty())
                 <span class="flex items-center gap-1.5 rounded-full bg-ember/10 px-3 py-1 text-xs font-semibold text-ember">
@@ -67,8 +67,8 @@
                     class="shrink-0 flex items-center gap-2 border-b-2 px-4 pb-4 text-sm font-medium transition
                            {{ $activeTab === 'campuses' ? 'border-ember text-ember' : 'border-transparent text-mist hover:text-ink' }}">
                 Campus Management
-                @if ($pendingCampusAdmins->isNotEmpty())
-                    <span class="rounded-full bg-ember px-1.5 py-0.5 text-[10px] font-bold text-white">{{ $pendingCampusAdmins->count() }}</span>
+                @if ($pendingCampuses->isNotEmpty())
+                    <span class="rounded-full bg-ember px-1.5 py-0.5 text-[10px] font-bold text-white">{{ $pendingCampuses->count() }}</span>
                 @endif
             </button>
             <button wire:click="$set('activeTab', 'users')"
@@ -115,7 +115,7 @@
                 </div>
                 <div class="rounded-2xl border border-ink/8 bg-white p-5">
                     <p class="text-xs font-medium uppercase tracking-wider text-mist">Campuses</p>
-                    <p class="mt-2 text-3xl font-semibold">{{ $totalCampusAdmins }}</p>
+                    <p class="mt-2 text-3xl font-semibold">{{ $totalCampuses }}</p>
                 </div>
                 <div class="rounded-2xl border border-ink/8 bg-white p-5">
                     <p class="text-xs font-medium uppercase tracking-wider text-mist">Works</p>
@@ -374,39 +374,44 @@
                 <div class="flex items-center justify-between border-b border-ink/8 px-5 py-4">
                     <div>
                         <h2 class="font-semibold">Pending applications</h2>
-                        <p class="text-sm text-mist">Campus admin accounts waiting for approval</p>
+                        <p class="text-sm text-mist">Campus registrations waiting for approval</p>
                     </div>
-                    @if ($pendingCampusAdmins->isNotEmpty())
-                        <span class="rounded-full bg-ember px-2.5 py-0.5 text-xs font-semibold text-white">{{ $pendingCampusAdmins->count() }}</span>
+                    @if ($pendingCampuses->isNotEmpty())
+                        <span class="rounded-full bg-ember px-2.5 py-0.5 text-xs font-semibold text-white">{{ $pendingCampuses->count() }}</span>
                     @endif
                 </div>
 
-                @if ($pendingCampusAdmins->isEmpty())
+                @if ($pendingCampuses->isEmpty())
                     <div class="px-5 py-10 text-center text-sm text-mist">No pending applications.</div>
                 @else
                     <ul class="divide-y divide-ink/8">
-                        @foreach ($pendingCampusAdmins as $applicant)
+                        @foreach ($pendingCampuses as $applicant)
                             <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="pending-{{ $applicant->id }}">
                                 <div class="flex items-center gap-3">
                                     <div class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-ember/10 text-sm font-semibold text-ember">
                                         @if ($applicant->avatarUrl())
-                                            <img src="{{ $applicant->avatarUrl() }}" alt="{{ $applicant->name }}" class="size-full object-cover rounded-full">
+                                            <img src="{{ $applicant->avatarUrl() }}" alt="{{ $applicant->displayCampusName() }}" class="size-full object-cover rounded-full">
                                         @else
                                             {{ $applicant->initials() }}
                                         @endif
                                     </div>
                                     <div>
-                                        <p class="font-medium">{{ $applicant->name }}</p>
+                                        <p class="font-medium">{{ $applicant->displayCampusName() }}</p>
                                         <p class="text-sm text-mist">{{ $applicant->email }}</p>
+                                        <p class="text-xs text-mist">Contact: {{ $applicant->name }} · {{ $applicant->campus_phone }}</p>
+                                        <p class="text-xs text-mist">{{ $applicant->campus_address }}</p>
+                                        @if ($applicant->campus_website)
+                                            <a href="{{ $applicant->campus_website }}" target="_blank" rel="noopener noreferrer" class="text-xs text-ember hover:underline">{{ $applicant->campus_website }}</a>
+                                        @endif
                                         <p class="text-xs text-mist">Applied {{ $applicant->created_at->diffForHumans() }}</p>
                                     </div>
                                 </div>
                                 <div class="flex gap-2">
-                                    <button wire:click="rejectCampusAdmin({{ $applicant->id }})"
+                                    <button wire:click="rejectCampus({{ $applicant->id }})"
                                             class="rounded-lg border border-ink/15 px-4 py-2 text-sm font-medium transition hover:bg-ink/5">
                                         Reject
                                     </button>
-                                    <button wire:click="approveCampusAdmin({{ $applicant->id }})"
+                                    <button wire:click="approveCampus({{ $applicant->id }})"
                                             class="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90">
                                         Approve
                                     </button>
@@ -421,19 +426,19 @@
             <div class="mt-6 rounded-2xl border border-ink/8 bg-white">
                 <div class="border-b border-ink/8 px-5 py-4">
                     <h2 class="font-semibold">Approved campuses</h2>
-                    <p class="text-sm text-mist">Active campus admin accounts</p>
+                    <p class="text-sm text-mist">Campuses available to students during registration</p>
                 </div>
 
-                @if ($approvedCampusAdmins->isEmpty())
-                    <div class="px-5 py-10 text-center text-sm text-mist">No approved campus admins yet.</div>
+                @if ($approvedCampuses->isEmpty())
+                    <div class="px-5 py-10 text-center text-sm text-mist">No approved campuses yet.</div>
                 @else
                     <ul class="divide-y divide-ink/8">
-                        @foreach ($approvedCampusAdmins as $campus)
+                        @foreach ($approvedCampuses as $campus)
                             <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="campus-{{ $campus->id }}">
                                 <div class="flex items-center gap-3">
                                     <div class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-studio text-sm font-semibold text-gold">
                                         @if ($campus->avatarUrl())
-                                            <img src="{{ $campus->avatarUrl() }}" alt="{{ $campus->name }}" class="size-full object-cover rounded-full">
+                                            <img src="{{ $campus->avatarUrl() }}" alt="{{ $campus->displayCampusName() }}" class="size-full object-cover rounded-full">
                                         @else
                                             {{ $campus->initials() }}
                                         @endif
@@ -441,17 +446,15 @@
                                     <div>
                                         <p class="font-medium">{{ $campus->displayCampusName() }}</p>
                                         <p class="text-sm text-mist">{{ $campus->email }}</p>
+                                        @if ($campus->campus_phone)
+                                            <p class="text-xs text-mist">{{ $campus->campus_phone }} · Contact: {{ $campus->name }}</p>
+                                        @endif
+                                        @if ($campus->campus_address)
+                                            <p class="text-xs text-mist">{{ $campus->campus_address }}</p>
+                                        @endif
                                         <p class="text-xs text-mist">Joined {{ $campus->created_at->format('M j, Y') }}</p>
                                     </div>
                                 </div>
-                                @unless ($campus->is(auth()->user()))
-                                    <div class="flex gap-2">
-                                        <button wire:click="assignRole({{ $campus->id }}, 'student')"
-                                                class="rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium transition hover:bg-ink/5">
-                                            Demote to student
-                                        </button>
-                                    </div>
-                                @endunless
                             </li>
                         @endforeach
                     </ul>
@@ -488,12 +491,17 @@
                             </div>
                             @unless ($user->is(auth()->user()))
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <select wire:change="assignRole({{ $user->id }}, $event.target.value)"
-                                            class="rounded-lg border border-ink/15 px-2 py-1.5 text-xs">
-                                        @foreach (\App\Enums\Role::cases() as $role)
-                                            <option value="{{ $role->value }}" @selected($user->role === $role)>{{ $role->label() }}</option>
-                                        @endforeach
-                                    </select>
+                                    @if ($user->isCampus())
+                                        <span class="rounded-lg bg-ink/5 px-2 py-1.5 text-xs font-medium">Campus</span>
+                                    @else
+                                        <select wire:change="assignRole({{ $user->id }}, $event.target.value)"
+                                                class="rounded-lg border border-ink/15 px-2 py-1.5 text-xs">
+                                            @foreach (\App\Enums\Role::cases() as $role)
+                                                @continue($role === \App\Enums\Role::Campus)
+                                                <option value="{{ $role->value }}" @selected($user->role === $role)>{{ $role->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
                                     @if ($user->status->value === 'banned')
                                         <button wire:click="unbanUser({{ $user->id }})"
                                                 class="rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium transition hover:bg-ink/5">

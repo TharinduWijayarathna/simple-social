@@ -47,8 +47,8 @@ Route::post('/logout', function () {
     return redirect()->route('home');
 })->middleware('auth')->name('logout');
 
-// ── Campus Admin / Event Creation Routes ──
-Route::middleware(['auth', 'role:campus_admin,super_admin'])->group(function (): void {
+// ── Campus / Event Creation Routes ──
+Route::middleware(['auth', 'role:campus,super_admin'])->group(function (): void {
     Route::livewire('/campus', CampusDashboard::class)->name('campus.dashboard');
     Route::livewire('/campus/rankings', CampusRankings::class)->name('campus.rankings');
     Route::livewire('/events/create', EventsCreate::class)->name('events.create');

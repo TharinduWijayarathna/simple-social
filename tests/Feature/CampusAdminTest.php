@@ -23,8 +23,8 @@ test('students cannot open the campus desk or super admin', function () {
         ->assertForbidden();
 });
 
-test('campus admins can open the campus desk', function () {
-    $campusAdmin = User::factory()->campusAdmin()->create();
+test('campuses can open the campus desk', function () {
+    $campusAdmin = User::factory()->campus()->create();
     Event::factory()->recycle($campusAdmin)->create([
         'title' => 'Open mic night',
     ]);
@@ -35,8 +35,8 @@ test('campus admins can open the campus desk', function () {
         ->assertSee('Open mic night');
 });
 
-test('campus admins cannot open super admin', function () {
-    $this->actingAs(User::factory()->campusAdmin()->create())
+test('campuses cannot open super admin', function () {
+    $this->actingAs(User::factory()->campus()->create())
         ->get(route('admin.dashboard'))
         ->assertForbidden();
 });
@@ -65,16 +65,16 @@ test('super admins can sign in through the admin portal', function () {
         ->assertSee('Overview');
 });
 
-test('super admins can appoint campus admins', function () {
+test('super admins cannot turn a student into a campus without campus registration details', function () {
     $superAdmin = User::factory()->superAdmin()->create();
     $student = User::factory()->student()->create();
 
     Livewire::actingAs($superAdmin)
         ->test(AdminDashboard::class)
-        ->call('assignRole', $student->id, 'campus_admin')
-        ->assertHasNoErrors();
+        ->call('assignRole', $student->id, 'campus')
+        ->assertForbidden();
 
-    expect($student->fresh()->isCampusAdmin())->toBeTrue();
+    expect($student->fresh()->isStudent())->toBeTrue();
 });
 
 test('students can join a published campus event from the web', function () {
@@ -95,7 +95,7 @@ test('super admin can view campuses tab without lazy loading violations', functi
     Model::preventLazyLoading(true);
 
     $superAdmin = User::factory()->superAdmin()->create();
-    User::factory()->campusAdmin()->count(3)->create();
+    User::factory()->campus()->count(3)->create();
 
     $this->actingAs($superAdmin)
         ->get(route('admin.dashboard', ['tab' => 'campuses']))
@@ -104,7 +104,7 @@ test('super admin can view campuses tab without lazy loading violations', functi
 
 test('super admin can manage, approve, reject, ban and unban students across campuses', function () {
     $superAdmin = User::factory()->superAdmin()->create();
-    $campus = User::factory()->campusAdmin()->create();
+    $campus = User::factory()->campus()->create();
 
     $pendingStudent = User::factory()->student()->create([
         'status' => UserStatus::Pending,
@@ -156,8 +156,8 @@ test('super admin can manage, approve, reject, ban and unban students across cam
     expect($pendingStudent->fresh()->status)->toBe(UserStatus::Rejected);
 });
 
-test('campus admin announcement shows to their students on the events tab', function () {
-    $campusAdmin = User::factory()->campusAdmin()->create();
+test('campus announcement shows to its students on the events tab', function () {
+    $campusAdmin = User::factory()->campus()->create();
     $student = User::factory()->student()->create(['campus_id' => $campusAdmin->id]);
 
     Livewire::actingAs($campusAdmin)
