@@ -9,6 +9,7 @@ use App\Livewire\Events\Show as EventsShow;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
 test('students cannot open the campus desk or super admin', function () {
@@ -102,58 +103,61 @@ test('super admin can view campuses tab without lazy loading violations', functi
         ->assertOk();
 });
 
-test('super admin can manage, approve, reject, ban and unban students across campuses', function () {
+test('super admins approve campuses but cannot approve or reject students', function () {
     $superAdmin = User::factory()->superAdmin()->create();
-    $campus = User::factory()->campus()->create();
+    $campus = User::factory()->campus()->pending()->create();
 
     $pendingStudent = User::factory()->student()->create([
         'status' => UserStatus::Pending,
         'campus_id' => $campus->id,
     ]);
 
-    $approvedStudent = User::factory()->student()->create([
-        'status' => UserStatus::Approved,
-        'campus_id' => $campus->id,
-    ]);
-
-    // View students tab as super admin
-    $this->actingAs($superAdmin)
-        ->get(route('admin.dashboard', ['tab' => 'students']))
-        ->assertOk()
-        ->assertSee($pendingStudent->name)
-        ->assertSee($approvedStudent->name);
-
-    // Approve pending student
     Livewire::actingAs($superAdmin)
         ->test(AdminDashboard::class)
+        ->set('activeTab', 'students')
+        ->assertSet('activeTab', 'overview')
+        ->assertDontSee('Student Management')
+        ->set('activeTab', 'campuses')
+        ->call('approveCampus', $campus->id)
+        ->assertHasNoErrors();
+
+    expect($campus->fresh()->status)->toBe(UserStatus::Approved);
+
+    Livewire::actingAs($superAdmin)
+        ->test(CampusDashboard::class)
         ->call('approveStudent', $pendingStudent->id)
-        ->assertHasNoErrors();
+        ->assertForbidden();
 
-    expect($pendingStudent->fresh()->status)->toBe(UserStatus::Approved);
-
-    // Ban approved student
     Livewire::actingAs($superAdmin)
-        ->test(AdminDashboard::class)
-        ->call('banStudent', $approvedStudent->id)
-        ->assertHasNoErrors();
-
-    expect($approvedStudent->fresh()->status)->toBe(UserStatus::Banned);
-
-    // Unban student
-    Livewire::actingAs($superAdmin)
-        ->test(AdminDashboard::class)
-        ->call('unbanStudent', $approvedStudent->id)
-        ->assertHasNoErrors();
-
-    expect($approvedStudent->fresh()->status)->toBe(UserStatus::Approved);
-
-    // Reject student
-    Livewire::actingAs($superAdmin)
-        ->test(AdminDashboard::class)
+        ->test(CampusDashboard::class)
         ->call('rejectStudent', $pendingStudent->id)
+        ->assertForbidden();
+
+    expect($pendingStudent->fresh()->status)->toBe(UserStatus::Pending);
+});
+
+test('a campus can only approve or reject its own pending students', function () {
+    $campus = User::factory()->campus()->create();
+    $otherCampus = User::factory()->campus()->create();
+    $studentToApprove = User::factory()->student()->pending()->create(['campus_id' => $campus->id]);
+    $studentToReject = User::factory()->student()->pending()->create(['campus_id' => $campus->id]);
+    $otherStudent = User::factory()->student()->pending()->create(['campus_id' => $otherCampus->id]);
+
+    Livewire::actingAs($campus)
+        ->test(CampusDashboard::class)
+        ->call('approveStudent', $studentToApprove->id)
+        ->assertHasNoErrors()
+        ->call('rejectStudent', $studentToReject->id)
         ->assertHasNoErrors();
 
-    expect($pendingStudent->fresh()->status)->toBe(UserStatus::Rejected);
+    expect(fn () => Livewire::actingAs($campus)
+        ->test(CampusDashboard::class)
+        ->call('approveStudent', $otherStudent->id))
+        ->toThrow(ModelNotFoundException::class);
+
+    expect($studentToApprove->fresh()->status)->toBe(UserStatus::Approved)
+        ->and($studentToReject->fresh()->status)->toBe(UserStatus::Rejected)
+        ->and($otherStudent->fresh()->status)->toBe(UserStatus::Pending);
 });
 
 test('campus announcement shows to its students on the announcements page', function () {

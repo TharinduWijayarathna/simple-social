@@ -25,6 +25,16 @@ class Dashboard extends Component
 {
     use WithPagination;
 
+    /** @var list<string> */
+    private const array AVAILABLE_TABS = [
+        'overview',
+        'campuses',
+        'users',
+        'moderation',
+        'analytics',
+        'settings',
+    ];
+
     #[Url(as: 'tab')]
     public string $activeTab = 'overview';
 
@@ -39,8 +49,15 @@ class Dashboard extends Component
     {
         abort_unless(auth()->user()->isSuperAdmin(), 403);
 
+        $this->normalizeActiveTab();
+
         $this->announcementMessage = Setting::get('announcement_message', '') ?? '';
         $this->announcementEnabled = Setting::get('announcement_enabled') === '1';
+    }
+
+    public function updatedActiveTab(): void
+    {
+        $this->normalizeActiveTab();
     }
 
     public function moderate(int $reportId, string $status): void
@@ -88,38 +105,6 @@ class Dashboard extends Component
 
         $user = User::query()->where('role', Role::Campus)->findOrFail($userId);
         $user->update(['status' => UserStatus::Rejected]);
-    }
-
-    public function approveStudent(int $userId): void
-    {
-        abort_unless(auth()->user()->isSuperAdmin(), 403);
-
-        $user = User::query()->where('role', Role::Student)->findOrFail($userId);
-        $user->update(['status' => UserStatus::Approved]);
-    }
-
-    public function rejectStudent(int $userId): void
-    {
-        abort_unless(auth()->user()->isSuperAdmin(), 403);
-
-        $user = User::query()->where('role', Role::Student)->findOrFail($userId);
-        $user->update(['status' => UserStatus::Rejected]);
-    }
-
-    public function banStudent(int $userId): void
-    {
-        abort_unless(auth()->user()->isSuperAdmin(), 403);
-
-        $user = User::query()->where('role', Role::Student)->findOrFail($userId);
-        $user->update(['status' => UserStatus::Banned]);
-    }
-
-    public function unbanStudent(int $userId): void
-    {
-        abort_unless(auth()->user()->isSuperAdmin(), 403);
-
-        $user = User::query()->where('role', Role::Student)->findOrFail($userId);
-        $user->update(['status' => UserStatus::Approved]);
     }
 
     public function banUser(int $userId): void
@@ -180,27 +165,6 @@ class Dashboard extends Component
 
     public function render(): View
     {
-        $pendingStudents = User::query()
-            ->where('role', Role::Student)
-            ->where('status', UserStatus::Pending)
-            ->with(['campus', 'profile.primaryTalentModel'])
-            ->latest()
-            ->get();
-
-        $approvedStudents = User::query()
-            ->where('role', Role::Student)
-            ->where('status', UserStatus::Approved)
-            ->with(['campus', 'profile.primaryTalentModel'])
-            ->latest()
-            ->get();
-
-        $bannedStudents = User::query()
-            ->where('role', Role::Student)
-            ->where('status', UserStatus::Banned)
-            ->with(['campus', 'profile.primaryTalentModel'])
-            ->latest()
-            ->get();
-
         /** @var Collection<int, User> $users */
         $users = User::query()
             ->when($this->userSearch !== '', fn ($query) => $query->where(fn ($query) => $query
@@ -223,9 +187,6 @@ class Dashboard extends Component
                 ->with('profile')
                 ->latest()
                 ->get(),
-            'pendingStudents' => $pendingStudents,
-            'approvedStudents' => $approvedStudents,
-            'bannedStudents' => $bannedStudents,
             'categories' => Talent::query()
                 ->withCount(['portfolioItems as published_items_count' => fn ($query) => $query->published()])
                 ->orderByDesc('published_items_count')
@@ -236,5 +197,12 @@ class Dashboard extends Component
             'newUsersLast7Days' => User::query()->where('created_at', '>=', now()->subDays(7))->count(),
             'newUsersLast30Days' => User::query()->where('created_at', '>=', now()->subDays(30))->count(),
         ]);
+    }
+
+    private function normalizeActiveTab(): void
+    {
+        if (! in_array($this->activeTab, self::AVAILABLE_TABS, true)) {
+            $this->activeTab = 'overview';
+        }
     }
 }

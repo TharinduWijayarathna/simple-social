@@ -140,10 +140,12 @@ class Dashboard extends Component
 
     public function approveStudent(int $userId): void
     {
-        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+        $campus = auth()->user();
+
+        abort_unless($campus instanceof User && $campus->isCampus(), 403);
 
         $user = User::query()
-            ->pendingStudentsForCampus(auth()->id())
+            ->pendingStudentsForCampus($campus->id)
             ->findOrFail($userId);
 
         $user->update(['status' => UserStatus::Approved]);
@@ -151,10 +153,12 @@ class Dashboard extends Component
 
     public function rejectStudent(int $userId): void
     {
-        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+        $campus = auth()->user();
+
+        abort_unless($campus instanceof User && $campus->isCampus(), 403);
 
         $user = User::query()
-            ->pendingStudentsForCampus(auth()->id())
+            ->pendingStudentsForCampus($campus->id)
             ->findOrFail($userId);
 
         $user->update(['status' => UserStatus::Rejected]);
