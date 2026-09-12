@@ -9,11 +9,11 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
     </head>
-    <body class="min-h-screen bg-studio-deep text-paper antialiased">
-        <div class="flex min-h-screen">
+    <body class="h-dvh overflow-hidden bg-studio-deep text-paper antialiased">
+        <div class="flex h-dvh overflow-hidden">
 
             {{-- Sidebar --}}
-            <aside class="hidden w-64 flex-shrink-0 flex-col border-r border-white/8 bg-studio lg:flex">
+            <aside class="fixed inset-y-0 left-0 z-20 hidden w-64 shrink-0 flex-col border-r border-white/8 bg-studio lg:flex">
                 <div class="flex h-16 items-center gap-2.5 border-b border-white/8 px-6">
                     <span class="font-display text-xl text-gold">VibeCraft</span>
                     <span class="rounded-md bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gold">Admin</span>
@@ -120,7 +120,7 @@
             </div>
 
             {{-- Main content --}}
-            <main class="flex-1 overflow-y-auto pt-14 lg:pt-0">
+            <main class="h-dvh min-w-0 flex-1 overflow-y-auto overscroll-y-contain pt-14 lg:ml-64 lg:pt-0">
                 <div class="min-h-full bg-wall text-ink">
                     {{ $slot }}
                 </div>
