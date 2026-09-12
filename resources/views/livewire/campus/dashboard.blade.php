@@ -1035,29 +1035,178 @@
 
         {{-- ── ANNOUNCEMENT TAB ── --}}
         @else
-
-            <div class="max-w-xl rounded-2xl border border-ink/8 bg-white">
-                <div class="border-b border-ink/8 px-5 py-4">
-                    <h2 class="font-semibold">Campus announcement</h2>
-                    <p class="text-sm text-mist">Shown as a banner to your students only.</p>
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-ember">Student communications</p>
+                    <h2 class="mt-1 font-display text-3xl">Announcement centre</h2>
+                    <p class="mt-1 text-sm text-mist">Create targeted notices, schedule publication, and track student reads.</p>
                 </div>
-                <form wire:submit="saveAnnouncement" class="space-y-4 px-5 py-5">
-                    <label class="flex items-center gap-2 text-sm font-medium">
-                        <input type="checkbox" wire:model="announcementEnabled" class="rounded border-ink/20">
-                        Enable announcement banner
-                    </label>
-                    <div>
-                        <textarea wire:model="announcementMessage" rows="3" maxlength="280"
-                                  placeholder="e.g. Open mic night this Friday at 7pm."
-                                  class="w-full rounded-lg border border-ink/15 px-3 py-2 text-sm focus:border-ember focus:outline-none focus:ring-1 focus:ring-ember"></textarea>
-                        @error('announcementMessage') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <button type="submit"
-                            class="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90">
-                        Save announcement
-                    </button>
-                </form>
+                <button wire:click="openAnnouncementForm" class="btn-primary shrink-0">
+                    + New announcement
+                </button>
             </div>
+
+            @if (session('announcement-status'))
+                <div class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+                    {{ session('announcement-status') }}
+                </div>
+            @endif
+
+            <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                @foreach ([
+                    'active' => ['Active', 'bg-emerald-100 text-emerald-700'],
+                    'scheduled' => ['Scheduled', 'bg-blue-100 text-blue-700'],
+                    'draft' => ['Drafts', 'bg-studio/8 text-studio'],
+                    'expired' => ['Expired', 'bg-ink/5 text-mist'],
+                ] as $key => [$label, $tone])
+                    <button wire:click="$set('announcementStatus', '{{ $key }}')" class="rounded-2xl border border-ink/8 bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-mist">{{ $label }}</span>
+                            <span class="size-2 rounded-full {{ $tone }}"></span>
+                        </div>
+                        <div class="mt-2 text-3xl font-bold">{{ $announcementStats[$key] }}</div>
+                    </button>
+                @endforeach
+            </div>
+
+            <div class="mt-6 rounded-2xl border border-ink/8 bg-white p-3">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex gap-2 overflow-x-auto">
+                        @foreach (['all' => 'All', 'active' => 'Active', 'scheduled' => 'Scheduled', 'draft' => 'Drafts', 'expired' => 'Expired'] as $value => $label)
+                            <button wire:click="$set('announcementStatus', '{{ $value }}')" class="shrink-0 rounded-xl px-3.5 py-2 text-xs font-semibold {{ $announcementStatus === $value ? 'bg-ink text-white' : 'text-mist hover:bg-wall hover:text-ink' }}">{{ $label }}</button>
+                        @endforeach
+                    </div>
+                    <input wire:model.live.debounce.300ms="announcementSearch" type="search" placeholder="Search title or message…" class="w-full rounded-xl border border-ink/10 bg-wall px-4 py-2.5 text-sm outline-none focus:border-ember focus:ring-2 focus:ring-ember/10 lg:w-80">
+                </div>
+            </div>
+
+            <div class="mt-5 overflow-hidden rounded-2xl border border-ink/8 bg-white">
+                <div class="hidden grid-cols-[1fr_150px_140px_100px_180px] gap-4 border-b border-ink/8 bg-wall/70 px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-mist lg:grid">
+                    <span>Announcement</span><span>Audience</span><span>Timing</span><span>Reads</span><span class="text-right">Actions</span>
+                </div>
+                <div class="divide-y divide-ink/8">
+                    @forelse ($announcements as $announcement)
+                        @php
+                            $status = $announcement->status();
+                            $statusTone = match ($status) {
+                                'active' => 'bg-emerald-100 text-emerald-700',
+                                'scheduled' => 'bg-blue-100 text-blue-700',
+                                'expired' => 'bg-ink/5 text-mist',
+                                default => 'bg-amber-100 text-amber-700',
+                            };
+                        @endphp
+                        <div wire:key="admin-announcement-{{ $announcement->id }}" class="grid gap-4 px-5 py-4 lg:grid-cols-[1fr_150px_140px_100px_180px] lg:items-center">
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="truncate font-semibold">{{ $announcement->title }}</h3>
+                                    <span class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase {{ $statusTone }}">{{ $status }}</span>
+                                    @if ($announcement->is_pinned)<span class="rounded-full bg-gold/20 px-2 py-0.5 text-[10px] font-bold">Pinned</span>@endif
+                                </div>
+                                <p class="mt-1 line-clamp-1 text-xs text-mist">{{ $announcement->body }}</p>
+                            </div>
+                            <div class="text-xs">
+                                <div class="font-semibold">{{ $announcement->audience->label() }}</div>
+                                @if ($announcement->audience_value)<div class="mt-0.5 truncate text-mist">{{ $announcement->audience_value }}</div>@endif
+                            </div>
+                            <div class="text-xs text-mist">
+                                @if ($status === 'scheduled')Starts {{ $announcement->starts_at->format('M j, g:i A') }}
+                                @elseif ($announcement->expires_at)Ends {{ $announcement->expires_at->format('M j, g:i A') }}
+                                @elseif ($announcement->published_at)Since {{ $announcement->published_at->format('M j') }}
+                                @elseNot published
+                                @endif
+                            </div>
+                            <div class="text-xs"><strong class="text-base text-ink">{{ $announcement->read_count }}</strong><span class="ml-1 text-mist">students</span></div>
+                            <div class="flex flex-wrap justify-start gap-1.5 lg:justify-end">
+                                <button wire:click="openAnnouncementForm({{ $announcement->id }})" class="rounded-lg border border-ink/10 px-2.5 py-1.5 text-xs font-semibold hover:bg-wall">Edit</button>
+                                @if ($announcement->published_at)
+                                    <button wire:click="unpublishAnnouncement({{ $announcement->id }})" wire:confirm="Move this announcement back to drafts?" class="rounded-lg border border-ink/10 px-2.5 py-1.5 text-xs font-semibold hover:bg-wall">Unpublish</button>
+                                @else
+                                    <button wire:click="publishAnnouncement({{ $announcement->id }})" class="rounded-lg bg-ember px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-ember/90">Publish</button>
+                                @endif
+                                <button wire:click="deleteAnnouncement({{ $announcement->id }})" wire:confirm="Delete this announcement permanently?" class="rounded-lg px-2 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50" aria-label="Delete {{ $announcement->title }}">Delete</button>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-6 py-14 text-center">
+                            <div class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-wall text-mist"><x-icon name="megaphone" class="size-6" /></div>
+                            <h3 class="mt-4 font-display text-xl">No announcements found</h3>
+                            <p class="mt-1 text-sm text-mist">Create a new announcement or adjust the current filters.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            @if ($announcements->hasPages())<div class="mt-5">{{ $announcements->links() }}</div>@endif
+
+            @if ($showAnnouncementForm)
+                <div class="fixed inset-0 z-50 overflow-y-auto bg-ink/55 p-4 backdrop-blur-sm" wire:click.self="closeAnnouncementForm">
+                    <div class="mx-auto my-4 max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl sm:my-10">
+                        <div class="flex items-start justify-between border-b border-ink/8 px-6 py-5">
+                            <div>
+                                <p class="text-xs font-bold uppercase tracking-[0.2em] text-ember">{{ $editingAnnouncementId ? 'Edit communication' : 'New communication' }}</p>
+                                <h3 class="mt-1 font-display text-2xl">{{ $editingAnnouncementId ? 'Update announcement' : 'Create announcement' }}</h3>
+                            </div>
+                            <button wire:click="closeAnnouncementForm" class="flex size-9 items-center justify-center rounded-full text-xl text-mist hover:bg-wall hover:text-ink" aria-label="Close">×</button>
+                        </div>
+                        <form class="space-y-5 px-6 py-6">
+                            <div>
+                                <label class="text-sm font-semibold">Title</label>
+                                <input wire:model="announcementTitle" maxlength="120" placeholder="Clear, action-focused headline" class="mt-1.5 w-full rounded-xl border border-ink/15 px-4 py-3 text-sm outline-none focus:border-ember focus:ring-2 focus:ring-ember/10">
+                                @error('announcementTitle')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between"><label class="text-sm font-semibold">Message</label><span class="text-xs text-mist">Up to 5,000 characters</span></div>
+                                <textarea wire:model="announcementBody" rows="6" maxlength="5000" placeholder="Include the details students need, key dates, and the next action." class="mt-1.5 w-full rounded-xl border border-ink/15 px-4 py-3 text-sm leading-6 outline-none focus:border-ember focus:ring-2 focus:ring-ember/10"></textarea>
+                                @error('announcementBody')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label class="text-sm font-semibold">Priority</label>
+                                    <select wire:model="announcementPriority" class="mt-1.5 w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-sm outline-none focus:border-ember">
+                                        @foreach (\App\Enums\AnnouncementPriority::cases() as $priority)<option value="{{ $priority->value }}">{{ $priority->label() }}</option>@endforeach
+                                    </select>
+                                    @error('announcementPriority')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="text-sm font-semibold">Audience</label>
+                                    <select wire:model.live="announcementAudience" class="mt-1.5 w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-sm outline-none focus:border-ember">
+                                        @foreach (\App\Enums\AnnouncementAudience::cases() as $audience)<option value="{{ $audience->value }}">{{ $audience->label() }}</option>@endforeach
+                                    </select>
+                                    @error('announcementAudience')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
+                            </div>
+                            @if ($announcementAudience !== \App\Enums\AnnouncementAudience::Everyone->value)
+                                <div>
+                                    <label class="text-sm font-semibold">Choose target group</label>
+                                    <select wire:model="announcementAudienceValue" class="mt-1.5 w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-sm outline-none focus:border-ember">
+                                        <option value="">Select a group</option>
+                                        @foreach ($announcementAudienceValues as $value)<option value="{{ $value }}">{{ $value }}</option>@endforeach
+                                    </select>
+                                    @if ($announcementAudienceValues === [])<p class="mt-1 text-xs text-amber-700">No students currently have this profile field completed.</p>@endif
+                                    @error('announcementAudienceValue')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
+                            @endif
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div><label class="text-sm font-semibold">Starts at <span class="font-normal text-mist">(optional)</span></label><input wire:model="announcementStartsAt" type="datetime-local" class="mt-1.5 w-full rounded-xl border border-ink/15 px-4 py-3 text-sm outline-none focus:border-ember">@error('announcementStartsAt')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+                                <div><label class="text-sm font-semibold">Expires at <span class="font-normal text-mist">(optional)</span></label><input wire:model="announcementExpiresAt" type="datetime-local" class="mt-1.5 w-full rounded-xl border border-ink/15 px-4 py-3 text-sm outline-none focus:border-ember">@error('announcementExpiresAt')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+                            </div>
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div><label class="text-sm font-semibold">Action link <span class="font-normal text-mist">(optional)</span></label><input wire:model="announcementLinkUrl" type="url" placeholder="https://…" class="mt-1.5 w-full rounded-xl border border-ink/15 px-4 py-3 text-sm outline-none focus:border-ember">@error('announcementLinkUrl')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+                                <div><label class="text-sm font-semibold">Button label</label><input wire:model="announcementLinkLabel" maxlength="60" placeholder="Register now" class="mt-1.5 w-full rounded-xl border border-ink/15 px-4 py-3 text-sm outline-none focus:border-ember">@error('announcementLinkLabel')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+                            </div>
+                            <label class="flex items-start gap-3 rounded-xl border border-ink/10 bg-wall/60 p-4">
+                                <input wire:model="announcementPinned" type="checkbox" class="mt-0.5 rounded border-ink/20 text-ember focus:ring-ember">
+                                <span><span class="block text-sm font-semibold">Pin this announcement</span><span class="block text-xs text-mist">Pinned announcements stay above standard updates.</span></span>
+                            </label>
+                            <div class="flex flex-col-reverse gap-2 border-t border-ink/8 pt-5 sm:flex-row sm:justify-end">
+                                <button wire:click="closeAnnouncementForm" type="button" class="rounded-xl border border-ink/10 px-5 py-2.5 text-sm font-semibold hover:bg-wall">Cancel</button>
+                                <button wire:click="saveAnnouncement(false)" type="button" wire:loading.attr="disabled" class="rounded-xl border border-ink/15 px-5 py-2.5 text-sm font-semibold hover:bg-wall">Save draft</button>
+                                <button wire:click="saveAnnouncement(true)" type="button" wire:loading.attr="disabled" class="btn-primary">{{ $announcementStartsAt ? 'Publish / schedule' : 'Publish now' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @endif
 
         @endif
     </div>

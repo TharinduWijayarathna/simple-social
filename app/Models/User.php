@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -256,6 +257,21 @@ class User extends Authenticatable
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class, 'reporter_id');
+    }
+
+    /** @return HasMany<Announcement, $this> */
+    public function campusAnnouncements(): HasMany
+    {
+        return $this->hasMany(Announcement::class, 'campus_id');
+    }
+
+    /** @return BelongsToMany<Announcement, $this, Pivot, 'pivot'> */
+    public function announcementEngagements(): BelongsToMany
+    {
+        return $this->belongsToMany(Announcement::class)
+            ->withoutGlobalScopes()
+            ->withPivot(['read_at', 'dismissed_at'])
+            ->withTimestamps();
     }
 
     #[Scope]

@@ -21,6 +21,9 @@
                         <x-nav-icon :href="route('home')" icon="home" label="Home" :active="request()->routeIs('home')" />
                         <x-nav-icon :href="route('students.index')" icon="people" label="People" :active="request()->routeIs('students.index')" />
                         <x-nav-icon :href="route('events.index')" icon="calendar" label="Events" :active="request()->routeIs('events.*')" />
+                        @if (auth()->user()->isStudent())
+                            <x-nav-icon :href="route('announcements.index')" icon="megaphone" label="Announcements" :active="request()->routeIs('announcements.*')" />
+                        @endif
                         <x-nav-icon :href="route('rankings')" icon="trophy" label="Rankings" :active="request()->routeIs('rankings')" />
                         @if (auth()->user()->canOrganizeEvents())
                             <x-nav-icon :href="route('campus.dashboard')" icon="building" label="Campus" :active="request()->routeIs('campus.*')" />
@@ -66,13 +69,8 @@
         @endif
 
         @auth
-            @php
-                $campusId = auth()->user()->isStudent() ? auth()->user()->campus_id : null;
-            @endphp
-            @if ($campusId && \App\Models\Setting::get("campus_announcement_enabled_{$campusId}") === '1' && filled(\App\Models\Setting::get("campus_announcement_message_{$campusId}")))
-                <div class="bg-ember/10 px-4 py-2.5 text-center text-sm font-medium text-ember">
-                    {{ \App\Models\Setting::get("campus_announcement_message_{$campusId}") }}
-                </div>
+            @if (auth()->user()->isStudent())
+                <livewire:announcements.banner />
             @endif
         @endauth
 
@@ -81,12 +79,15 @@
         </main>
 
         @auth
-            <nav class="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-ink/10 bg-white/95 px-2 py-1.5 backdrop-blur md:hidden">
+            <nav class="fixed inset-x-0 bottom-0 z-30 grid {{ auth()->user()->isStudent() ? 'grid-cols-6' : 'grid-cols-5' }} border-t border-ink/10 bg-white/95 px-2 py-1.5 backdrop-blur md:hidden">
                 <x-nav-icon :href="route('home')" icon="home" label="Home" :active="request()->routeIs('home')" class="mx-auto" />
                 <x-nav-icon :href="route('students.index')" icon="people" label="People" :active="request()->routeIs('students.index')" class="mx-auto" />
                 <a href="{{ route('portfolio.create') }}" class="mx-auto flex size-10 items-center justify-center rounded-full bg-ember text-white {{ request()->routeIs('portfolio.create') ? 'ring-2 ring-ember/30' : '' }}" title="Post" aria-label="Post" wire:navigate>
                     <x-icon name="plus" class="size-5" />
                 </a>
+                @if (auth()->user()->isStudent())
+                    <x-nav-icon :href="route('announcements.index')" icon="megaphone" label="Announcements" :active="request()->routeIs('announcements.*')" class="mx-auto" />
+                @endif
                 <x-nav-icon :href="route('rankings')" icon="trophy" label="Rankings" :active="request()->routeIs('rankings')" class="mx-auto" />
                 <x-nav-icon :href="route('profile.show')" icon="user" label="Profile" :active="request()->routeIs('students.show')" class="mx-auto" />
             </nav>

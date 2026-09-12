@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Dashboard as AdminDashboard;
+use App\Livewire\Announcements\Index as AnnouncementsIndex;
 use App\Livewire\Auth\AdminLogin;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
@@ -62,6 +63,7 @@ Route::middleware('auth')->group(function (): void {
 
 // ── Student-only social routes (campus and super admins are redirected away) ──
 Route::middleware(['auth', 'student-only'])->group(function (): void {
+    Route::livewire('/announcements', AnnouncementsIndex::class)->name('announcements.index');
     Route::get('/profile', function () {
         return redirect()->route('students.show', auth()->user());
     })->name('profile.show');

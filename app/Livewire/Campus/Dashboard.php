@@ -3,6 +3,8 @@
 namespace App\Livewire\Campus;
 
 use App\Actions\AwardXp;
+use App\Enums\AnnouncementAudience;
+use App\Enums\AnnouncementPriority;
 use App\Enums\EventApplicationStatus;
 use App\Enums\PortfolioMediaType;
 use App\Enums\ReportStatus;
@@ -10,11 +12,11 @@ use App\Enums\Role;
 use App\Enums\TalentTheme;
 use App\Enums\UserStatus;
 use App\Enums\XpEventType;
+use App\Models\Announcement;
 use App\Models\Event;
 use App\Models\EventApplication;
 use App\Models\PortfolioItem;
 use App\Models\Report;
-use App\Models\Setting;
 use App\Models\Talent;
 use App\Models\TalentCategory;
 use App\Models\User;
@@ -92,26 +94,40 @@ class Dashboard extends Component
 
     public bool $showTalentForm = false;
 
-    public string $announcementMessage = '';
+    #[Url(as: 'announcement_status')]
+    public string $announcementStatus = 'all';
 
-    public bool $announcementEnabled = false;
+    #[Url(as: 'announcement_q')]
+    public string $announcementSearch = '';
+
+    public string $announcementTitle = '';
+
+    public string $announcementBody = '';
+
+    public string $announcementPriority = 'standard';
+
+    public string $announcementAudience = 'everyone';
+
+    public string $announcementAudienceValue = '';
+
+    public string $announcementStartsAt = '';
+
+    public string $announcementExpiresAt = '';
+
+    public string $announcementLinkUrl = '';
+
+    public string $announcementLinkLabel = '';
+
+    public bool $announcementPinned = false;
+
+    public ?int $editingAnnouncementId = null;
+
+    public bool $showAnnouncementForm = false;
 
     public function mount(): void
     {
         abort_unless(auth()->user()->canOrganizeEvents(), 403);
 
-        $this->announcementMessage = Setting::get($this->announcementMessageKey(), '') ?? '';
-        $this->announcementEnabled = Setting::get($this->announcementEnabledKey()) === '1';
-    }
-
-    protected function announcementMessageKey(): string
-    {
-        return 'campus_announcement_message_'.auth()->id();
-    }
-
-    protected function announcementEnabledKey(): string
-    {
-        return 'campus_announcement_enabled_'.auth()->id();
     }
 
     public function selectEvent(int $eventId): void
@@ -386,16 +402,133 @@ class Dashboard extends Component
         session()->flash('moderation-status', "{$processedCount} reports were updated.");
     }
 
-    public function saveAnnouncement(): void
+    public function updatedAnnouncementSearch(): void
     {
-        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+        $this->resetPage(pageName: 'announcementsPage');
+    }
 
-        $this->validate([
-            'announcementMessage' => ['nullable', 'string', 'max:280'],
+    public function updatedAnnouncementStatus(): void
+    {
+        $this->resetPage(pageName: 'announcementsPage');
+    }
+
+    public function updatedAnnouncementAudience(): void
+    {
+        $this->announcementAudienceValue = '';
+    }
+
+    public function openAnnouncementForm(?int $announcementId = null): void
+    {
+        $this->resetErrorBag();
+        $this->resetAnnouncementForm();
+
+        if ($announcementId !== null) {
+            $announcement = $this->campusAnnouncementsQuery()->findOrFail($announcementId);
+            $this->authorize('update', $announcement);
+            $this->editingAnnouncementId = $announcement->id;
+            $this->announcementTitle = $announcement->title;
+            $this->announcementBody = $announcement->body;
+            $this->announcementPriority = $announcement->priority->value;
+            $this->announcementAudience = $announcement->audience->value;
+            $this->announcementAudienceValue = $announcement->audience_value ?? '';
+            $this->announcementStartsAt = $announcement->starts_at?->format('Y-m-d\TH:i') ?? '';
+            $this->announcementExpiresAt = $announcement->expires_at?->format('Y-m-d\TH:i') ?? '';
+            $this->announcementLinkUrl = $announcement->link_url ?? '';
+            $this->announcementLinkLabel = $announcement->link_label ?? '';
+            $this->announcementPinned = $announcement->is_pinned;
+        }
+
+        $this->showAnnouncementForm = true;
+    }
+
+    public function closeAnnouncementForm(): void
+    {
+        $this->showAnnouncementForm = false;
+        $this->resetAnnouncementForm();
+        $this->resetErrorBag();
+    }
+
+    public function saveAnnouncement(bool $publish = false): void
+    {
+        $this->authorize('create', Announcement::class);
+
+        $audience = AnnouncementAudience::tryFrom($this->announcementAudience);
+        $audienceValues = $audience === null || $audience === AnnouncementAudience::Everyone
+            ? []
+            : $this->announcementAudienceValues($audience);
+
+        $validated = $this->validate([
+            'announcementTitle' => ['required', 'string', 'max:120'],
+            'announcementBody' => ['required', 'string', 'max:5000'],
+            'announcementPriority' => ['required', Rule::enum(AnnouncementPriority::class)],
+            'announcementAudience' => ['required', Rule::enum(AnnouncementAudience::class)],
+            'announcementAudienceValue' => [
+                Rule::requiredIf($audience !== null && $audience !== AnnouncementAudience::Everyone),
+                'nullable',
+                'string',
+                'max:255',
+                Rule::in($audienceValues),
+            ],
+            'announcementStartsAt' => ['nullable', 'date'],
+            'announcementExpiresAt' => [
+                'nullable',
+                Rule::date()->after($this->announcementStartsAt !== '' ? $this->announcementStartsAt : now()),
+            ],
+            'announcementLinkUrl' => ['nullable', 'url:http,https', 'max:2048'],
+            'announcementLinkLabel' => ['nullable', 'string', 'max:60', 'required_with:announcementLinkUrl'],
+            'announcementPinned' => ['boolean'],
         ]);
 
-        Setting::set($this->announcementMessageKey(), $this->announcementMessage);
-        Setting::set($this->announcementEnabledKey(), $this->announcementEnabled ? '1' : '0');
+        $announcement = $this->editingAnnouncementId === null
+            ? new Announcement(['campus_id' => auth()->id()])
+            : $this->campusAnnouncementsQuery()->findOrFail($this->editingAnnouncementId);
+
+        $this->authorize($announcement->exists ? 'update' : 'create', $announcement);
+
+        $announcement->fill([
+            'title' => Str::squish($validated['announcementTitle']),
+            'body' => trim($validated['announcementBody']),
+            'priority' => AnnouncementPriority::from($validated['announcementPriority']),
+            'audience' => AnnouncementAudience::from($validated['announcementAudience']),
+            'audience_value' => filled($validated['announcementAudienceValue'] ?? null) ? $validated['announcementAudienceValue'] : null,
+            'starts_at' => filled($validated['announcementStartsAt'] ?? null) ? $validated['announcementStartsAt'] : null,
+            'expires_at' => filled($validated['announcementExpiresAt'] ?? null) ? $validated['announcementExpiresAt'] : null,
+            'link_url' => filled($validated['announcementLinkUrl'] ?? null) ? $validated['announcementLinkUrl'] : null,
+            'link_label' => filled($validated['announcementLinkLabel'] ?? null) ? Str::squish($validated['announcementLinkLabel']) : null,
+            'is_pinned' => $validated['announcementPinned'],
+            'published_at' => $publish ? ($announcement->published_at ?? now()) : null,
+        ])->save();
+
+        $message = $publish
+            ? (($announcement->starts_at?->isFuture() ?? false) ? 'Announcement scheduled successfully.' : 'Announcement published successfully.')
+            : 'Announcement saved as a draft.';
+
+        $this->closeAnnouncementForm();
+        session()->flash('announcement-status', $message);
+    }
+
+    public function publishAnnouncement(int $announcementId): void
+    {
+        $announcement = $this->campusAnnouncementsQuery()->findOrFail($announcementId);
+        $this->authorize('update', $announcement);
+        $announcement->update(['published_at' => now()]);
+        session()->flash('announcement-status', $announcement->starts_at?->isFuture() ? 'Announcement scheduled.' : 'Announcement published.');
+    }
+
+    public function unpublishAnnouncement(int $announcementId): void
+    {
+        $announcement = $this->campusAnnouncementsQuery()->findOrFail($announcementId);
+        $this->authorize('update', $announcement);
+        $announcement->update(['published_at' => null]);
+        session()->flash('announcement-status', 'Announcement moved back to drafts. Student read history was preserved.');
+    }
+
+    public function deleteAnnouncement(int $announcementId): void
+    {
+        $announcement = $this->campusAnnouncementsQuery()->findOrFail($announcementId);
+        $this->authorize('delete', $announcement);
+        $announcement->delete();
+        session()->flash('announcement-status', 'Announcement deleted.');
     }
 
     public function openCategoryForm(?int $categoryId = null): void
@@ -629,6 +762,59 @@ class Dashboard extends Component
         ]);
     }
 
+    private function resetAnnouncementForm(): void
+    {
+        $this->editingAnnouncementId = null;
+        $this->announcementTitle = '';
+        $this->announcementBody = '';
+        $this->announcementPriority = AnnouncementPriority::Standard->value;
+        $this->announcementAudience = AnnouncementAudience::Everyone->value;
+        $this->announcementAudienceValue = '';
+        $this->announcementStartsAt = '';
+        $this->announcementExpiresAt = '';
+        $this->announcementLinkUrl = '';
+        $this->announcementLinkLabel = '';
+        $this->announcementPinned = false;
+    }
+
+    /**
+     * @return Builder<Announcement>
+     */
+    private function campusAnnouncementsQuery(): Builder
+    {
+        return Announcement::query()->where('campus_id', auth()->id());
+    }
+
+    /** @return list<string> */
+    private function announcementAudienceValues(AnnouncementAudience $audience): array
+    {
+        $column = match ($audience) {
+            AnnouncementAudience::Batch => 'batch',
+            AnnouncementAudience::Faculty => 'faculty',
+            AnnouncementAudience::Department => 'department',
+            AnnouncementAudience::Program => 'program',
+            AnnouncementAudience::Everyone => null,
+        };
+
+        if ($column === null) {
+            return [];
+        }
+
+        return User::query()
+            ->withoutGlobalScopes()
+            ->where('role', Role::Student)
+            ->where('campus_id', auth()->id())
+            ->join('profiles', 'profiles.user_id', '=', 'users.id')
+            ->whereNotNull("profiles.{$column}")
+            ->where("profiles.{$column}", '!=', '')
+            ->distinct()
+            ->orderBy("profiles.{$column}")
+            ->pluck("profiles.{$column}")
+            ->map(fn (mixed $value): string => (string) $value)
+            ->values()
+            ->all();
+    }
+
     /**
      * @return Builder<PortfolioItem>
      */
@@ -783,6 +969,30 @@ class Dashboard extends Component
             ->orderByDesc('published_items_count')
             ->get();
 
+        $announcementSearch = Str::squish($this->announcementSearch);
+        $announcements = $this->campusAnnouncementsQuery()
+            ->when($announcementSearch !== '', fn (Builder $query) => $query->where(fn (Builder $query) => $query
+                ->where('title', 'like', "%{$announcementSearch}%")
+                ->orWhere('body', 'like', "%{$announcementSearch}%")))
+            ->when($this->announcementStatus === 'draft', fn (Builder $query) => $query->whereNull('published_at'))
+            ->when($this->announcementStatus === 'scheduled', fn (Builder $query) => $query
+                ->whereNotNull('published_at')
+                ->where('starts_at', '>', now()))
+            ->when($this->announcementStatus === 'active', fn (Builder $query) => $query->active())
+            ->when($this->announcementStatus === 'expired', fn (Builder $query) => $query
+                ->whereNotNull('published_at')
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '<=', now()))
+            ->withCount([
+                'recipients as read_count' => fn (Builder $query) => $query->whereNotNull('announcement_user.read_at'),
+            ])
+            ->orderByDesc('is_pinned')
+            ->latest('updated_at')
+            ->paginate(8, pageName: 'announcementsPage');
+
+        $allAnnouncements = $this->campusAnnouncementsQuery()->get();
+        $selectedAudience = AnnouncementAudience::tryFrom($this->announcementAudience) ?? AnnouncementAudience::Everyone;
+
         return view('livewire.campus.dashboard', [
             'events' => $events,
             'selectedEvent' => $selectedEvent,
@@ -801,6 +1011,14 @@ class Dashboard extends Component
             'publishedItemsCount' => $publishedItemsCount,
             'removedItemsCount' => $removedItemsCount,
             'categories' => $categories,
+            'announcements' => $announcements,
+            'announcementStats' => [
+                'active' => $allAnnouncements->filter(fn (Announcement $announcement) => $announcement->status() === 'active')->count(),
+                'scheduled' => $allAnnouncements->filter(fn (Announcement $announcement) => $announcement->status() === 'scheduled')->count(),
+                'draft' => $allAnnouncements->filter(fn (Announcement $announcement) => $announcement->status() === 'draft')->count(),
+                'expired' => $allAnnouncements->filter(fn (Announcement $announcement) => $announcement->status() === 'expired')->count(),
+            ],
+            'announcementAudienceValues' => $this->announcementAudienceValues($selectedAudience),
             'newStudentsLast7Days' => User::query()
                 ->where('role', Role::Student)
                 ->where('campus_id', auth()->id())
