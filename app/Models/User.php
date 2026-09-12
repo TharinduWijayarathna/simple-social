@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -184,6 +185,11 @@ class User extends Authenticatable
     public function campusStudents(): HasMany
     {
         return $this->hasMany(User::class, 'campus_id');
+    }
+
+    public function campusPortfolioItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(PortfolioItem::class, User::class, 'campus_id', 'user_id');
     }
 
     public function portfolioItems(): HasMany

@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Device;
+use App\Models\Setting;
+use App\Support\MailSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +14,7 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -33,6 +36,26 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureAuth();
         $this->configureRateLimiting();
+        $this->configureStoredMailSettings();
+    }
+
+    protected function configureStoredMailSettings(): void
+    {
+        try {
+            if (Schema::hasTable('settings')) {
+                $siteName = Setting::get('site_name');
+
+                if (filled($siteName)) {
+                    config(['app.name' => $siteName]);
+                }
+
+                if (filled(Setting::get('smtp_host'))) {
+                    app(MailSettings::class)->apply();
+                }
+            }
+        } catch (\Throwable) {
+            // The application must remain bootable while its database is unavailable or migrating.
+        }
     }
 
     /**

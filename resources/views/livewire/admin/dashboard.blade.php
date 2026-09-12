@@ -159,111 +159,85 @@
 
         {{-- ── CAMPUSES TAB ── --}}
         @elseif ($activeTab === 'campuses')
+            @if (session('campus-status'))
+                <div class="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('campus-status') }}</div>
+            @endif
 
-            {{-- Pending applications --}}
-            <div class="rounded-2xl border border-ink/8 bg-white">
-                <div class="flex items-center justify-between border-b border-ink/8 px-5 py-4">
-                    <div>
-                        <h2 class="font-semibold">Pending applications</h2>
-                        <p class="text-sm text-mist">Campus registrations waiting for approval</p>
-                    </div>
-                    @if ($pendingCampuses->isNotEmpty())
-                        <span class="rounded-full bg-ember px-2.5 py-0.5 text-xs font-semibold text-white">{{ $pendingCampuses->count() }}</span>
-                    @endif
-                </div>
-
-                @if ($pendingCampuses->isEmpty())
-                    <div class="px-5 py-10 text-center text-sm text-mist">No pending applications.</div>
-                @else
-                    <ul class="divide-y divide-ink/8">
-                        @foreach ($pendingCampuses as $applicant)
-                            <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="pending-{{ $applicant->id }}">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-ember/10 text-sm font-semibold text-ember">
-                                        @if ($applicant->avatarUrl())
-                                            <img src="{{ $applicant->avatarUrl() }}" alt="{{ $applicant->displayCampusName() }}" class="size-full object-cover rounded-full">
-                                        @else
-                                            {{ $applicant->initials() }}
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">{{ $applicant->displayCampusName() }}</p>
-                                        <p class="text-sm text-mist">{{ $applicant->email }}</p>
-                                        <p class="text-xs text-mist">Contact: {{ $applicant->name }} · {{ $applicant->campus_phone }}</p>
-                                        <p class="text-xs text-mist">{{ $applicant->campus_address }}</p>
-                                        @if ($applicant->campus_website)
-                                            <a href="{{ $applicant->campus_website }}" target="_blank" rel="noopener noreferrer" class="text-xs text-ember hover:underline">{{ $applicant->campus_website }}</a>
-                                        @endif
-                                        <p class="text-xs text-mist">Applied {{ $applicant->created_at->diffForHumans() }}</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button wire:click="rejectCampus({{ $applicant->id }})"
-                                            class="rounded-lg border border-ink/15 px-4 py-2 text-sm font-medium transition hover:bg-ink/5">
-                                        Reject
-                                    </button>
-                                    <button wire:click="approveCampus({{ $applicant->id }})"
-                                            class="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90">
-                                        Approve
-                                    </button>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
+            <div class="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                @foreach (['all' => 'All campuses', 'pending' => 'Pending', 'approved' => 'Active', 'banned' => 'On hold'] as $status => $label)
+                    <button wire:click="$set('campusStatus', '{{ $status }}')" class="rounded-2xl border p-4 text-left transition {{ $campusStatus === $status ? 'border-ember bg-ember/5' : 'border-ink/8 bg-white hover:border-ink/20' }}">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-mist">{{ $label }}</p>
+                        <p class="mt-2 text-2xl font-semibold">{{ $status === 'all' ? $campusOptions->count() : $campusOptions->filter(fn ($campusOption) => $campusOption->status->value === $status)->count() }}</p>
+                    </button>
+                @endforeach
             </div>
 
-            {{-- Approved campuses --}}
-            <div class="mt-6 rounded-2xl border border-ink/8 bg-white">
-                <div class="border-b border-ink/8 px-5 py-4">
-                    <h2 class="font-semibold">Approved campuses</h2>
-                    <p class="text-sm text-mist">Campuses available to students during registration</p>
-                </div>
-
-                @if ($approvedCampuses->isEmpty())
-                    <div class="px-5 py-10 text-center text-sm text-mist">No approved campuses yet.</div>
-                @else
-                    <ul class="divide-y divide-ink/8">
-                        @foreach ($approvedCampuses as $campus)
-                            <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="campus-{{ $campus->id }}">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-studio text-sm font-semibold text-gold">
-                                        @if ($campus->avatarUrl())
-                                            <img src="{{ $campus->avatarUrl() }}" alt="{{ $campus->displayCampusName() }}" class="size-full object-cover rounded-full">
-                                        @else
-                                            {{ $campus->initials() }}
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">{{ $campus->displayCampusName() }}</p>
-                                        <p class="text-sm text-mist">{{ $campus->email }}</p>
-                                        @if ($campus->campus_phone)
-                                            <p class="text-xs text-mist">{{ $campus->campus_phone }} · Contact: {{ $campus->name }}</p>
-                                        @endif
-                                        @if ($campus->campus_address)
-                                            <p class="text-xs text-mist">{{ $campus->campus_address }}</p>
-                                        @endif
-                                        <p class="text-xs text-mist">Joined {{ $campus->created_at->format('M j, Y') }}</p>
-                                    </div>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
+            <div class="mb-5 flex flex-col gap-3 rounded-2xl border border-ink/8 bg-white p-4 sm:flex-row">
+                <input type="search" wire:model.live.debounce.350ms="campusSearch" placeholder="Search campus, contact, email or address…" class="min-w-0 flex-1 rounded-xl border border-ink/15 px-3 py-2.5 text-sm focus:border-ember focus:outline-none focus:ring-1 focus:ring-ember">
+                <select wire:model.live="campusStatus" class="rounded-xl border border-ink/15 px-3 py-2.5 text-sm">
+                    <option value="all">Every status</option><option value="pending">Pending</option><option value="approved">Active</option><option value="rejected">Rejected</option><option value="banned">On hold</option>
+                </select>
             </div>
+
+            <div class="space-y-4">
+                @forelse ($campuses as $campus)
+                    <article x-data="{ expanded: false }" class="overflow-hidden rounded-2xl border border-ink/8 bg-white shadow-sm" wire:key="campus-{{ $campus->id }}">
+                        <div class="flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
+                            <div class="flex min-w-0 items-center gap-4">
+                                <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-studio font-semibold text-gold">{{ $campus->initials() }}</div>
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2"><h2 class="font-semibold">{{ $campus->displayCampusName() }}</h2><span class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase {{ $campus->status === \App\Enums\UserStatus::Approved ? 'bg-emerald-100 text-emerald-700' : ($campus->status === \App\Enums\UserStatus::Pending ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }}">{{ $campus->status === \App\Enums\UserStatus::Banned ? 'On hold' : $campus->status->label() }}</span></div>
+                                    <p class="truncate text-sm text-mist">{{ $campus->email }} · Contact: {{ $campus->name }}</p>
+                                    <p class="mt-1 text-xs text-mist">Registered {{ $campus->created_at->format('M j, Y') }}</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-5 text-center lg:min-w-72">
+                                <div><p class="text-xl font-semibold">{{ $campus->students_count }}</p><p class="text-xs text-mist">Students</p></div>
+                                <div><p class="text-xl font-semibold">{{ $campus->published_items_count }}</p><p class="text-xs text-mist">Works</p></div>
+                                <div><p class="text-xl font-semibold">{{ $campus->events_count }}</p><p class="text-xs text-mist">Events</p></div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button x-on:click="expanded = ! expanded" class="rounded-xl border border-ink/15 px-3 py-2 text-xs font-semibold" x-text="expanded ? 'Hide details' : 'View details'"></button>
+                                @if ($campus->status === \App\Enums\UserStatus::Pending)
+                                    <button wire:click="rejectCampus({{ $campus->id }})" wire:confirm="Reject this campus application?" class="rounded-xl border border-red-200 px-3 py-2 text-xs font-semibold text-red-700">Reject</button>
+                                    <button wire:click="approveCampus({{ $campus->id }})" class="rounded-xl bg-ember px-3 py-2 text-xs font-semibold text-white">Approve</button>
+                                @elseif ($campus->status === \App\Enums\UserStatus::Approved)
+                                    <button wire:click="holdCampus({{ $campus->id }})" wire:confirm="Place this campus on hold? Campus access will be suspended." class="rounded-xl bg-amber-500 px-3 py-2 text-xs font-semibold text-white">Place on hold</button>
+                                @elseif ($campus->status === \App\Enums\UserStatus::Banned)
+                                    <button wire:click="reactivateCampus({{ $campus->id }})" class="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white">Reactivate</button>
+                                @endif
+                            </div>
+                        </div>
+                        <div x-show="expanded" x-collapse class="border-t border-ink/8 bg-canvas/60 px-5 py-5">
+                            <dl class="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4"><div><dt class="text-xs text-mist">Phone</dt><dd class="mt-1 font-medium">{{ $campus->campus_phone ?: 'Not provided' }}</dd></div><div><dt class="text-xs text-mist">Address</dt><dd class="mt-1 font-medium">{{ $campus->campus_address ?: 'Not provided' }}</dd></div><div><dt class="text-xs text-mist">Website</dt><dd class="mt-1 font-medium">@if ($campus->campus_website)<a class="text-ember hover:underline" target="_blank" rel="noopener" href="{{ $campus->campus_website }}">Open website</a>@else Not provided @endif</dd></div><div><dt class="text-xs text-mist">Pending students</dt><dd class="mt-1 font-medium">{{ $campus->pending_students_count }}</dd></div></dl>
+                        </div>
+                    </article>
+                @empty
+                    <div class="rounded-2xl border border-dashed border-ink/15 bg-white px-6 py-14 text-center text-sm text-mist">No campuses match these filters.</div>
+                @endforelse
+            </div>
+            <div class="mt-5">{{ $campuses->links() }}</div>
 
         {{-- ── USERS TAB ── --}}
         @elseif ($activeTab === 'users')
 
-            <div class="mb-4">
-                <input type="text" wire:model.live.debounce.400ms="userSearch"
-                       placeholder="Search by name or email…"
-                       class="w-full max-w-sm rounded-lg border border-ink/15 px-3 py-2 text-sm focus:border-ember focus:outline-none focus:ring-1 focus:ring-ember">
+            <div class="mb-5 grid gap-3 rounded-2xl border border-ink/8 bg-white p-4 md:grid-cols-4">
+                <input type="search" wire:model.live.debounce.350ms="userSearch" placeholder="Name, email or student ID…" class="rounded-xl border border-ink/15 px-3 py-2.5 text-sm focus:border-ember focus:outline-none focus:ring-1 focus:ring-ember">
+                <select wire:model.live="userCampus" class="rounded-xl border border-ink/15 px-3 py-2.5 text-sm">
+                    <option value="all">All campuses</option>
+                    @foreach ($campusOptions as $campusOption)<option value="{{ $campusOption->id }}">{{ $campusOption->displayCampusName() }} ({{ $campusOption->students_count }})</option>@endforeach
+                    <option value="unassigned">Without a campus</option>
+                </select>
+                <select wire:model.live="userRole" class="rounded-xl border border-ink/15 px-3 py-2.5 text-sm"><option value="all">All roles</option>@foreach (\App\Enums\Role::cases() as $role)<option value="{{ $role->value }}">{{ $role->label() }}</option>@endforeach</select>
+                <select wire:model.live="userStatus" class="rounded-xl border border-ink/15 px-3 py-2.5 text-sm"><option value="all">All statuses</option>@foreach (\App\Enums\UserStatus::cases() as $status)<option value="{{ $status->value }}">{{ $status->label() }}</option>@endforeach</select>
             </div>
 
-            <div class="rounded-2xl border border-ink/8 bg-white">
-                <ul class="divide-y divide-ink/8">
-                    @forelse ($users as $user)
+            <div class="space-y-5">
+                @forelse ($usersByCampus as $campusName => $campusUsers)
+                    <section class="overflow-hidden rounded-2xl border border-ink/8 bg-white" wire:key="user-group-{{ md5($campusName) }}">
+                        <div class="flex items-center justify-between border-b border-ink/8 bg-canvas/50 px-5 py-3"><div><h2 class="font-semibold">{{ $campusName }}</h2><p class="text-xs text-mist">Users in this category</p></div><span class="rounded-full bg-ink px-2.5 py-1 text-xs font-bold text-white">{{ $campusUsers->count() }}</span></div>
+                        <ul class="divide-y divide-ink/8">
+                    @foreach ($campusUsers as $user)
                         <li class="flex flex-wrap items-center justify-between gap-4 px-5 py-4" wire:key="user-{{ $user->id }}">
                             <div class="flex items-center gap-3">
                                 <div class="flex size-10 items-center justify-center rounded-full bg-studio text-sm font-semibold text-gold">
@@ -277,7 +251,7 @@
                                         @endif
                                     </p>
                                     <p class="text-sm text-mist">{{ $user->email }}</p>
-                                    <p class="text-xs text-mist">{{ $user->role->label() }} · Joined {{ $user->created_at->format('M j, Y') }}</p>
+                                    <p class="text-xs text-mist">{{ $user->role->label() }}@if ($user->university_id) · ID {{ $user->university_id }}@endif · Joined {{ $user->created_at->format('M j, Y') }}</p>
                                 </div>
                             </div>
                             @unless ($user->is(auth()->user()))
@@ -312,10 +286,12 @@
                                 </div>
                             @endunless
                         </li>
-                    @empty
-                        <li class="px-5 py-10 text-center text-sm text-mist">No users found.</li>
-                    @endforelse
-                </ul>
+                    @endforeach
+                        </ul>
+                    </section>
+                @empty
+                    <div class="rounded-2xl border border-dashed border-ink/15 bg-white px-5 py-12 text-center text-sm text-mist">No users match these filters.</div>
+                @endforelse
             </div>
 
             <div class="mt-4">{{ $users->links() }}</div>
@@ -620,63 +596,46 @@
         {{-- ── ANALYTICS TAB ── --}}
         @elseif ($activeTab === 'analytics')
 
-            <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                <div class="rounded-2xl border border-ink/8 bg-white p-5">
-                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Total users</p>
-                    <p class="mt-2 text-3xl font-semibold">{{ $totalUsers }}</p>
-                </div>
-                <div class="rounded-2xl border border-ink/8 bg-white p-5">
-                    <p class="text-xs font-medium uppercase tracking-wider text-mist">New (7 days)</p>
-                    <p class="mt-2 text-3xl font-semibold">{{ $newUsersLast7Days }}</p>
-                </div>
-                <div class="rounded-2xl border border-ink/8 bg-white p-5">
-                    <p class="text-xs font-medium uppercase tracking-wider text-mist">New (30 days)</p>
-                    <p class="mt-2 text-3xl font-semibold">{{ $newUsersLast30Days }}</p>
-                </div>
-                <div class="rounded-2xl border border-ink/8 bg-white p-5">
-                    <p class="text-xs font-medium uppercase tracking-wider text-mist">Suspended</p>
-                    <p class="mt-2 text-3xl font-semibold">{{ $totalBanned }}</p>
-                </div>
+            <div class="grid grid-cols-2 gap-4 xl:grid-cols-6">
+                @foreach ([['Users', $totalUsers, '+'.$newUsersLast30Days.' this month'], ['Campuses', $totalCampuses, 'active institutions'], ['Published work', $totalItems, 'student creations'], ['Events', $totalEvents, 'published'], ['Engagements', $totalLikes + $totalComments + $totalFollows, 'likes, comments & follows'], ['Open reports', $pendingReportsCount, 'need review']] as [$label, $value, $detail])
+                    <div class="rounded-2xl border border-ink/8 bg-white p-5 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wider text-mist">{{ $label }}</p><p class="mt-3 text-3xl font-semibold">{{ number_format($value) }}</p><p class="mt-1 text-xs text-mist">{{ $detail }}</p></div>
+                @endforeach
             </div>
 
-            <div class="mt-6 rounded-2xl border border-ink/8 bg-white">
-                <div class="border-b border-ink/8 px-5 py-4">
-                    <h2 class="font-semibold">Talent rooms by published work</h2>
-                </div>
-                <ul class="divide-y divide-ink/8">
-                    @foreach ($categories as $category)
-                        <li class="flex items-center justify-between px-5 py-3 text-sm" wire:key="an-cat-{{ $category->id }}">
-                            <span>{{ $category->name }}</span>
-                            <span class="font-semibold text-ember">{{ $category->published_items_count }}</span>
-                        </li>
-                    @endforeach
-                </ul>
+            <div class="mt-6 grid gap-6 xl:grid-cols-5">
+                <section class="rounded-2xl border border-ink/8 bg-white p-5 xl:col-span-3">
+                    <div><h2 class="font-semibold">Registration growth</h2><p class="text-sm text-mist">New accounts during the last six calendar months</p></div>
+                    <div class="mt-8 flex h-56 items-end gap-3 border-b border-ink/10 pb-2">
+                        @foreach ($registrationTrend as $month)
+                            <div class="flex h-full flex-1 flex-col justify-end text-center" wire:key="growth-{{ $month['label'] }}"><span class="mb-2 text-xs font-semibold">{{ $month['count'] }}</span><div class="mx-auto w-full max-w-14 rounded-t-lg bg-ember/80" style="height: {{ max(4, round(($month['count'] / $registrationTrendMax) * 100)) }}%"></div><span class="mt-2 text-xs text-mist">{{ $month['label'] }}</span></div>
+                        @endforeach
+                    </div>
+                </section>
+                <section class="overflow-hidden rounded-2xl border border-ink/8 bg-white xl:col-span-2">
+                    <div class="border-b border-ink/8 px-5 py-4"><h2 class="font-semibold">Engagement mix</h2><p class="text-sm text-mist">Platform-wide social activity</p></div>
+                    <dl class="divide-y divide-ink/8">@foreach ([['Likes', $totalLikes, 'text-ember'], ['Comments', $totalComments, 'text-blue-600'], ['Follows', $totalFollows, 'text-emerald-600']] as [$label, $value, $color])<div class="flex items-center justify-between px-5 py-4"><dt class="text-sm text-mist">{{ $label }}</dt><dd class="text-xl font-semibold {{ $color }}">{{ number_format($value) }}</dd></div>@endforeach</dl>
+                </section>
+            </div>
+
+            <div class="mt-6 grid gap-6 xl:grid-cols-2">
+                <section class="overflow-hidden rounded-2xl border border-ink/8 bg-white"><div class="border-b border-ink/8 px-5 py-4"><h2 class="font-semibold">Campus performance</h2><p class="text-sm text-mist">Ranked by published student work</p></div><div class="divide-y divide-ink/8">@forelse ($topCampuses as $index => $campus)<div class="flex items-center gap-4 px-5 py-4"><span class="flex size-8 items-center justify-center rounded-full bg-studio text-xs font-bold text-gold">{{ $index + 1 }}</span><div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">{{ $campus->displayCampusName() }}</p><p class="text-xs text-mist">{{ $campus->students_count }} students · {{ $campus->events_count }} events</p></div><p class="text-right text-lg font-semibold text-ember">{{ $campus->published_items_count }}<span class="block text-[10px] font-normal text-mist">works</span></p></div>@empty<div class="p-8 text-center text-sm text-mist">No campus activity yet.</div>@endforelse</div></section>
+                <section class="overflow-hidden rounded-2xl border border-ink/8 bg-white">
+                    <div class="border-b border-ink/8 px-5 py-4"><h2 class="font-semibold">Talent room activity</h2><p class="text-sm text-mist">Published work by talent</p></div>
+                    <ul class="divide-y divide-ink/8">
+                        @foreach ($categories->take(8) as $category)
+                            <li class="flex items-center gap-4 px-5 py-3 text-sm" wire:key="an-cat-{{ $category->id }}"><span class="min-w-0 flex-1 truncate">{{ $category->name }}</span><div class="h-2 w-24 overflow-hidden rounded-full bg-ink/8"><div class="h-full rounded-full bg-gold" style="width: {{ $categories->max('published_items_count') > 0 ? max(4, round(($category->published_items_count / $categories->max('published_items_count')) * 100)) : 0 }}%"></div></div><span class="w-8 text-right font-semibold text-ember">{{ $category->published_items_count }}</span></li>
+                        @endforeach
+                    </ul>
+                </section>
             </div>
 
         {{-- ── SETTINGS TAB ── --}}
         @elseif ($activeTab === 'settings')
 
-            <div class="max-w-xl rounded-2xl border border-ink/8 bg-white">
-                <div class="border-b border-ink/8 px-5 py-4">
-                    <h2 class="font-semibold">Site announcement</h2>
-                    <p class="text-sm text-mist">Shown as a banner to every signed-in user.</p>
-                </div>
-                <form wire:submit="saveSettings" class="space-y-4 px-5 py-5">
-                    <label class="flex items-center gap-2 text-sm font-medium">
-                        <input type="checkbox" wire:model="announcementEnabled" class="rounded border-ink/20">
-                        Enable announcement banner
-                    </label>
-                    <div>
-                        <textarea wire:model="announcementMessage" rows="3" maxlength="280"
-                                  placeholder="e.g. Scheduled maintenance on Friday, 9–10pm."
-                                  class="w-full rounded-lg border border-ink/15 px-3 py-2 text-sm focus:border-ember focus:outline-none focus:ring-1 focus:ring-ember"></textarea>
-                        @error('announcementMessage') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <button type="submit"
-                            class="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90">
-                        Save settings
-                    </button>
-                </form>
+            @if (session('settings-status'))<div class="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('settings-status') }}</div>@endif
+            <div class="grid items-start gap-6 xl:grid-cols-2">
+                <section class="overflow-hidden rounded-2xl border border-ink/8 bg-white"><div class="border-b border-ink/8 px-5 py-4"><h2 class="font-semibold">Platform configuration</h2><p class="text-sm text-mist">Identity, support contact, and availability controls.</p></div><form wire:submit="saveGeneralSettings" class="space-y-5 p-5"><div class="grid gap-4 sm:grid-cols-2"><label class="text-sm font-medium">Platform name<input wire:model="siteName" class="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-2.5"></label><label class="text-sm font-medium">Support email<input type="email" wire:model="supportEmail" class="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-2.5"></label></div><div class="rounded-2xl border border-amber-200 bg-amber-50 p-4"><label class="flex items-start gap-3"><input type="checkbox" wire:model="siteUnderConstruction" class="mt-1 rounded border-ink/20"><span><span class="block text-sm font-semibold text-amber-900">Under-construction mode</span><span class="block text-xs leading-5 text-amber-800">Visitors and students receive a polished 503 page. Super admins retain access.</span></span></label><div class="mt-4 space-y-3"><input wire:model="underConstructionTitle" placeholder="Page title" class="w-full rounded-xl border border-amber-200 px-3 py-2.5 text-sm"><textarea wire:model="underConstructionMessage" rows="3" placeholder="Explain when the platform will return" class="w-full rounded-xl border border-amber-200 px-3 py-2.5 text-sm"></textarea></div></div>@error('siteName')<p class="text-xs text-red-600">{{ $message }}</p>@enderror @error('supportEmail')<p class="text-xs text-red-600">{{ $message }}</p>@enderror @error('underConstructionTitle')<p class="text-xs text-red-600">{{ $message }}</p>@enderror @error('underConstructionMessage')<p class="text-xs text-red-600">{{ $message }}</p>@enderror<button class="rounded-xl bg-ember px-4 py-2.5 text-sm font-semibold text-white">Save platform settings</button></form></section>
+                <section class="overflow-hidden rounded-2xl border border-ink/8 bg-white"><div class="border-b border-ink/8 px-5 py-4"><h2 class="font-semibold">SMTP email</h2><p class="text-sm text-mist">Secure outgoing email connection for platform messages.</p></div><form wire:submit="saveSmtpSettings" class="space-y-4 p-5"><div class="grid gap-4 sm:grid-cols-3"><label class="text-sm font-medium sm:col-span-2">SMTP host<input wire:model="smtpHost" placeholder="smtp.example.com" class="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-2.5"></label><label class="text-sm font-medium">Port<input type="number" wire:model="smtpPort" class="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-2.5"></label></div><div class="grid gap-4 sm:grid-cols-2"><label class="text-sm font-medium">Username<input wire:model="smtpUsername" autocomplete="off" class="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-2.5"></label><label class="text-sm font-medium">Password<input type="password" wire:model="smtpPassword" autocomplete="new-password" placeholder="Leave blank to keep saved password" class="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-2.5"></label></div><div class="grid gap-4 sm:grid-cols-3"><label class="text-sm font-medium">Security<select wire:model="smtpScheme" class="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-2.5"><option value="tls">TLS</option><option value="smtps">SMTPS</option></select></label><label class="text-sm font-medium sm:col-span-2">From email<input type="email" wire:model="smtpFromAddress" class="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-2.5"></label></div><label class="block text-sm font-medium">From name<input wire:model="smtpFromName" class="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-2.5"></label>@foreach (['smtpHost','smtpPort','smtpUsername','smtpPassword','smtpScheme','smtpFromAddress','smtpFromName'] as $field)@error($field)<p class="text-xs text-red-600">{{ $message }}</p>@enderror @endforeach<div class="flex flex-wrap gap-2"><button class="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white">Save SMTP</button></div></form><div class="border-t border-ink/8 bg-canvas/50 p-5"><p class="text-sm font-semibold">Send a connection test</p><div class="mt-3 flex flex-col gap-2 sm:flex-row"><input type="email" wire:model="smtpTestRecipient" placeholder="recipient@example.com" class="min-w-0 flex-1 rounded-xl border border-ink/15 px-3 py-2.5 text-sm"><button type="button" wire:click="sendSmtpTest" wire:loading.attr="disabled" class="rounded-xl border border-ember px-4 py-2.5 text-sm font-semibold text-ember disabled:opacity-50">Send test email</button></div>@error('smtpTestRecipient')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div></section>
             </div>
 
         @endif

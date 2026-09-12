@@ -62,12 +62,6 @@
             </header>
         @endauth
 
-        @if (\App\Models\Setting::get('announcement_enabled') === '1' && filled(\App\Models\Setting::get('announcement_message')))
-            <div class="bg-gold/15 px-4 py-2.5 text-center text-sm font-medium text-studio">
-                {{ \App\Models\Setting::get('announcement_message') }}
-            </div>
-        @endif
-
         @auth
             @if (auth()->user()->isStudent())
                 <livewire:announcements.banner />

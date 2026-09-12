@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureSiteIsAvailable;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\RedirectNonStudents;
 use Illuminate\Foundation\Application;
@@ -15,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(EnsureSiteIsAvailable::class);
+
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'student-only' => RedirectNonStudents::class,
