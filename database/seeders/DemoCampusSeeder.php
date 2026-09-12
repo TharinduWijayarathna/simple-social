@@ -337,7 +337,7 @@ class DemoCampusSeeder extends Seeder
                 'title' => $campusName.' Sports Fest',
                 'description' => 'Inter-batch matches, fitness challenges, and a talent showcase on the field.',
                 'location' => $campusName.' Sports Complex',
-                'cover' => 'photo-1461896836934-ffe607ba6851',
+                'cover' => 'photo-1546519638-68e109498ffc',
             ],
         ];
 
@@ -737,7 +737,7 @@ class DemoCampusSeeder extends Seeder
             'photo-1524504388940-b1c1722653e1',
             'photo-1529626455594-4ff0802cfb7e',
             'photo-1531123897727-8f129e1688ce',
-            'photo-1504257432389-52343af06d0e',
+            'photo-1500336624523-d727130c3328',
             'photo-1519345182560-3f2917c472ef',
             'photo-1488426862026-3ee34a7d66df',
             'photo-1463453091185-61582044d556',
@@ -765,7 +765,7 @@ class DemoCampusSeeder extends Seeder
                 'photo-1541961017774-22349e4a1262',
             ],
             'Sports & Physical' => [
-                'photo-1461896836934-ffe607ba6851',
+                'photo-1546519638-68e109498ffc',
                 'photo-1579952363873-27f3bade9f55',
                 'photo-1552674605-db6ffd4facb5',
                 'photo-1517649763962-0c623066013b',
@@ -780,7 +780,7 @@ class DemoCampusSeeder extends Seeder
                 'photo-1522202176988-66273c2fd55f',
                 'photo-1523240795612-9a054b0db644',
                 'photo-1517486808906-6ca8b3f04846',
-                'photo-1523050854058-8df90110c9f1',
+                'photo-1547153760-18fc86324498',
             ],
         ];
 
@@ -793,8 +793,8 @@ class DemoCampusSeeder extends Seeder
     {
         // Stable Unsplash campus/lifestyle shots (with UI onerror → picsum fallback).
         $photos = [
-            'photo-1523050854058-8df90110c9f1',
-            'photo-1541339907198-e816be447fa8',
+            'photo-1547153760-18fc86324498',
+            'photo-1487956382158-bb926046304a',
             'photo-1522202176988-66273c2fd55f',
             'photo-1517486808906-6ca8b3f04846',
             'photo-1523240795612-9a054b0db644',
@@ -802,9 +802,9 @@ class DemoCampusSeeder extends Seeder
             'photo-1500530855697-b586d89ba3ee',
             'photo-1498243691581-b145c3f54a5a',
             'photo-1519389950473-47ba0277781c',
-            'photo-1523580494863-6f3031224fd3',
+            'photo-1519861531473-9200262188bf',
             'photo-1524178232363-1fb2b075b655',
-            'photo-1511632765486-a01980e36a16',
+            'photo-1508214751196-bcfd4ca60f91',
         ];
 
         return $this->unsplash($photos[$seed % count($photos)], 720, 1280);

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Actions\FollowUser;
 use App\Models\CampusRanking;
 use App\Models\Event;
 use App\Models\PortfolioItem;
@@ -19,6 +20,17 @@ use Livewire\WithPagination;
 class Feed extends Component
 {
     use WithPagination;
+
+    public function follow(int $userId, FollowUser $followUser): void
+    {
+        abort_unless(auth()->check(), 403);
+
+        $student = User::query()->students()->findOrFail($userId);
+
+        abort_if(auth()->user()->is($student), 403);
+
+        $followUser->handle(auth()->user(), $student);
+    }
 
     public function render(): View
     {
@@ -62,7 +74,9 @@ class Feed extends Component
                 ->get(),
             'risingStudents' => User::query()
                 ->students()
+                ->when(auth()->check(), fn ($query) => $query->where('id', '!=', auth()->id()))
                 ->with('profile:id,user_id,headline')
+                ->withExists(['followers as followed_by_viewer' => fn ($query) => $query->where('follower_id', auth()->id())])
                 ->orderByDesc('xp')
                 ->limit(5)
                 ->get(),

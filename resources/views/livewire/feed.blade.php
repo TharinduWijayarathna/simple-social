@@ -104,9 +104,20 @@
                 <h2 class="font-display text-lg text-gold">People on campus</h2>
                 <ol class="mt-3 flex flex-col gap-3 text-sm">
                     @foreach ($risingStudents as $student)
-                        <li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-start gap-3" wire:key="rail-student-{{ $student->id }}">
-                            <a href="{{ route('students.show', $student) }}" class="truncate font-medium hover:text-gold" wire:navigate>{{ $student->name }}</a>
-                            <span class="truncate text-right text-xs leading-5 text-paper/55">{{ $student->profile?->headline }}</span>
+                        <li class="flex items-center justify-between gap-3" wire:key="rail-student-{{ $student->id }}">
+                            <a href="{{ route('students.show', $student) }}" class="min-w-0" wire:navigate>
+                                <span class="block truncate font-medium hover:text-gold">{{ $student->name }}</span>
+                                <span class="block truncate text-xs leading-5 text-paper/55">{{ $student->profile?->headline }}</span>
+                            </a>
+                            @auth
+                                <button type="button" wire:click="follow({{ $student->id }})" @class([
+                                    'shrink-0 rounded-full px-3 py-1 text-[11px] font-bold transition',
+                                    'bg-white/20 text-white ring-1 ring-white/40 hover:bg-white/30' => $student->followed_by_viewer,
+                                    'bg-ember text-white hover:bg-ember/90' => ! $student->followed_by_viewer,
+                                ])>
+                                    {{ $student->followed_by_viewer ? 'Following' : 'Follow' }}
+                                </button>
+                            @endauth
                         </li>
                     @endforeach
                 </ol>

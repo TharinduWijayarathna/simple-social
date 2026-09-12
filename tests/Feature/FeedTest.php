@@ -1,6 +1,8 @@
 <?php
 
+use App\Livewire\Feed;
 use App\Livewire\PostCard;
+use App\Models\Follow;
 use App\Models\PortfolioItem;
 use App\Models\Share;
 use App\Models\User;
@@ -45,6 +47,23 @@ test('students can like comment and share a homepage post', function () {
         Share::query()
             ->whereBelongsTo($viewer)
             ->whereBelongsTo($item)
+            ->first(),
+    );
+});
+
+test('students can follow a rising student from the people on campus rail', function () {
+    $viewer = User::factory()->student()->create(['xp' => 0]);
+    $risingStudent = User::factory()->student()->create(['xp' => 500]);
+
+    Livewire::actingAs($viewer)
+        ->test(Feed::class)
+        ->call('follow', $risingStudent->id)
+        ->assertHasNoErrors();
+
+    $this->assertModelExists(
+        Follow::query()
+            ->where('follower_id', $viewer->id)
+            ->where('following_id', $risingStudent->id)
             ->first(),
     );
 });

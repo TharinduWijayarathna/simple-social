@@ -13,7 +13,10 @@
         @auth
             <header class="sticky top-0 z-20 border-b border-ink/10 bg-white/95 backdrop-blur">
                 <div class="page-shell flex items-center justify-between gap-4 py-2.5">
-                    <a href="{{ route('home') }}" class="font-display text-2xl tracking-tight text-studio" wire:navigate>VibeCraft</a>
+                    <a href="{{ route('home') }}" class="flex items-center gap-2 font-display text-2xl tracking-tight text-studio" wire:navigate>
+                        <img src="{{ asset('logo.png') }}" alt="VibeCraft" class="size-8 rounded-full">
+                        VibeCraft
+                    </a>
                     <nav class="hidden items-center gap-1 md:flex">
                         <x-nav-icon :href="route('home')" icon="home" label="Home" :active="request()->routeIs('home')" />
                         <x-nav-icon :href="route('students.index')" icon="people" label="People" :active="request()->routeIs('students.index')" />
@@ -44,7 +47,10 @@
         @else
             <header class="sticky top-0 z-20 border-b border-ink/10 bg-white">
                 <div class="page-shell flex items-center justify-between py-3">
-                    <a href="{{ route('home') }}" class="font-display text-2xl tracking-tight text-studio" wire:navigate>VibeCraft</a>
+                    <a href="{{ route('home') }}" class="flex items-center gap-2 font-display text-2xl tracking-tight text-studio" wire:navigate>
+                        <img src="{{ asset('logo.png') }}" alt="VibeCraft" class="size-8 rounded-full">
+                        VibeCraft
+                    </a>
                     <div class="flex items-center gap-3 text-sm">
                         <a href="{{ route('login') }}" class="hover:text-ember" wire:navigate>Sign in</a>
                         <a href="{{ route('register') }}" class="btn-primary" wire:navigate>Sign up</a>

@@ -13,6 +13,22 @@
         @endif
     </div>
 
+    {{-- Campus announcement --}}
+    @php
+        $campusAdminId = auth()->check() && auth()->user()->isStudent() ? auth()->user()->campus_id : null;
+    @endphp
+    @if ($campusAdminId && \App\Models\Setting::get("campus_announcement_enabled_{$campusAdminId}") === '1' && filled(\App\Models\Setting::get("campus_announcement_message_{$campusAdminId}")))
+        <div class="rounded-2xl border border-ember/20 bg-ember/10 p-5 flex items-center gap-3">
+            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ember text-white">
+                <x-icon name="megaphone" class="size-5" />
+            </div>
+            <div>
+                <h3 class="font-bold text-ink text-sm">Campus announcement</h3>
+                <p class="mt-0.5 text-sm text-ink/80">{{ \App\Models\Setting::get("campus_announcement_message_{$campusAdminId}") }}</p>
+            </div>
+        </div>
+    @endif
+
     {{-- Notification Alert if student is chosen for any events --}}
     @if ($chosenCount > 0 && $activeTab !== 'chosen')
         <div class="rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 p-5 flex items-center justify-between gap-4">

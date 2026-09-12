@@ -3,6 +3,8 @@
 use App\Enums\UserStatus;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Auth\AdminLogin;
+use App\Livewire\Campus\Dashboard as CampusDashboard;
+use App\Livewire\Events\Index as EventsIndex;
 use App\Livewire\Events\Show as EventsShow;
 use App\Models\Event;
 use App\Models\User;
@@ -152,4 +154,20 @@ test('super admin can manage, approve, reject, ban and unban students across cam
         ->assertHasNoErrors();
 
     expect($pendingStudent->fresh()->status)->toBe(UserStatus::Rejected);
+});
+
+test('campus admin announcement shows to their students on the events tab', function () {
+    $campusAdmin = User::factory()->campusAdmin()->create();
+    $student = User::factory()->student()->create(['campus_id' => $campusAdmin->id]);
+
+    Livewire::actingAs($campusAdmin)
+        ->test(CampusDashboard::class)
+        ->set('announcementMessage', 'Sports fest moved to Friday!')
+        ->set('announcementEnabled', true)
+        ->call('saveAnnouncement')
+        ->assertHasNoErrors();
+
+    Livewire::actingAs($student)
+        ->test(EventsIndex::class)
+        ->assertSee('Sports fest moved to Friday!');
 });

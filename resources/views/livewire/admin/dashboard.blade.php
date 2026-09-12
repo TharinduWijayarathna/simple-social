@@ -439,7 +439,7 @@
                                         @endif
                                     </div>
                                     <div>
-                                        <p class="font-medium">{{ $campus->name }}</p>
+                                        <p class="font-medium">{{ $campus->displayCampusName() }}</p>
                                         <p class="text-sm text-mist">{{ $campus->email }}</p>
                                         <p class="text-xs text-mist">Joined {{ $campus->created_at->format('M j, Y') }}</p>
                                     </div>
