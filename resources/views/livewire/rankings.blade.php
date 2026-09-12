@@ -3,7 +3,7 @@
     <div class="mb-8 flex items-end justify-between gap-4">
         <div>
             <h1 class="font-display text-4xl tracking-tight">Campus Rankings</h1>
-            <p class="mt-1 text-mist">Top performers ranked by likes on their talent posts.</p>
+            <p class="mt-1 text-mist">Top performers ranked by talent XP earned from published work and community engagement.</p>
         </div>
     </div>
 
@@ -41,7 +41,7 @@
                     {{-- Leaderboard --}}
                     @if ($leaders->isEmpty())
                         <div class="px-6 py-10 text-center text-sm text-mist">
-                            No posts with this talent yet.
+                            No published work with this talent yet.
                         </div>
                     @else
                         <ol class="divide-y divide-ink/6">
@@ -86,10 +86,10 @@
                                         @endif
                                     </div>
 
-                                    {{-- Like count --}}
+                                    {{-- Talent XP --}}
                                     <div class="shrink-0 text-right">
-                                        <p class="text-sm font-bold text-ember">{{ number_format($student->talent_likes_total ?? 0) }}</p>
-                                        <p class="text-[10px] text-mist">likes</p>
+                                        <p class="text-sm font-bold text-ember">{{ number_format($student->talent_xp ?? 0) }}</p>
+                                        <p class="text-[10px] font-semibold uppercase tracking-wide text-mist">XP</p>
                                     </div>
                                 </li>
                             @endforeach

@@ -178,7 +178,8 @@
                                         </a>
                                     </div>
                                     <div class="shrink-0 text-right">
-                                        <p class="text-xs font-bold text-ember">{{ number_format($student->talent_likes_total ?? 0) }}</p>
+                                        <p class="text-xs font-bold text-ember">{{ number_format($student->talent_xp ?? 0) }}</p>
+                                        <p class="text-[9px] font-semibold uppercase tracking-wide text-mist">XP</p>
                                     </div>
                                 </li>
                             @endforeach

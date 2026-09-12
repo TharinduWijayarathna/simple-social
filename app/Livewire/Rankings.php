@@ -15,7 +15,7 @@ use Livewire\Component;
 #[Title('Rankings')]
 class Rankings extends Component
 {
-    /** Re-render triggered by PostCard after a like is toggled. */
+    /** Re-render when a score input changes on the current page. */
     #[On('like-toggled')]
     public function refresh(): void
     {

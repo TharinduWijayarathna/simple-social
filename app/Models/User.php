@@ -38,6 +38,10 @@ use Illuminate\Support\Str;
  * @property int $xp
  * @property int|null $current_rank
  * @property int|null $previous_rank
+ * @property-read int|null $talent_xp
+ * @property-read int|null $published_posts_total
+ * @property-read int|null $talent_likes_total
+ * @property-read int|null $followers_total
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

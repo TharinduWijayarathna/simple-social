@@ -270,7 +270,7 @@ test('seeded talent categories are displayed with their existing talent relation
         ->assertSee('10 talents assigned');
 });
 
-test('campus rankings section shows all student ranks with points and likes count', function () {
+test('campus rankings section shows all student ranks with talent xp', function () {
     $admin = User::factory()->create([
         'role' => Role::Campus,
         'status' => UserStatus::Approved,
@@ -332,7 +332,8 @@ test('campus rankings section shows all student ranks with points and likes coun
     Livewire::test(Rankings::class)
         ->assertSee('Top Classical Singers')
         ->assertSee($student1->name)
-        ->assertSee('points (5 likes)')
+        ->assertSee('35')
+        ->assertSee('XP')
         ->assertSee($student2->name)
-        ->assertSee('points (2 likes)');
+        ->assertSee('29');
 });

@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Support\CampusRankingLeaders;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -20,6 +21,9 @@ use Livewire\WithPagination;
 class Feed extends Component
 {
     use WithPagination;
+
+    #[On('like-toggled')]
+    public function refreshRankings(): void {}
 
     public function follow(int $userId, FollowUser $followUser): void
     {

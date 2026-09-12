@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-xl font-semibold">Talent Rankings</h1>
-                <p class="mt-0.5 text-sm text-mist">Create and manage talent-based leaderboards for your campus.</p>
+                <p class="mt-0.5 text-sm text-mist">Create and manage engagement-based talent XP leaderboards for your campus.</p>
             </div>
             @if (! $showForm)
                 <button wire:click="openForm"
@@ -140,7 +140,7 @@
                         {{-- Leaderboard list --}}
                         @if ($leaders->isEmpty())
                             <div class="px-6 py-8 text-center text-sm text-mist">
-                                No students currently ranked under this talent.
+                                No students have published work under this talent yet.
                             </div>
                         @else
                             <div class="divide-y divide-ink/6">
@@ -188,12 +188,13 @@
                                             </div>
                                         </div>
 
-                                        {{-- Points & Likes count --}}
+                                        {{-- Talent XP --}}
                                         <div class="shrink-0 text-right">
                                             <div class="inline-flex items-center gap-1 rounded-xl bg-ember/10 px-3 py-1.5 text-ember">
-                                                <span class="text-sm font-extrabold">{{ number_format($student->talent_likes_total ?? 0) }}</span>
-                                                <span class="text-[11px] font-semibold text-ember/80">points ({{ number_format($student->talent_likes_total ?? 0) }} likes)</span>
+                                                <span class="text-sm font-extrabold">{{ number_format($student->talent_xp ?? 0) }}</span>
+                                                <span class="text-[11px] font-semibold uppercase tracking-wide text-ember/80">XP</span>
                                             </div>
+                                            <p class="mt-1 text-[10px] text-mist">{{ number_format($student->published_posts_total ?? 0) }} posts · {{ number_format($student->talent_likes_total ?? 0) }} likes · {{ number_format($student->followers_total ?? 0) }} followers</p>
                                         </div>
                                     </div>
                                 @endforeach
