@@ -4,6 +4,7 @@ namespace App\Livewire\Campus;
 
 use App\Actions\AwardXp;
 use App\Enums\EventApplicationStatus;
+use App\Enums\PortfolioMediaType;
 use App\Enums\ReportStatus;
 use App\Enums\Role;
 use App\Enums\TalentTheme;
@@ -20,6 +21,8 @@ use App\Models\User;
 use App\Models\XpEvent;
 use App\Notifications\EventApplicationSelectedNotification;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -39,6 +42,31 @@ class Dashboard extends Component
 
     #[Url(as: 'q')]
     public string $studentSearch = '';
+
+    #[Url(as: 'report_status')]
+    public string $moderationStatus = 'pending';
+
+    #[Url(as: 'report_q')]
+    public string $moderationSearch = '';
+
+    #[Url(as: 'content_state')]
+    public string $moderationContentState = 'published';
+
+    #[Url(as: 'content_type')]
+    public string $moderationContentType = 'all';
+
+    #[Url(as: 'content_q')]
+    public string $moderationContentSearch = '';
+
+    /** @var array<int|string, string> */
+    public array $moderatorNotes = [];
+
+    /** @var list<int|string> */
+    public array $selectedReportIds = [];
+
+    public ?int $contentUnderReviewId = null;
+
+    public string $contentModerationReason = '';
 
     public ?int $selectedEventId = null;
 
@@ -152,32 +180,210 @@ class Dashboard extends Component
         $user->delete();
     }
 
-    public function unpublishItem(int $itemId): void
+    public function updatedModerationSearch(): void
     {
-        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+        $this->resetPage(pageName: 'reportsPage');
+    }
 
-        PortfolioItem::query()->findOrFail($itemId)->update(['published_at' => null]);
+    public function updatedModerationStatus(): void
+    {
+        $this->selectedReportIds = [];
+        $this->resetPage(pageName: 'reportsPage');
+    }
+
+    public function updatedModerationContentSearch(): void
+    {
+        $this->resetPage(pageName: 'contentPage');
+    }
+
+    public function updatedModerationContentState(): void
+    {
+        $this->resetPage(pageName: 'contentPage');
+    }
+
+    public function updatedModerationContentType(): void
+    {
+        $this->resetPage(pageName: 'contentPage');
+    }
+
+    public function openContentReview(int $itemId): void
+    {
+        $item = $this->campusPortfolioItemsQuery()
+            ->published()
+            ->with('user:id,campus_id')
+            ->findOrFail($itemId);
+
+        $this->authorize('moderate', $item);
+        $this->resetErrorBag();
+        $this->contentUnderReviewId = $item->id;
+        $this->contentModerationReason = '';
+    }
+
+    public function closeContentReview(): void
+    {
+        $this->contentUnderReviewId = null;
+        $this->contentModerationReason = '';
+        $this->resetErrorBag();
+    }
+
+    public function unpublishItem(): void
+    {
+        abort_unless($this->contentUnderReviewId !== null, 422);
+
+        $validated = $this->validate([
+            'contentModerationReason' => ['required', 'string', 'min:10', 'max:1000'],
+        ]);
+
+        $item = $this->campusPortfolioItemsQuery()
+            ->published()
+            ->with('user:id,campus_id')
+            ->findOrFail($this->contentUnderReviewId);
+
+        $this->authorize('moderate', $item);
+
+        DB::transaction(function () use ($item, $validated): void {
+            $item->update(['published_at' => null]);
+
+            $item->reports()->create([
+                'reporter_id' => auth()->id(),
+                'reason' => 'proactive_campus_review',
+                'details' => $validated['contentModerationReason'],
+                'status' => ReportStatus::Actioned,
+                'moderator_notes' => $validated['contentModerationReason'],
+            ]);
+        });
+
+        $this->closeContentReview();
+        session()->flash('moderation-status', 'The work was unpublished and the reason was added to moderation history.');
+    }
+
+    public function republishItem(int $itemId): void
+    {
+        $item = $this->campusPortfolioItemsQuery()
+            ->whereNull('published_at')
+            ->whereHas('reports', fn (Builder $query) => $query->where('status', ReportStatus::Actioned))
+            ->with('user:id,campus_id')
+            ->findOrFail($itemId);
+
+        $this->authorize('moderate', $item);
+        $item->update(['published_at' => now()]);
+
+        session()->flash('moderation-status', 'The work is published again. Its moderation history has been preserved.');
     }
 
     public function moderateReport(int $reportId, string $status): void
     {
-        abort_unless(auth()->user()->canOrganizeEvents(), 403);
+        $reportStatus = ReportStatus::tryFrom($status);
+        abort_unless($reportStatus !== null, 422);
 
-        $report = Report::query()
-            ->whereHasMorph('reportable', [PortfolioItem::class], function ($query) {
-                $query->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()));
-            })
+        $report = $this->campusReportsQuery()
+            ->with('reportable')
             ->findOrFail($reportId);
 
-        $report->update(['status' => ReportStatus::from($status)]);
+        $this->authorize('moderate', $report);
 
-        if ($report->status === ReportStatus::Actioned) {
-            $report->loadMissing('reportable');
+        $this->validate([
+            "moderatorNotes.{$reportId}" => ['nullable', 'string', 'max:2000'],
+        ]);
 
-            if ($report->reportable instanceof PortfolioItem) {
+        $moderatorNote = filled($this->moderatorNotes[$reportId] ?? null)
+            ? Str::squish($this->moderatorNotes[$reportId])
+            : $report->moderator_notes;
+
+        DB::transaction(function () use ($report, $reportStatus, $moderatorNote): void {
+            $report->update([
+                'status' => $reportStatus,
+                'moderator_notes' => $moderatorNote,
+            ]);
+
+            if ($reportStatus === ReportStatus::Actioned && $report->reportable instanceof PortfolioItem) {
                 $report->reportable->update(['published_at' => null]);
+
+                Report::query()
+                    ->pending()
+                    ->where('reportable_type', $report->reportable_type)
+                    ->where('reportable_id', $report->reportable_id)
+                    ->update([
+                        'status' => ReportStatus::Actioned,
+                        'moderator_notes' => $moderatorNote,
+                    ]);
             }
+        });
+
+        unset($this->moderatorNotes[$reportId]);
+        $this->selectedReportIds = array_values(array_diff($this->selectedReportIds, [$reportId, (string) $reportId]));
+        session()->flash('moderation-status', match ($reportStatus) {
+            ReportStatus::Pending => 'The report was reopened and returned to the queue.',
+            ReportStatus::Reviewed => 'The report was marked as reviewed.',
+            ReportStatus::Dismissed => 'The report was dismissed.',
+            ReportStatus::Actioned => 'The reported work was taken down and related reports were resolved.',
+        });
+    }
+
+    public function saveModeratorNote(int $reportId): void
+    {
+        $report = $this->campusReportsQuery()->findOrFail($reportId);
+        $this->authorize('moderate', $report);
+
+        $validated = $this->validate([
+            "moderatorNotes.{$reportId}" => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $report->update([
+            'moderator_notes' => filled($validated['moderatorNotes'][$reportId] ?? null)
+                ? Str::squish($validated['moderatorNotes'][$reportId])
+                : null,
+        ]);
+
+        unset($this->moderatorNotes[$reportId]);
+        session()->flash('moderation-status', 'Moderator note saved.');
+    }
+
+    public function bulkModerateReports(string $status): void
+    {
+        $reportStatus = ReportStatus::tryFrom($status);
+        abort_unless(in_array($reportStatus, [ReportStatus::Reviewed, ReportStatus::Dismissed, ReportStatus::Actioned], true), 422);
+
+        $reportIds = collect($this->selectedReportIds)
+            ->filter(fn (mixed $reportId): bool => filter_var($reportId, FILTER_VALIDATE_INT) !== false)
+            ->map(fn (mixed $reportId): int => (int) $reportId)
+            ->unique()
+            ->values();
+
+        if ($reportIds->isEmpty()) {
+            $this->addError('selectedReportIds', 'Select at least one report.');
+
+            return;
         }
+
+        $reports = $this->campusReportsQuery()
+            ->whereKey($reportIds)
+            ->with('reportable')
+            ->get();
+
+        abort_unless($reports->count() === $reportIds->count(), 404);
+
+        DB::transaction(function () use ($reports, $reportStatus): void {
+            foreach ($reports as $report) {
+                $this->authorize('moderate', $report);
+                $report->update(['status' => $reportStatus]);
+
+                if ($reportStatus === ReportStatus::Actioned && $report->reportable instanceof PortfolioItem) {
+                    $report->reportable->update(['published_at' => null]);
+
+                    Report::query()
+                        ->pending()
+                        ->where('reportable_type', $report->reportable_type)
+                        ->where('reportable_id', $report->reportable_id)
+                        ->update(['status' => ReportStatus::Actioned]);
+                }
+            }
+        });
+
+        $processedCount = $reports->count();
+        $this->selectedReportIds = [];
+        $this->resetErrorBag('selectedReportIds');
+        session()->flash('moderation-status', "{$processedCount} reports were updated.");
     }
 
     public function saveAnnouncement(): void
@@ -423,6 +629,26 @@ class Dashboard extends Component
         ]);
     }
 
+    /**
+     * @return Builder<PortfolioItem>
+     */
+    private function campusPortfolioItemsQuery(): Builder
+    {
+        return PortfolioItem::query()
+            ->whereHas('user', fn (Builder $query) => $query->where('campus_id', auth()->id()));
+    }
+
+    /**
+     * @return Builder<Report>
+     */
+    private function campusReportsQuery(): Builder
+    {
+        return Report::query()
+            ->whereHasMorph('reportable', [PortfolioItem::class], function (Builder $query): void {
+                $query->whereHas('user', fn (Builder $query) => $query->where('campus_id', auth()->id()));
+            });
+    }
+
     public function render(): View
     {
         $campusUser = auth()->user();
@@ -463,23 +689,80 @@ class Dashboard extends Component
             ->latest()
             ->paginate(15, pageName: 'studentsPage');
 
-        $recentItems = PortfolioItem::query()
-            ->published()
-            ->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()))
-            ->with('user:id,name')
-            ->latest('published_at')
-            ->limit(20)
-            ->get();
+        $reportStatus = ReportStatus::tryFrom($this->moderationStatus);
+        $moderationSearch = Str::squish($this->moderationSearch);
 
-        $reports = Report::query()
-            ->pending()
-            ->whereHasMorph('reportable', [PortfolioItem::class], function ($query) {
-                $query->whereHas('user', fn ($query) => $query->where('campus_id', auth()->id()));
+        $reports = $this->campusReportsQuery()
+            ->when($this->moderationStatus !== 'all', fn (Builder $query) => $query->where(
+                'status',
+                $reportStatus ?? ReportStatus::Pending,
+            ))
+            ->when($moderationSearch !== '', function (Builder $query) use ($moderationSearch): void {
+                $query->where(function (Builder $query) use ($moderationSearch): void {
+                    $query->where('reason', 'like', "%{$moderationSearch}%")
+                        ->orWhere('details', 'like', "%{$moderationSearch}%")
+                        ->orWhere('moderator_notes', 'like', "%{$moderationSearch}%")
+                        ->orWhereHas('reporter', fn (Builder $query) => $query->where('name', 'like', "%{$moderationSearch}%"))
+                        ->orWhereHasMorph('reportable', [PortfolioItem::class], function (Builder $query) use ($moderationSearch): void {
+                            $query->where(function (Builder $query) use ($moderationSearch): void {
+                                $query->where('title', 'like', "%{$moderationSearch}%")
+                                    ->orWhere('description', 'like', "%{$moderationSearch}%")
+                                    ->orWhereHas('user', fn (Builder $query) => $query->where('name', 'like', "%{$moderationSearch}%"));
+                            });
+                        });
+                });
             })
-            ->with(['reporter:id,name', 'reportable'])
+            ->with(['reporter.profile', 'reportable', 'reportable.talent', 'reportable.user.profile'])
             ->latest()
-            ->limit(20)
-            ->get();
+            ->paginate(8, pageName: 'reportsPage');
+
+        $contentState = in_array($this->moderationContentState, ['published', 'removed', 'all'], true)
+            ? $this->moderationContentState
+            : 'published';
+        $contentMediaType = PortfolioMediaType::tryFrom($this->moderationContentType);
+        $contentSearch = Str::squish($this->moderationContentSearch);
+
+        $moderationItems = $this->campusPortfolioItemsQuery()
+            ->when($contentState === 'published', fn (Builder $query) => $query->published())
+            ->when($contentState === 'removed', fn (Builder $query) => $query
+                ->whereNull('published_at')
+                ->whereHas('reports', fn (Builder $query) => $query->where('status', ReportStatus::Actioned)))
+            ->when($contentState === 'all', function (Builder $query): void {
+                $query->where(function (Builder $query): void {
+                    $query->published()
+                        ->orWhere(function (Builder $query): void {
+                            $query->whereNull('published_at')
+                                ->whereHas('reports', fn (Builder $query) => $query->where('status', ReportStatus::Actioned));
+                        });
+                });
+            })
+            ->when($contentMediaType !== null, fn (Builder $query) => $query->where('media_type', $contentMediaType))
+            ->when($contentSearch !== '', function (Builder $query) use ($contentSearch): void {
+                $query->where(function (Builder $query) use ($contentSearch): void {
+                    $query->where('title', 'like', "%{$contentSearch}%")
+                        ->orWhere('description', 'like', "%{$contentSearch}%")
+                        ->orWhereHas('user', fn (Builder $query) => $query->where('name', 'like', "%{$contentSearch}%"))
+                        ->orWhereHas('talent', fn (Builder $query) => $query->where('name', 'like', "%{$contentSearch}%"));
+                });
+            })
+            ->with(['talent:id,name', 'user.profile'])
+            ->withCount([
+                'reports',
+                'reports as pending_reports_count' => fn (Builder $query) => $query->where('status', ReportStatus::Pending),
+            ])
+            ->latest('updated_at')
+            ->paginate(9, pageName: 'contentPage');
+
+        $pendingReportsCount = $this->campusReportsQuery()->pending()->count();
+        $resolvedReportsLast30Days = $this->campusReportsQuery()
+            ->whereIn('status', [ReportStatus::Reviewed, ReportStatus::Dismissed, ReportStatus::Actioned])
+            ->where('updated_at', '>=', now()->subDays(30))
+            ->count();
+        $publishedItemsCount = $this->campusPortfolioItemsQuery()->published()->count();
+        $removedItemsCount = $this->campusPortfolioItemsQuery()
+            ->whereNull('published_at')
+            ->whereHas('reports', fn (Builder $query) => $query->where('status', ReportStatus::Actioned))
+            ->count();
 
         $talents = Talent::query()
             ->forCampus($campusId)
@@ -511,8 +794,12 @@ class Dashboard extends Component
             'totalStudents' => $approvedStudents->count(),
             'totalPending' => $pendingStudents->count(),
             'totalEvents' => $events->count(),
-            'recentItems' => $recentItems,
+            'moderationItems' => $moderationItems,
             'reports' => $reports,
+            'pendingReportsCount' => $pendingReportsCount,
+            'resolvedReportsLast30Days' => $resolvedReportsLast30Days,
+            'publishedItemsCount' => $publishedItemsCount,
+            'removedItemsCount' => $removedItemsCount,
             'categories' => $categories,
             'newStudentsLast7Days' => User::query()
                 ->where('role', Role::Student)

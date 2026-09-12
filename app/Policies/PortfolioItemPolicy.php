@@ -35,4 +35,17 @@ class PortfolioItemPolicy
     {
         return $this->update($user, $portfolioItem);
     }
+
+    public function moderate(User $user, PortfolioItem $portfolioItem): bool
+    {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        return $user->isCampus()
+            && User::query()
+                ->whereKey($portfolioItem->user_id)
+                ->where('campus_id', $user->id)
+                ->exists();
+    }
 }
